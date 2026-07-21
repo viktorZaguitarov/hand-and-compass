@@ -512,6 +512,7 @@
 
     .world-entry-map {
       position: relative;
+      isolation: isolate;
       min-height: 430px;
       overflow: hidden;
       border: 1px solid rgba(151, 130, 90, 0.3);
@@ -522,6 +523,53 @@
         radial-gradient(circle at 82% 70%, rgba(49, 95, 82, 0.18), transparent 14rem),
         linear-gradient(145deg, rgba(234, 217, 181, 0.58), rgba(241, 234, 217, 0.28));
       box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.42);
+    }
+
+    .world-graph-lines {
+      position: absolute;
+      z-index: 0;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .world-graph-line {
+      fill: none;
+      stroke: rgba(49, 95, 82, 0.24);
+      stroke-linecap: round;
+      stroke-width: 1.5;
+      vector-effect: non-scaling-stroke;
+      transition: opacity 180ms ease, stroke 180ms ease, stroke-width 180ms ease;
+    }
+
+    .world-graph-line.is-confirmed {
+      stroke: rgba(49, 95, 82, 0.5);
+      stroke-width: 2;
+    }
+
+    .world-graph-line.is-nearby {
+      stroke: rgba(198, 147, 69, 0.46);
+      stroke-dasharray: 3 7;
+      animation: worldLineFlow 10s linear infinite;
+    }
+
+    .world-graph-line.is-shared-road {
+      stroke: rgba(163, 97, 83, 0.34);
+      stroke-dasharray: 2 5;
+    }
+
+    .world-graph-line.is-muted { opacity: 0.2; }
+
+    .world-graph-line.is-active {
+      opacity: 1;
+      stroke: var(--gold);
+      stroke-width: 2.6;
+    }
+
+    @keyframes worldLineFlow {
+      to { stroke-dashoffset: -40; }
     }
 
     .world-map-orbit {
@@ -568,7 +616,16 @@
       line-height: 1.3;
     }
 
-    .world-cloud {
+    .world-map-heart small {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.68rem;
+      line-height: 1.3;
+    }
+
+    .world-entry-map .world-cloud {
       position: absolute;
       z-index: 2;
       display: grid;
@@ -584,33 +641,76 @@
       text-align: center;
       box-shadow: 0 8px 22px rgba(62, 73, 66, 0.07);
       transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+      translate: 0 0;
+      animation: worldCloudDrift var(--float-duration, 8s) ease-in-out var(--float-delay, 0s) infinite;
     }
 
-    .world-cloud:hover,
-    .world-cloud.is-selected {
-      transform: translateY(-3px);
+    .world-entry-map .world-cloud:hover,
+    .world-entry-map .world-cloud.is-selected {
+      transform: translateY(-3px) scale(1.035);
       border-style: solid;
       border-color: rgba(198, 147, 69, 0.58);
       background: rgba(255, 248, 226, 0.92);
       box-shadow: 0 12px 28px rgba(62, 73, 66, 0.14);
+      animation-play-state: paused;
     }
 
-    .world-cloud.has-local-trace {
+    .world-entry-map .world-cloud.has-local-trace {
       border-style: solid;
       border-color: rgba(49, 95, 82, 0.36);
       background: rgba(239, 246, 237, 0.82);
     }
 
-    .world-cloud strong { display: block; font-size: 0.86rem; line-height: 1.2; }
-    .world-cloud small { display: block; margin-top: 4px; color: var(--muted); font-size: 0.7rem; }
-    .world-cloud[data-world-cloud="clarity"] { top: 7%; left: 7%; }
-    .world-cloud[data-world-cloud="mutuality"] { top: 7%; right: 8%; }
-    .world-cloud[data-world-cloud="freedom"] { top: 37%; left: 2%; }
-    .world-cloud[data-world-cloud="trust"] { top: 36%; right: 2%; }
-    .world-cloud[data-world-cloud="boundaries"] { bottom: 7%; left: 9%; }
-    .world-cloud[data-world-cloud="movement"] { right: 9%; bottom: 7%; }
-    .world-cloud[data-world-cloud="belonging"] { top: 15%; left: 41%; }
-    .world-cloud[data-world-cloud="expression"] { bottom: 8%; left: 40%; }
+    .world-entry-map .world-cloud.is-nearby {
+      border-color: rgba(198, 147, 69, 0.4);
+      background: rgba(255, 248, 226, 0.68);
+    }
+
+    .world-entry-map .world-cloud.is-unexplored { opacity: 0.66; }
+
+    .world-entry-map .world-cloud strong { display: block; font-size: 0.86rem; line-height: 1.2; }
+    .world-entry-map .world-cloud small { display: block; margin-top: 4px; color: var(--muted); font-size: 0.7rem; }
+    .world-entry-map .world-cloud[data-world-cloud="clarity"] { top: 7%; left: 7%; --float-duration: 8.6s; --float-delay: -1s; --float-x: 4px; --float-y: -5px; }
+    .world-entry-map .world-cloud[data-world-cloud="mutuality"] { top: 7%; right: 8%; --float-duration: 9.8s; --float-delay: -4s; --float-x: -5px; --float-y: 4px; }
+    .world-entry-map .world-cloud[data-world-cloud="freedom"] { top: 37%; left: 2%; --float-duration: 9.2s; --float-delay: -6s; --float-x: 5px; --float-y: 3px; }
+    .world-entry-map .world-cloud[data-world-cloud="trust"] { top: 36%; right: 2%; --float-duration: 8.1s; --float-delay: -2s; --float-x: -4px; --float-y: -4px; }
+    .world-entry-map .world-cloud[data-world-cloud="boundaries"] { bottom: 7%; left: 9%; --float-duration: 10.3s; --float-delay: -5s; --float-x: 4px; --float-y: 5px; }
+    .world-entry-map .world-cloud[data-world-cloud="movement"] { right: 9%; bottom: 7%; --float-duration: 9.4s; --float-delay: -3s; --float-x: -4px; --float-y: 5px; }
+    .world-entry-map .world-cloud[data-world-cloud="belonging"] { top: 15%; left: 41%; --float-duration: 8.8s; --float-delay: -7s; --float-x: 3px; --float-y: -4px; }
+    .world-entry-map .world-cloud[data-world-cloud="expression"] { bottom: 8%; left: 40%; --float-duration: 10.1s; --float-delay: -4s; --float-x: -3px; --float-y: 4px; }
+
+    @keyframes worldCloudDrift {
+      0%, 100% { translate: 0 0; }
+      50% { translate: var(--float-x, 4px) var(--float-y, -4px); }
+    }
+
+    .world-graph-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin: 11px 4px 0;
+      color: var(--muted);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.72rem;
+    }
+
+    .world-graph-legend span::before {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 6px;
+      border: 1px solid rgba(49, 95, 82, 0.34);
+      border-radius: 50%;
+      background: rgba(239, 246, 237, 0.9);
+      content: '';
+    }
+
+    .world-graph-legend .nearby::before {
+      border-color: rgba(198, 147, 69, 0.5);
+      background: rgba(255, 248, 226, 0.88);
+    }
+
+    .world-graph-legend .unknown::before { opacity: 0.45; background: transparent; }
 
     .world-cloud-detail {
       display: grid;
@@ -629,6 +729,30 @@
     .world-cloud-detail p { margin: 4px 0 0; color: var(--muted); line-height: 1.45; }
     .world-cloud-detail .world-cloud-local { color: var(--forest-dark); font-size: 0.82rem; }
     .world-cloud-actions { min-width: 210px; text-align: right; }
+
+    .world-cloud-origins {
+      grid-column: 1 / -1;
+      padding-top: 12px;
+      border-top: 1px solid rgba(151, 130, 90, 0.22);
+    }
+
+    .world-cloud-origins[hidden] { display: none; }
+    .world-cloud-origins > strong { color: var(--forest-dark); font-size: 0.82rem; }
+    .world-cloud-origin-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+
+    .world-cloud-origin {
+      max-width: 310px;
+      padding: 9px 11px;
+      border: 1px solid rgba(49, 95, 82, 0.2);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.48);
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-align: left;
+    }
+
+    .world-cloud-origin strong { display: block; font-size: 0.78rem; }
+    .world-cloud-origin small { display: block; margin-top: 3px; color: var(--muted); line-height: 1.35; }
 
     .world-entry-nav {
       display: flex;
@@ -711,7 +835,7 @@
 
     .world-clouds { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
 
-    .world-cloud {
+    .world-clouds .world-cloud {
       max-width: 100%;
       padding: 10px 14px;
       border: 1px solid rgba(49, 95, 82, 0.2);
@@ -721,7 +845,7 @@
       overflow-wrap: anywhere;
     }
 
-    .world-cloud small { color: var(--muted); }
+    .world-clouds .world-cloud small { color: var(--muted); }
 
     .world-surface {
       position: relative;
@@ -1036,18 +1160,25 @@
         min-height: 0;
         padding: 16px;
       }
-      .world-map-orbit, .world-map-heart { display: none; }
-      .world-cloud,
-      .world-cloud[data-world-cloud] {
+      .world-map-orbit, .world-map-heart, .world-graph-lines { display: none; }
+      .world-entry-map .world-cloud,
+      .world-entry-map .world-cloud[data-world-cloud] {
         position: static;
         min-width: 0;
         min-height: 82px;
+        animation: none;
+        opacity: 1;
       }
       .world-cloud-detail { grid-template-columns: 1fr; }
       .world-cloud-actions { min-width: 0; text-align: left; }
       .lab-mode > summary { display: block; }
       .lab-mode > summary small { display: block; margin-top: 4px; text-align: left; }
       .lab-mode-body { padding-left: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .world-entry-map .world-cloud,
+      .world-graph-line.is-nearby { animation: none; }
     }
   </style>
 </head>
@@ -1067,12 +1198,14 @@
         </div>
 
         <div class="world-entry-map" id="worldEntryMap" aria-label="Карта областей общего мира Hand and Compass">
+          <svg class="world-graph-lines" id="worldGraphLines" aria-hidden="true"></svg>
           <div class="world-map-orbit one" aria-hidden="true"></div>
           <div class="world-map-orbit two" aria-hidden="true"></div>
           <div class="world-map-orbit three" aria-hidden="true"></div>
-          <div class="world-map-heart" aria-hidden="true">
+          <div class="world-map-heart">
             <span>◉</span>
-            <strong>Здесь пересекаются дороги</strong>
+            <strong id="worldMapHeartLabel">Здесь пересекаются дороги</strong>
+            <small id="worldMapHeartState">Точка наблюдения пока свободна</small>
           </div>
 
           <button class="world-cloud" type="button" data-world-cloud="clarity" aria-pressed="false">
@@ -1101,6 +1234,12 @@
           </button>
         </div>
 
+        <div class="world-graph-legend" aria-label="Состояния областей карты">
+          <span>Есть твои дороги</span>
+          <span class="nearby">Рядом по смыслу — гипотеза</span>
+          <span class="unknown">Пока не исследовано</span>
+        </div>
+
         <section class="world-cloud-detail" id="worldCloudDetail" aria-live="polite" hidden>
           <div>
             <h3 id="worldCloudTitle"></h3>
@@ -1110,6 +1249,10 @@
           </div>
           <div class="world-cloud-actions">
             <button class="primary-button" id="worldCloudStartButton" type="button">Оставить след здесь</button>
+          </div>
+          <div class="world-cloud-origins" id="worldCloudOrigins" hidden>
+            <strong id="worldCloudOriginsTitle">Откуда появилась связь</strong>
+            <div class="world-cloud-origin-list" id="worldCloudOriginList"></div>
           </div>
         </section>
 
@@ -1677,6 +1820,7 @@
       const steps = Array.from(document.querySelectorAll('[data-step]'));
       const homeButton = document.getElementById('homeButton');
       const worldEntryMap = document.getElementById('worldEntryMap');
+      const worldGraphLines = document.getElementById('worldGraphLines');
       const worldCloudStartButton = document.getElementById('worldCloudStartButton');
       const worldPathButton = document.getElementById('worldPathButton');
       const worldWorkshopButton = document.getElementById('worldWorkshopButton');
@@ -1701,49 +1845,57 @@
           id: 'clarity',
           label: 'Ясность',
           copy: 'Дороги, на которых люди пытаются отделить наблюдаемые события от догадок и понять происходящее до решения.',
-          terms: ['ясност', 'честност']
+          terms: ['ясност', 'честност'],
+          related: ['mutuality', 'trust', 'boundaries']
         },
         {
           id: 'mutuality',
           label: 'Взаимность',
           copy: 'Дороги о встречном движении: замечают ли люди вклад друг друга и возможно ли участие без принуждения.',
-          terms: ['взаимност', 'близост']
+          terms: ['взаимност', 'близост'],
+          related: ['clarity', 'trust', 'belonging', 'movement']
         },
         {
           id: 'freedom',
           label: 'Свобода',
           copy: 'Дороги, где важно сохранить право выбирать, менять темп и не терять себя внутри связи.',
-          terms: ['свобод', 'автоном']
+          terms: ['свобод', 'автоном'],
+          related: ['boundaries', 'expression', 'belonging']
         },
         {
           id: 'trust',
           label: 'Доверие',
           copy: 'Дороги, на которых проверяется, можно ли опираться на слова, действия и повторяющийся опыт.',
-          terms: ['довер', 'надёжност', 'надежност']
+          terms: ['довер', 'надёжност', 'надежност'],
+          related: ['clarity', 'mutuality', 'boundaries']
         },
         {
           id: 'boundaries',
           label: 'Границы',
           copy: 'Дороги о возможности сказать «да», «нет», «не сейчас» или попросить паузу без исчезновения собственной позиции.',
-          terms: ['границ', 'пауза']
+          terms: ['границ', 'пауза'],
+          related: ['freedom', 'clarity', 'trust']
         },
         {
           id: 'movement',
           label: 'Совместное движение',
           copy: 'Дороги, где люди пытаются понять, существует ли общее направление и как оно проявляется в действиях.',
-          terms: ['совместн', 'движен', 'развит']
+          terms: ['совместн', 'движен', 'развит'],
+          related: ['mutuality', 'expression', 'belonging']
         },
         {
           id: 'belonging',
           label: 'Принадлежность',
           copy: 'Дороги о принятии, своём месте рядом с другими и возможности оставаться частью связи без необходимости притворяться.',
-          terms: ['принадлеж', 'принят', 'поддерж']
+          terms: ['принадлеж', 'принят', 'поддерж'],
+          related: ['mutuality', 'freedom', 'movement', 'expression']
         },
         {
           id: 'expression',
           label: 'Самовыражение',
           copy: 'Дороги, на которых человек показывает важное, создаёт новое и проверяет, сохраняется ли его инициатива во взаимодействии.',
-          terms: ['самовыраж', 'творч', 'иде']
+          terms: ['самовыраж', 'творч', 'иде'],
+          related: ['freedom', 'movement', 'belonging']
         }
       ];
       let step = 0;
@@ -1751,6 +1903,7 @@
       let dialogueJourneyId = null;
       let patternJourneyIds = [];
       let selectedWorldCloudId = null;
+      let worldResizeFrame = null;
       let draft = emptyDraft();
 
       const promptVariants = [
@@ -1866,24 +2019,38 @@
 
       function renderWorldEntry() {
         const items = readJourneys();
+        const model = buildWorldCloudModel(items);
         document.querySelectorAll('[data-world-cloud]').forEach((button) => {
           const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === button.dataset.worldCloud);
-          const localCount = cloud ? items.filter((item) => journeyMatchesCloud(item, cloud)).length : 0;
-          button.classList.toggle('has-local-trace', localCount > 0);
+          const localCount = cloud ? model.matches.get(cloud.id).length : 0;
+          const state = localCount ? 'confirmed' : model.nearby.has(cloud?.id) ? 'nearby' : 'unexplored';
+          button.classList.toggle('has-local-trace', state === 'confirmed');
+          button.classList.toggle('is-nearby', state === 'nearby');
+          button.classList.toggle('is-unexplored', state === 'unexplored');
+          button.dataset.worldState = state;
           const count = button.querySelector('[data-world-cloud-count]');
-          count.textContent = localCount ? localTraceLabel(localCount) : 'Область мира';
+          count.textContent = localCount
+            ? localTraceLabel(localCount)
+            : state === 'nearby' ? 'Рядом по смыслу' : 'Не исследовано';
         });
 
         const honesty = document.getElementById('worldEntryHonesty');
+        const heartLabel = document.getElementById('worldMapHeartLabel');
+        const heartState = document.getElementById('worldMapHeartState');
         worldPathButton.hidden = !items.length;
         if (items.length) {
           worldPathButton.textContent = items.length >= 3 ? 'Продолжить мой путь' : 'Посмотреть мои следы';
-          honesty.textContent = 'Зелёным отмечены области, которых уже касаются твои локальные дороги. Чужих профилей и вымышленных участников на этой карте пока нет.';
+          heartLabel.textContent = 'Твоя карта сейчас';
+          heartState.textContent = roadCountLabel(items.length);
+          honesty.textContent = 'Зелёные области опираются на твои дороги. Золотистые показаны рядом как проверяемые смысловые гипотезы, а не выводы о тебе. Чужих профилей здесь пока нет.';
         } else {
+          heartLabel.textContent = 'Здесь пересекаются дороги';
+          heartState.textContent = 'Точка наблюдения пока свободна';
           honesty.textContent = 'Сейчас видна архитектура будущего мира. Реальных чужих следов и вымышленных участников здесь пока нет.';
         }
 
         if (selectedWorldCloudId) selectWorldCloud(selectedWorldCloudId);
+        requestAnimationFrame(() => renderWorldConnections(items));
       }
 
       function journeyMatchesCloud(item, cloud) {
@@ -1891,6 +2058,95 @@
           .map((value) => String(value || '').toLowerCase())
           .join(' ');
         return source.includes(cloud.label.toLowerCase()) || cloud.terms.some((term) => source.includes(term));
+      }
+
+      function buildWorldCloudModel(items) {
+        const matches = new Map(WORLD_CLOUDS.map((cloud) => [
+          cloud.id,
+          items.filter((item) => journeyMatchesCloud(item, cloud))
+        ]));
+        const confirmed = new Set(WORLD_CLOUDS
+          .filter((cloud) => matches.get(cloud.id).length)
+          .map((cloud) => cloud.id));
+        const nearby = new Set();
+        WORLD_CLOUDS.forEach((cloud) => {
+          if (confirmed.has(cloud.id)) return;
+          const touchesConfirmed = cloud.related.some((id) => confirmed.has(id))
+            || WORLD_CLOUDS.some((candidate) => confirmed.has(candidate.id) && candidate.related.includes(cloud.id));
+          if (touchesConfirmed) nearby.add(cloud.id);
+        });
+        return { matches, confirmed, nearby };
+      }
+
+      function cloudPoint(mapRect, id) {
+        const node = worldEntryMap.querySelector(`[data-world-cloud="${id}"]`);
+        if (!node) return null;
+        const rect = node.getBoundingClientRect();
+        return {
+          x: rect.left - mapRect.left + rect.width / 2,
+          y: rect.top - mapRect.top + rect.height / 2
+        };
+      }
+
+      function appendWorldGraphLine(start, end, kind, cloudIds) {
+        if (!start || !end) return;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const bend = Math.max(18, Math.abs(end.x - start.x) * 0.18);
+        const direction = end.y >= start.y ? 1 : -1;
+        const middleX = (start.x + end.x) / 2;
+        const middleY = (start.y + end.y) / 2 + bend * direction;
+        path.setAttribute('d', `M ${start.x} ${start.y} Q ${middleX} ${middleY} ${end.x} ${end.y}`);
+        path.setAttribute('class', `world-graph-line ${kind}`);
+        path.dataset.cloudIds = cloudIds.join(' ');
+        worldGraphLines.append(path);
+      }
+
+      function renderWorldConnections(items) {
+        if (!worldGraphLines || worldEntryMap.hidden) return;
+        const mapRect = worldEntryMap.getBoundingClientRect();
+        if (!mapRect.width || !mapRect.height) return;
+        worldGraphLines.setAttribute('viewBox', `0 0 ${mapRect.width} ${mapRect.height}`);
+        worldGraphLines.replaceChildren();
+
+        const model = buildWorldCloudModel(items);
+        const heart = document.querySelector('.world-map-heart');
+        const heartRect = heart.getBoundingClientRect();
+        const center = {
+          x: heartRect.left - mapRect.left + heartRect.width / 2,
+          y: heartRect.top - mapRect.top + heartRect.height / 2
+        };
+
+        model.confirmed.forEach((id) => {
+          appendWorldGraphLine(center, cloudPoint(mapRect, id), 'is-confirmed', [id]);
+        });
+
+        model.nearby.forEach((id) => {
+          const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === id);
+          const source = WORLD_CLOUDS.find((candidate) => model.confirmed.has(candidate.id)
+            && (cloud.related.includes(candidate.id) || candidate.related.includes(id)));
+          if (source) appendWorldGraphLine(cloudPoint(mapRect, source.id), cloudPoint(mapRect, id), 'is-nearby', [source.id, id]);
+        });
+
+        const sharedPairs = new Set();
+        items.forEach((item) => {
+          const ids = WORLD_CLOUDS.filter((cloud) => journeyMatchesCloud(item, cloud)).map((cloud) => cloud.id);
+          ids.forEach((id, index) => ids.slice(index + 1).forEach((otherId) => {
+            const key = [id, otherId].sort().join(':');
+            if (sharedPairs.has(key)) return;
+            sharedPairs.add(key);
+            appendWorldGraphLine(cloudPoint(mapRect, id), cloudPoint(mapRect, otherId), 'is-shared-road', [id, otherId]);
+          }));
+        });
+        syncWorldConnectionFocus();
+      }
+
+      function syncWorldConnectionFocus() {
+        worldGraphLines.querySelectorAll('.world-graph-line').forEach((line) => {
+          const cloudIds = String(line.dataset.cloudIds || '').split(' ');
+          const active = selectedWorldCloudId && cloudIds.includes(selectedWorldCloudId);
+          line.classList.toggle('is-active', Boolean(active));
+          line.classList.toggle('is-muted', Boolean(selectedWorldCloudId) && !active);
+        });
       }
 
       function localTraceLabel(count) {
@@ -1902,21 +2158,76 @@
         const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === id);
         if (!cloud) return;
         selectedWorldCloudId = id;
+        const items = readJourneys();
+        const model = buildWorldCloudModel(items);
+        const matched = model.matches.get(id);
+        const state = matched.length ? 'confirmed' : model.nearby.has(id) ? 'nearby' : 'unexplored';
         document.querySelectorAll('[data-world-cloud]').forEach((button) => {
           const selected = button.dataset.worldCloud === id;
           button.classList.toggle('is-selected', selected);
           button.setAttribute('aria-pressed', String(selected));
         });
 
-        const localCount = readJourneys().filter((item) => journeyMatchesCloud(item, cloud)).length;
         document.getElementById('worldCloudTitle').textContent = cloud.label;
         document.getElementById('worldCloudCopy').textContent = cloud.copy;
-        document.getElementById('worldCloudLocal').textContent = localCount
-          ? `В твоей карте с этой областью уже ${localCount === 1 ? 'соприкасается' : 'соприкасаются'} ${localTraceLabel(localCount)}.`
-          : 'В твоей локальной карте здесь пока нет следа.';
-        document.getElementById('worldCloudGate').textContent = 'Чтобы мир понял, какие дороги могут откликнуться тебе, оставь первый след: что в последнее время тебя задело, удивило или заставило остановиться?';
+        const localCopy = document.getElementById('worldCloudLocal');
+        const gate = document.getElementById('worldCloudGate');
+        if (state === 'confirmed') {
+          localCopy.textContent = `С этой областью уже ${matched.length === 1 ? 'соприкасается' : 'соприкасаются'} ${localTraceLabel(matched.length)}.`;
+          gate.textContent = 'Ниже видны только безопасные обложки дорог. Полные истории остаются внутри твоей личной карты.';
+        } else if (state === 'nearby') {
+          const sources = WORLD_CLOUDS.filter((candidate) => model.confirmed.has(candidate.id)
+            && (cloud.related.includes(candidate.id) || candidate.related.includes(id)));
+          localCopy.textContent = `Эта область пока не подтверждена. Она появилась рядом с ${sources.map((item) => `«${item.label}»`).join(', ')} как смысловой кандидат.`;
+          gate.textContent = 'Это предложение карты, а не вывод о тебе. Его можно исследовать новой дорогой или оставить без ответа.';
+        } else {
+          localCopy.textContent = 'В твоей локальной карте здесь пока нет следа или смысловой связи.';
+          gate.textContent = 'Если область откликается, можно оставить первый след: что в последнее время тебя задело, удивило или заставило остановиться?';
+        }
+
+        renderWorldCloudOrigins(cloud, matched, state, model);
         document.getElementById('worldCloudDetail').hidden = false;
-        worldCloudStartButton.textContent = localCount ? 'Оставить ещё один след здесь' : 'Оставить след здесь';
+        worldCloudStartButton.textContent = matched.length ? 'Оставить ещё один след здесь' : 'Исследовать этой дорогой';
+        syncWorldConnectionFocus();
+      }
+
+      function renderWorldCloudOrigins(cloud, matched, state, model) {
+        const origins = document.getElementById('worldCloudOrigins');
+        const title = document.getElementById('worldCloudOriginsTitle');
+        const list = document.getElementById('worldCloudOriginList');
+        list.replaceChildren();
+        origins.hidden = state === 'unexplored';
+        if (state === 'unexplored') return;
+
+        if (state === 'confirmed') {
+          title.textContent = 'Какие твои дороги создали эту связь';
+          matched.slice(0, 4).forEach((item) => {
+            const button = document.createElement('button');
+            button.className = 'world-cloud-origin';
+            button.type = 'button';
+            button.dataset.worldOriginId = item.id;
+            const name = document.createElement('strong');
+            name.textContent = item.coverTitle || item.compass || 'Сохранённая дорога';
+            const thesis = document.createElement('small');
+            thesis.textContent = item.coverThesis || 'Полная история скрыта внутри этой дороги.';
+            button.append(name, thesis);
+            list.append(button);
+          });
+          return;
+        }
+
+        title.textContent = 'Почему область показана рядом';
+        const sourceNames = WORLD_CLOUDS.filter((candidate) => model.confirmed.has(candidate.id)
+          && (cloud.related.includes(candidate.id) || candidate.related.includes(cloud.id)))
+          .map((candidate) => candidate.label);
+        const note = document.createElement('div');
+        note.className = 'world-cloud-origin';
+        const name = document.createElement('strong');
+        name.textContent = sourceNames.join(' · ');
+        const thesis = document.createElement('small');
+        thesis.textContent = 'Связь задана черновой картой соседних смыслов. Она станет личной только после твоего подтверждения опытом.';
+        note.append(name, thesis);
+        list.append(note);
       }
 
       function openWorldPath() {
@@ -3127,6 +3438,10 @@
         const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === selectedWorldCloudId);
         if (cloud) startJourney(cloud.label);
       });
+      document.getElementById('worldCloudDetail').addEventListener('click', (event) => {
+        const origin = event.target.closest('[data-world-origin-id]');
+        if (origin) openReturn(origin.dataset.worldOriginId);
+      });
       worldPathButton.addEventListener('click', openWorldPath);
       worldWorkshopButton.addEventListener('click', () => { renderSaved(); showScreen('home'); });
       startButton.addEventListener('click', () => startJourney());
@@ -3198,6 +3513,11 @@
       document.getElementById('closeLivingMapButton').addEventListener('click', () => { renderSaved(); showScreen('home'); });
       document.getElementById('mapActionButton').addEventListener('click', (event) => {
         if (event.currentTarget.dataset.returnId) openReturn(event.currentTarget.dataset.returnId);
+      });
+
+      window.addEventListener('resize', () => {
+        if (worldResizeFrame) cancelAnimationFrame(worldResizeFrame);
+        worldResizeFrame = requestAnimationFrame(() => renderWorldConnections(readJourneys()));
       });
 
       renderSaved();
