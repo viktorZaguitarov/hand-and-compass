@@ -580,9 +580,24 @@
       pointer-events: none;
     }
 
-    .world-map-orbit.one { inset: 15% 13% 18%; transform: rotate(8deg); }
-    .world-map-orbit.two { inset: 27% 7% 9% 24%; transform: rotate(-13deg); }
-    .world-map-orbit.three { inset: 8% 27% 24% 8%; transform: rotate(19deg); }
+    .world-map-orbit.one { inset: 15% 13% 18%; animation: worldOrbitOne 18s ease-in-out infinite; }
+    .world-map-orbit.two { inset: 27% 7% 9% 24%; animation: worldOrbitTwo 22s ease-in-out -7s infinite; }
+    .world-map-orbit.three { inset: 8% 27% 24% 8%; animation: worldOrbitThree 26s ease-in-out -13s infinite; }
+
+    @keyframes worldOrbitOne {
+      0%, 100% { transform: rotate(8deg) scale(1); }
+      50% { transform: rotate(16deg) scale(1.025); }
+    }
+
+    @keyframes worldOrbitTwo {
+      0%, 100% { transform: rotate(-13deg) scale(1); }
+      50% { transform: rotate(-21deg) scale(0.975); }
+    }
+
+    @keyframes worldOrbitThree {
+      0%, 100% { transform: rotate(19deg) scale(1); }
+      50% { transform: rotate(28deg) scale(1.018); }
+    }
 
     .world-map-heart {
       position: absolute;
@@ -607,6 +622,12 @@
       background: rgba(255, 248, 226, 0.94);
       box-shadow: 0 10px 28px rgba(62, 73, 66, 0.13);
       font-size: 1.25rem;
+      animation: worldHeartPulse 4.8s ease-in-out infinite;
+    }
+
+    @keyframes worldHeartPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 10px 28px rgba(62, 73, 66, 0.13); }
+      50% { transform: scale(1.08); box-shadow: 0 12px 34px rgba(198, 147, 69, 0.24); }
     }
 
     .world-map-heart strong {
@@ -641,8 +662,8 @@
       text-align: center;
       box-shadow: 0 8px 22px rgba(62, 73, 66, 0.07);
       transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
-      translate: 0 0;
-      animation: worldCloudDrift var(--float-duration, 8s) ease-in-out var(--float-delay, 0s) infinite;
+      animation: worldCloudDrift var(--float-duration, 6.4s) ease-in-out var(--float-delay, 0s) infinite;
+      will-change: transform;
     }
 
     .world-entry-map .world-cloud:hover,
@@ -652,7 +673,7 @@
       border-color: rgba(198, 147, 69, 0.58);
       background: rgba(255, 248, 226, 0.92);
       box-shadow: 0 12px 28px rgba(62, 73, 66, 0.14);
-      animation-play-state: paused;
+      animation: none;
     }
 
     .world-entry-map .world-cloud.has-local-trace {
@@ -670,18 +691,19 @@
 
     .world-entry-map .world-cloud strong { display: block; font-size: 0.86rem; line-height: 1.2; }
     .world-entry-map .world-cloud small { display: block; margin-top: 4px; color: var(--muted); font-size: 0.7rem; }
-    .world-entry-map .world-cloud[data-world-cloud="clarity"] { top: 7%; left: 7%; --float-duration: 8.6s; --float-delay: -1s; --float-x: 4px; --float-y: -5px; }
-    .world-entry-map .world-cloud[data-world-cloud="mutuality"] { top: 7%; right: 8%; --float-duration: 9.8s; --float-delay: -4s; --float-x: -5px; --float-y: 4px; }
-    .world-entry-map .world-cloud[data-world-cloud="freedom"] { top: 37%; left: 2%; --float-duration: 9.2s; --float-delay: -6s; --float-x: 5px; --float-y: 3px; }
-    .world-entry-map .world-cloud[data-world-cloud="trust"] { top: 36%; right: 2%; --float-duration: 8.1s; --float-delay: -2s; --float-x: -4px; --float-y: -4px; }
-    .world-entry-map .world-cloud[data-world-cloud="boundaries"] { bottom: 7%; left: 9%; --float-duration: 10.3s; --float-delay: -5s; --float-x: 4px; --float-y: 5px; }
-    .world-entry-map .world-cloud[data-world-cloud="movement"] { right: 9%; bottom: 7%; --float-duration: 9.4s; --float-delay: -3s; --float-x: -4px; --float-y: 5px; }
-    .world-entry-map .world-cloud[data-world-cloud="belonging"] { top: 15%; left: 41%; --float-duration: 8.8s; --float-delay: -7s; --float-x: 3px; --float-y: -4px; }
-    .world-entry-map .world-cloud[data-world-cloud="expression"] { bottom: 8%; left: 40%; --float-duration: 10.1s; --float-delay: -4s; --float-x: -3px; --float-y: 4px; }
+    .world-entry-map .world-cloud[data-world-cloud="clarity"] { top: 7%; left: 7%; --float-duration: 6.2s; --float-delay: -1s; --float-x: 10px; --float-y: -9px; --float-r: 1.2deg; }
+    .world-entry-map .world-cloud[data-world-cloud="mutuality"] { top: 7%; right: 8%; --float-duration: 7.1s; --float-delay: -4s; --float-x: -11px; --float-y: 8px; --float-r: -1deg; }
+    .world-entry-map .world-cloud[data-world-cloud="freedom"] { top: 37%; left: 2%; --float-duration: 6.8s; --float-delay: -6s; --float-x: 12px; --float-y: 7px; --float-r: -1.4deg; }
+    .world-entry-map .world-cloud[data-world-cloud="trust"] { top: 36%; right: 2%; --float-duration: 5.9s; --float-delay: -2s; --float-x: -10px; --float-y: -9px; --float-r: 1deg; }
+    .world-entry-map .world-cloud[data-world-cloud="boundaries"] { bottom: 7%; left: 9%; --float-duration: 7.4s; --float-delay: -5s; --float-x: 10px; --float-y: 10px; --float-r: 1.3deg; }
+    .world-entry-map .world-cloud[data-world-cloud="movement"] { right: 9%; bottom: 7%; --float-duration: 6.7s; --float-delay: -3s; --float-x: -11px; --float-y: 9px; --float-r: -1.2deg; }
+    .world-entry-map .world-cloud[data-world-cloud="belonging"] { top: 15%; left: 41%; --float-duration: 6.4s; --float-delay: -7s; --float-x: 8px; --float-y: -10px; --float-r: 0.8deg; }
+    .world-entry-map .world-cloud[data-world-cloud="expression"] { bottom: 8%; left: 40%; --float-duration: 7.2s; --float-delay: -4s; --float-x: -9px; --float-y: 10px; --float-r: -0.9deg; }
 
     @keyframes worldCloudDrift {
-      0%, 100% { translate: 0 0; }
-      50% { translate: var(--float-x, 4px) var(--float-y, -4px); }
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0); }
+      45% { transform: translate3d(var(--float-x, 10px), var(--float-y, -9px), 0) rotate(var(--float-r, 1deg)); }
+      72% { transform: translate3d(-4px, 3px, 0) rotate(-0.4deg); }
     }
 
     .world-graph-legend {
@@ -1178,7 +1200,9 @@
 
     @media (prefers-reduced-motion: reduce) {
       .world-entry-map .world-cloud,
-      .world-graph-line.is-nearby { animation: none; }
+      .world-graph-line.is-nearby,
+      .world-map-orbit,
+      .world-map-heart span { animation: none; }
     }
   </style>
 </head>
