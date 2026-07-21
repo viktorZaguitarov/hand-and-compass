@@ -1,0 +1,3209 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hand &amp; Compass — личная лаборатория навигации по ситуациям и отношениям.">
+  <title>Hand &amp; Compass — личная лаборатория</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #21342f;
+      --muted: #64756f;
+      --paper: #fbf8ef;
+      --paper-deep: #f1ead9;
+      --line: #d4c9af;
+      --forest: #315f52;
+      --forest-dark: #23473e;
+      --gold: #c69345;
+      --gold-soft: #ead9b5;
+      --rose: #9c5d62;
+      --shadow: 0 18px 50px rgba(42, 54, 46, 0.13);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 18% 5%, rgba(198, 147, 69, 0.16), transparent 29rem),
+        radial-gradient(circle at 86% 20%, rgba(49, 95, 82, 0.14), transparent 32rem),
+        linear-gradient(180deg, #f5f0e3, var(--paper));
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    button, textarea, input { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .app-shell {
+      width: min(920px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 56px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--forest-dark);
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .quiet-button, .primary-button, .choice-button, .text-button {
+      border: 0;
+      border-radius: 12px;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .quiet-button, .text-button {
+      padding: 10px 14px;
+      color: var(--forest-dark);
+      background: transparent;
+    }
+
+    .quiet-button:hover, .text-button:hover { background: rgba(49, 95, 82, 0.08); }
+
+    .primary-button {
+      padding: 13px 18px;
+      color: #fffdf6;
+      background: var(--forest);
+      box-shadow: 0 8px 22px rgba(35, 71, 62, 0.19);
+    }
+
+    .primary-button:hover { background: var(--forest-dark); transform: translateY(-1px); }
+    .primary-button:disabled { cursor: not-allowed; opacity: 0.45; transform: none; }
+
+    .page {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(24px, 5vw, 54px);
+      border: 1px solid rgba(151, 130, 90, 0.32);
+      border-radius: 24px;
+      background: rgba(251, 248, 239, 0.92);
+      box-shadow: var(--shadow);
+    }
+
+    .page::after {
+      content: "";
+      position: absolute;
+      right: -75px;
+      bottom: -100px;
+      width: 230px;
+      height: 230px;
+      border: 1px solid rgba(198, 147, 69, 0.24);
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 28px rgba(198, 147, 69, 0.035), inset 0 0 0 58px rgba(49, 95, 82, 0.035);
+      pointer-events: none;
+    }
+
+    .screen { position: relative; z-index: 1; }
+    .screen[hidden] { display: none; }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--rose);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { margin: 0; color: var(--forest-dark); font-weight: 500; }
+    h1 { max-width: 760px; font-size: clamp(2rem, 6vw, 4.5rem); line-height: 1.03; }
+    h2 { max-width: 720px; font-size: clamp(1.7rem, 4vw, 2.7rem); line-height: 1.08; }
+    h3 { font-size: 1.2rem; }
+
+    .lead {
+      max-width: 660px;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2.4vw, 1.28rem);
+      line-height: 1.55;
+    }
+
+    .intro-road {
+      position: relative;
+      height: 118px;
+      margin: 30px 0 22px;
+    }
+
+    .intro-road::before, .intro-road::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 58px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--forest), transparent);
+    }
+
+    .intro-road::after { top: 64px; opacity: 0.35; }
+
+    .road-symbol {
+      position: absolute;
+      top: 34px;
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--paper);
+      font-size: 1.45rem;
+    }
+
+    .road-symbol:nth-child(1) { left: 5%; }
+    .road-symbol:nth-child(2) { left: 36%; }
+    .road-symbol:nth-child(3) { right: 28%; }
+    .road-symbol:nth-child(4) { right: 5%; }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+    }
+
+    .progress-wrap { margin-bottom: 30px; }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.82rem;
+    }
+
+    .progress-track { height: 5px; border-radius: 10px; background: var(--paper-deep); overflow: hidden; }
+    .progress-bar { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--gold), var(--forest)); transition: width 180ms ease; }
+
+    .prompt-copy { max-width: 670px; margin: 14px 0 22px; color: var(--muted); line-height: 1.52; }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.88rem;
+      font-weight: 650;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 15px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.54);
+      outline: none;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--forest);
+      box-shadow: 0 0 0 3px rgba(49, 95, 82, 0.11);
+    }
+
+    .helper { margin: 8px 0 0; color: var(--muted); font-size: 0.9rem; line-height: 1.45; }
+
+    .choice-grid { display: grid; gap: 9px; margin-top: 18px; }
+
+    .choice-button {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.4);
+      text-align: left;
+    }
+
+    .choice-button:hover { border-color: var(--forest); background: rgba(49, 95, 82, 0.055); }
+    .choice-button.is-selected { border-color: var(--forest); background: rgba(49, 95, 82, 0.11); }
+
+    .reveal {
+      margin: 24px 0 0;
+      padding: 17px 19px;
+      border-left: 3px solid var(--gold);
+      background: rgba(234, 217, 181, 0.22);
+      line-height: 1.5;
+    }
+
+    .map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+
+    .map-piece {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.36);
+    }
+
+    .map-piece strong { color: var(--forest-dark); }
+    .map-piece p { margin: 8px 0 0; color: var(--muted); line-height: 1.45; overflow-wrap: anywhere; white-space: pre-line; }
+
+    .saved-section { margin-top: 34px; }
+    .saved-list { display: grid; gap: 10px; margin-top: 14px; }
+
+    .home-guidance {
+      margin-top: 26px;
+      padding: 17px 19px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(234, 217, 181, 0.22);
+      line-height: 1.5;
+    }
+
+    .home-guidance strong { color: var(--forest-dark); }
+
+    .pattern-invite {
+      margin-top: 16px;
+      padding: 17px 19px;
+      border-left: 3px solid var(--forest);
+      background: rgba(49, 95, 82, 0.055);
+      line-height: 1.5;
+    }
+
+    .pattern-invite p { margin: 6px 0 0; color: var(--muted); }
+
+    .pattern-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .pattern-road {
+      min-width: 0;
+      padding: 18px;
+      border-top: 2px solid var(--gold);
+      background: rgba(255, 255, 255, 0.28);
+    }
+
+    .pattern-road:nth-child(2) { border-top-color: var(--forest); }
+    .pattern-road h3 { overflow-wrap: anywhere; }
+    .pattern-road p { margin: 9px 0 0; color: var(--muted); line-height: 1.45; overflow-wrap: anywhere; white-space: pre-line; }
+    .pattern-road strong { color: var(--forest-dark); }
+
+    .latest-pattern {
+      margin-top: 16px;
+      padding: 17px 19px;
+      border: 1px dashed var(--line);
+      border-radius: 15px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .latest-pattern strong { color: var(--forest-dark); }
+
+    .living-map-invite {
+      position: relative;
+      overflow: hidden;
+      margin-top: 18px;
+      padding: 20px;
+      border: 1px solid rgba(49, 95, 82, 0.28);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 82% 18%, rgba(198, 147, 69, 0.18), transparent 10rem),
+        linear-gradient(145deg, rgba(49, 95, 82, 0.09), rgba(234, 217, 181, 0.22));
+      line-height: 1.5;
+    }
+
+    .living-map-invite::after {
+      content: "";
+      position: absolute;
+      right: -28px;
+      bottom: -42px;
+      width: 126px;
+      height: 126px;
+      border: 1px solid rgba(49, 95, 82, 0.18);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .living-map-invite p { max-width: 610px; margin: 7px 0 0; color: var(--muted); }
+
+    .focus-scene {
+      position: relative;
+      overflow: hidden;
+      margin-top: 24px;
+      border: 1px solid rgba(151, 130, 90, 0.35);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 82% 12%, rgba(234, 217, 181, 0.72), transparent 9rem),
+        linear-gradient(
+          180deg,
+          rgba(49, 95, 82, 0.11) 0%,
+          rgba(49, 95, 82, 0.07) 34%,
+          rgba(241, 234, 217, 0.54) 58%,
+          rgba(241, 234, 217, 0.78) 100%
+        );
+    }
+
+    .focus-scene-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      padding: 22px 24px 0;
+    }
+
+    .focus-scene-head h3 { margin-top: 4px; }
+
+    .scene-status {
+      max-width: 220px;
+      padding: 7px 10px;
+      border: 1px solid rgba(49, 95, 82, 0.2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.5);
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .scene-canvas {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: 112px 108px 96px;
+      padding: 4px 28px 0;
+    }
+
+    .scene-road {
+      position: absolute;
+      z-index: 0;
+      right: 8%;
+      bottom: 111px;
+      left: 8%;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(151, 130, 90, 0.5), var(--gold), var(--forest));
+      transform: rotate(-2deg);
+    }
+
+    .scene-landmark {
+      position: relative;
+      z-index: 1;
+      align-self: center;
+      justify-self: center;
+      width: min(100%, 176px);
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      font: inherit;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .scene-landmark:focus-visible { outline: 3px solid rgba(198, 147, 69, 0.55); outline-offset: 5px; }
+
+    .scene-symbol {
+      display: grid;
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 8px;
+      place-items: center;
+      border: 1px solid rgba(49, 95, 82, 0.24);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 8px 22px rgba(47, 62, 56, 0.09);
+      font-size: 1.45rem;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .scene-landmark:hover .scene-symbol,
+    .scene-landmark.is-selected .scene-symbol {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 26px rgba(47, 62, 56, 0.16), 0 0 0 3px rgba(198, 147, 69, 0.22);
+    }
+
+    .scene-landmark strong {
+      display: block;
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      line-height: 1.25;
+    }
+
+    .scene-landmark small { display: block; margin-top: 3px; color: var(--muted); }
+    .scene-direction { grid-column: 1 / 4; grid-row: 1; }
+    .scene-obstacle { grid-column: 1; grid-row: 3; }
+    .scene-key { grid-column: 2; grid-row: 2; }
+    .scene-next { grid-column: 3; grid-row: 2; }
+
+    .scene-obstacle .scene-symbol {
+      border-color: rgba(101, 74, 62, 0.25);
+      background: rgba(50, 70, 63, 0.9);
+      color: #fff7e8;
+      box-shadow: 0 8px 22px rgba(36, 53, 47, 0.22);
+    }
+
+    .scene-key .scene-symbol {
+      border-color: rgba(198, 147, 69, 0.44);
+      background: rgba(255, 247, 225, 0.92);
+    }
+
+    .scene-next .scene-symbol {
+      border-style: dashed;
+      background: rgba(255, 255, 255, 0.46);
+    }
+
+    .focus-scene.is-returned .scene-next .scene-symbol {
+      border-style: solid;
+      border-color: rgba(198, 147, 69, 0.56);
+      background: rgba(255, 239, 194, 0.92);
+      box-shadow: 0 10px 28px rgba(115, 84, 38, 0.16);
+    }
+
+    .focus-scene.is-returned .scene-road {
+      opacity: 0.58;
+      background: linear-gradient(90deg, rgba(151, 130, 90, 0.38), var(--gold), rgba(198, 147, 69, 0.55));
+    }
+
+    .scene-detail {
+      min-height: 82px;
+      margin: 0 24px 22px;
+      padding: 15px 17px;
+      border-left: 3px solid var(--gold);
+      background: rgba(255, 255, 255, 0.52);
+      line-height: 1.45;
+    }
+
+    .scene-detail p { margin: 5px 0 0; color: var(--muted); }
+    .scene-actions { padding: 0 24px 22px; }
+
+    .world-entry-screen { position: relative; }
+
+    .world-entry-head {
+      max-width: 720px;
+      margin-bottom: 20px;
+    }
+
+    .world-entry-head h1 { margin-bottom: 10px; }
+
+    .world-entry-map {
+      position: relative;
+      min-height: 430px;
+      overflow: hidden;
+      border: 1px solid rgba(151, 130, 90, 0.3);
+      border-radius: 30px;
+      background:
+        radial-gradient(circle at 50% 47%, rgba(255, 248, 226, 0.96), transparent 9rem),
+        radial-gradient(circle at 18% 22%, rgba(198, 147, 69, 0.16), transparent 13rem),
+        radial-gradient(circle at 82% 70%, rgba(49, 95, 82, 0.18), transparent 14rem),
+        linear-gradient(145deg, rgba(234, 217, 181, 0.58), rgba(241, 234, 217, 0.28));
+      box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.42);
+    }
+
+    .world-map-orbit {
+      position: absolute;
+      z-index: 0;
+      border: 1px solid rgba(49, 95, 82, 0.13);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .world-map-orbit.one { inset: 15% 13% 18%; transform: rotate(8deg); }
+    .world-map-orbit.two { inset: 27% 7% 9% 24%; transform: rotate(-13deg); }
+    .world-map-orbit.three { inset: 8% 27% 24% 8%; transform: rotate(19deg); }
+
+    .world-map-heart {
+      position: absolute;
+      z-index: 1;
+      top: 50%;
+      left: 50%;
+      width: 132px;
+      transform: translate(-50%, -50%);
+      color: var(--forest-dark);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .world-map-heart span {
+      display: grid;
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 8px;
+      place-items: center;
+      border: 1px solid rgba(198, 147, 69, 0.48);
+      border-radius: 50%;
+      background: rgba(255, 248, 226, 0.94);
+      box-shadow: 0 10px 28px rgba(62, 73, 66, 0.13);
+      font-size: 1.25rem;
+    }
+
+    .world-map-heart strong {
+      display: block;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.8rem;
+      line-height: 1.3;
+    }
+
+    .world-cloud {
+      position: absolute;
+      z-index: 2;
+      display: grid;
+      min-width: 132px;
+      min-height: 76px;
+      padding: 12px 16px;
+      place-items: center;
+      border: 1px dashed rgba(49, 95, 82, 0.25);
+      border-radius: 48% 52% 43% 57% / 55% 42% 58% 45%;
+      background: rgba(255, 255, 255, 0.48);
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-align: center;
+      box-shadow: 0 8px 22px rgba(62, 73, 66, 0.07);
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .world-cloud:hover,
+    .world-cloud.is-selected {
+      transform: translateY(-3px);
+      border-style: solid;
+      border-color: rgba(198, 147, 69, 0.58);
+      background: rgba(255, 248, 226, 0.92);
+      box-shadow: 0 12px 28px rgba(62, 73, 66, 0.14);
+    }
+
+    .world-cloud.has-local-trace {
+      border-style: solid;
+      border-color: rgba(49, 95, 82, 0.36);
+      background: rgba(239, 246, 237, 0.82);
+    }
+
+    .world-cloud strong { display: block; font-size: 0.86rem; line-height: 1.2; }
+    .world-cloud small { display: block; margin-top: 4px; color: var(--muted); font-size: 0.7rem; }
+    .world-cloud[data-world-cloud="clarity"] { top: 7%; left: 7%; }
+    .world-cloud[data-world-cloud="mutuality"] { top: 7%; right: 8%; }
+    .world-cloud[data-world-cloud="freedom"] { top: 37%; left: 2%; }
+    .world-cloud[data-world-cloud="trust"] { top: 36%; right: 2%; }
+    .world-cloud[data-world-cloud="boundaries"] { bottom: 7%; left: 9%; }
+    .world-cloud[data-world-cloud="movement"] { right: 9%; bottom: 7%; }
+    .world-cloud[data-world-cloud="belonging"] { top: 15%; left: 41%; }
+    .world-cloud[data-world-cloud="expression"] { bottom: 8%; left: 40%; }
+
+    .world-cloud-detail {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      min-height: 122px;
+      margin-top: 18px;
+      padding: 17px 19px;
+      border-left: 3px solid var(--gold);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .world-cloud-detail[hidden] { display: none; }
+    .world-cloud-detail h3 { margin: 0 0 5px; }
+    .world-cloud-detail p { margin: 4px 0 0; color: var(--muted); line-height: 1.45; }
+    .world-cloud-detail .world-cloud-local { color: var(--forest-dark); font-size: 0.82rem; }
+    .world-cloud-actions { min-width: 210px; text-align: right; }
+
+    .world-entry-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .world-entry-honesty {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .world-details { margin-top: 20px; }
+    .world-details > summary {
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .world-details[open] > summary { margin-bottom: 10px; }
+
+    .lab-mode {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .lab-mode > summary {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: baseline;
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .lab-mode > summary small {
+      color: var(--muted);
+      font-weight: 500;
+      text-align: right;
+    }
+
+    .lab-mode[open] > summary { margin-bottom: 18px; }
+    .lab-mode-body { padding-left: 14px; border-left: 2px solid rgba(49, 95, 82, 0.14); }
+
+    .world-map {
+      position: relative;
+      overflow: hidden;
+      margin-top: 28px;
+      border: 1px solid rgba(151, 130, 90, 0.35);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.24);
+    }
+
+    .world-sky {
+      min-height: 170px;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 74% 24%, rgba(234, 217, 181, 0.7), transparent 8rem),
+        linear-gradient(180deg, rgba(49, 95, 82, 0.12), rgba(49, 95, 82, 0.03));
+    }
+
+    .world-label {
+      margin: 0 0 12px;
+      color: var(--rose);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .world-clouds { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+
+    .world-cloud {
+      max-width: 100%;
+      padding: 10px 14px;
+      border: 1px solid rgba(49, 95, 82, 0.2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--forest-dark);
+      overflow-wrap: anywhere;
+    }
+
+    .world-cloud small { color: var(--muted); }
+
+    .world-surface {
+      position: relative;
+      padding: 28px 24px 30px;
+      border-top: 1px solid rgba(151, 130, 90, 0.3);
+      background: linear-gradient(180deg, rgba(234, 217, 181, 0.32), rgba(241, 234, 217, 0.5));
+    }
+
+    .world-roadline {
+      position: absolute;
+      left: 34px;
+      right: 34px;
+      top: 84px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--forest));
+      opacity: 0.58;
+    }
+
+    .world-roads {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .world-road-node { position: relative; min-width: 0; }
+
+    .world-road-marker {
+      width: 22px;
+      height: 22px;
+      margin: 0 auto 15px;
+      border: 4px solid var(--paper);
+      border-radius: 50%;
+      background: var(--forest);
+      box-shadow: 0 0 0 1px rgba(49, 95, 82, 0.35);
+    }
+
+    .world-road-node:first-child .world-road-marker { background: var(--gold); }
+
+    .world-road-node h3 {
+      font-size: 1rem;
+      overflow-wrap: anywhere;
+    }
+
+    .world-road-node p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      line-height: 1.42;
+      overflow-wrap: anywhere;
+    }
+
+    .world-road-node .road-private-note {
+      font-style: italic;
+      color: var(--rose);
+    }
+
+    .world-road-node .actions { margin-top: 10px; }
+
+    .world-horizon {
+      margin-top: 26px;
+      padding: 18px;
+      border-left: 3px solid var(--gold);
+      background: rgba(255, 255, 255, 0.36);
+      line-height: 1.5;
+    }
+
+    .world-horizon p { margin: 7px 0 0; color: var(--muted); white-space: pre-line; }
+    .world-horizon strong { color: var(--forest-dark); }
+
+    .world-underground {
+      padding: 26px 24px;
+      color: #f8f1df;
+      background: linear-gradient(160deg, #32463f, #24352f);
+    }
+
+    .world-underground .world-label { color: #dfbd7c; }
+    .world-underground h3 { color: #fffaf0; }
+
+    .underground-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      margin-top: 16px;
+    }
+
+    .underground-list { display: grid; gap: 10px; }
+
+    .underground-item {
+      padding-left: 14px;
+      border-left: 2px solid rgba(223, 189, 124, 0.55);
+      color: rgba(255, 250, 240, 0.76);
+      line-height: 1.42;
+      overflow-wrap: anywhere;
+      white-space: pre-line;
+    }
+
+    .world-stones { display: flex; flex-wrap: wrap; gap: 9px; align-content: flex-start; }
+
+    .world-stone {
+      padding: 9px 12px;
+      border: 1px solid rgba(255, 250, 240, 0.18);
+      border-radius: 14px 14px 11px 16px;
+      background: rgba(255, 250, 240, 0.08);
+      color: rgba(255, 250, 240, 0.82);
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .world-pattern {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 250, 240, 0.16);
+      color: rgba(255, 250, 240, 0.76);
+      line-height: 1.5;
+    }
+
+    .world-pattern strong { color: #fffaf0; }
+
+    .map-trust-note {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .packaging-bridge {
+      margin-top: 22px;
+      padding: 19px;
+      border-left: 3px solid var(--forest);
+      background: rgba(49, 95, 82, 0.055);
+      line-height: 1.5;
+    }
+
+    .packaging-bridge p { margin: 7px 0 0; color: var(--muted); }
+    .packaging-bridge details { margin-top: 16px; }
+    .packaging-bridge summary { color: var(--forest-dark); cursor: pointer; }
+
+    .cover-import {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .cover-status { min-height: 1.4em; margin-top: 9px; color: var(--forest-dark); font-size: 0.9rem; }
+
+    .quest-invite {
+      margin-top: 22px;
+      padding: 20px;
+      border: 1px solid rgba(198, 147, 69, 0.4);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 88% 20%, rgba(198, 147, 69, 0.18), transparent 9rem),
+        rgba(234, 217, 181, 0.2);
+      line-height: 1.5;
+    }
+
+    .quest-invite p { max-width: 650px; margin: 7px 0 0; color: var(--muted); }
+
+    .quest-contract {
+      margin-top: 24px;
+      padding: 19px;
+      border-left: 3px solid var(--gold);
+      background: rgba(234, 217, 181, 0.22);
+    }
+
+    .quest-contract textarea { margin-top: 8px; }
+
+    .quest-return {
+      margin-top: 26px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .quest-return[hidden], .quest-result[hidden] { display: none; }
+
+    .quest-result {
+      margin-top: 22px;
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .quest-result strong { color: var(--forest-dark); }
+
+    .dialogue-invite {
+      margin-top: 22px;
+      padding: 20px;
+      border-left: 3px solid var(--forest);
+      background:
+        radial-gradient(circle at 90% 18%, rgba(49, 95, 82, 0.13), transparent 10rem),
+        rgba(49, 95, 82, 0.045);
+      line-height: 1.5;
+    }
+
+    .dialogue-invite p { max-width: 650px; margin: 7px 0 0; color: var(--muted); }
+
+    .dialogue-context {
+      margin-top: 22px;
+      padding: 18px 19px;
+      border-left: 3px solid var(--forest);
+      background: rgba(49, 95, 82, 0.055);
+      line-height: 1.5;
+    }
+
+    .dialogue-context p { margin: 7px 0 0; color: var(--muted); white-space: pre-line; }
+
+    .dialogue-result {
+      margin-top: 24px;
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: 16px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .dialogue-result[hidden] { display: none; }
+    .dialogue-result strong { color: var(--forest-dark); }
+
+    .analysis-bridge {
+      margin-top: 22px;
+      padding: 17px 19px;
+      border-left: 3px solid var(--gold);
+      background: rgba(234, 217, 181, 0.22);
+      line-height: 1.5;
+    }
+
+    .analysis-bridge p { margin: 6px 0 0; color: var(--muted); }
+    .copy-status { min-height: 1.4em; margin-top: 8px; color: var(--forest-dark); font-size: 0.9rem; }
+
+    .layered-question {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .layered-question summary {
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .layered-question[open] summary { margin-bottom: 16px; }
+    .layer-field + .layer-field { margin-top: 16px; }
+
+    .path-context {
+      margin: 0 0 20px;
+      padding: 15px 17px;
+      border-left: 3px solid var(--forest);
+      background: rgba(49, 95, 82, 0.055);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .path-context strong { color: var(--forest-dark); }
+
+    .saved-card {
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .saved-card-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+    .saved-card p { margin: 7px 0 0; color: var(--muted); line-height: 1.4; }
+    .saved-status { color: var(--rose); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 0.76rem; white-space: nowrap; }
+    .empty-state { color: var(--muted); }
+
+    .return-box { margin-top: 24px; }
+
+    .notice {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 640px) {
+      .app-shell { width: min(100% - 18px, 920px); padding-top: 12px; }
+      .topbar { margin-bottom: 12px; }
+      .page { padding: 24px 18px; border-radius: 18px; }
+      .map-grid { grid-template-columns: 1fr; }
+      .pattern-pair { grid-template-columns: 1fr; }
+      .world-roads { grid-template-columns: 1fr; gap: 20px; }
+      .world-roadline { top: 38px; bottom: 38px; left: 34px; right: auto; width: 2px; height: auto; }
+      .world-road-node { padding-left: 28px; }
+      .world-road-marker { position: absolute; left: 0; margin: 0; }
+      .underground-grid { grid-template-columns: 1fr; }
+      .intro-road { height: 92px; }
+      .road-symbol { top: 25px; width: 42px; height: 42px; font-size: 1.1rem; }
+      .intro-road::before { top: 46px; }
+      .intro-road::after { top: 51px; }
+      .saved-card-top { display: block; }
+      .saved-status { display: inline-block; margin-top: 6px; }
+      .focus-scene-head { display: block; padding: 19px 18px 0; }
+      .scene-status { display: inline-block; margin-top: 10px; }
+      .scene-canvas { grid-template-rows: 104px 104px 92px; padding-inline: 8px; }
+      .scene-road { right: 5%; bottom: 104px; left: 5%; }
+      .scene-symbol { width: 46px; height: 46px; font-size: 1.25rem; }
+      .scene-landmark strong { font-size: 0.76rem; }
+      .scene-landmark small { font-size: 0.72rem; }
+      .scene-detail { margin: 0 16px 18px; }
+      .scene-actions { padding: 0 16px 18px; }
+      .world-entry-map {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        min-height: 0;
+        padding: 16px;
+      }
+      .world-map-orbit, .world-map-heart { display: none; }
+      .world-cloud,
+      .world-cloud[data-world-cloud] {
+        position: static;
+        min-width: 0;
+        min-height: 82px;
+      }
+      .world-cloud-detail { grid-template-columns: 1fr; }
+      .world-cloud-actions { min-width: 0; text-align: left; }
+      .lab-mode > summary { display: block; }
+      .lab-mode > summary small { display: block; margin-top: 4px; text-align: left; }
+      .lab-mode-body { padding-left: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">🧭</span> Hand &amp; Compass</div>
+      <button class="quiet-button" id="homeButton" type="button" hidden>В мир</button>
+    </header>
+
+    <article class="page">
+      <section class="screen world-entry-screen" data-screen="world-entry" hidden>
+        <div class="world-entry-head">
+          <p class="eyebrow">Общий мир · ранняя карта</p>
+          <h1>Посмотри, какие дороги здесь могут пересекаться.</h1>
+          <p class="lead">Выбери облако. Мир покажет только один слой — без анкеты и без требования сразу рассказывать о себе.</p>
+        </div>
+
+        <div class="world-entry-map" id="worldEntryMap" aria-label="Карта областей общего мира Hand and Compass">
+          <div class="world-map-orbit one" aria-hidden="true"></div>
+          <div class="world-map-orbit two" aria-hidden="true"></div>
+          <div class="world-map-orbit three" aria-hidden="true"></div>
+          <div class="world-map-heart" aria-hidden="true">
+            <span>◉</span>
+            <strong>Здесь пересекаются дороги</strong>
+          </div>
+
+          <button class="world-cloud" type="button" data-world-cloud="clarity" aria-pressed="false">
+            <span><strong>Ясность</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+          <button class="world-cloud" type="button" data-world-cloud="mutuality" aria-pressed="false">
+            <span><strong>Взаимность</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+          <button class="world-cloud" type="button" data-world-cloud="freedom" aria-pressed="false">
+            <span><strong>Свобода</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+          <button class="world-cloud" type="button" data-world-cloud="trust" aria-pressed="false">
+            <span><strong>Доверие</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+          <button class="world-cloud" type="button" data-world-cloud="boundaries" aria-pressed="false">
+            <span><strong>Границы</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+          <button class="world-cloud" type="button" data-world-cloud="movement" aria-pressed="false">
+            <span><strong>Совместное движение</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+          <button class="world-cloud" type="button" data-world-cloud="belonging" aria-pressed="false">
+            <span><strong>Принадлежность</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+          <button class="world-cloud" type="button" data-world-cloud="expression" aria-pressed="false">
+            <span><strong>Самовыражение</strong><small data-world-cloud-count>Область мира</small></span>
+          </button>
+        </div>
+
+        <section class="world-cloud-detail" id="worldCloudDetail" aria-live="polite" hidden>
+          <div>
+            <h3 id="worldCloudTitle"></h3>
+            <p id="worldCloudCopy"></p>
+            <p class="world-cloud-local" id="worldCloudLocal"></p>
+            <p id="worldCloudGate"></p>
+          </div>
+          <div class="world-cloud-actions">
+            <button class="primary-button" id="worldCloudStartButton" type="button">Оставить след здесь</button>
+          </div>
+        </section>
+
+        <div class="world-entry-nav">
+          <button class="quiet-button" id="worldPathButton" type="button" hidden>Продолжить мой путь</button>
+          <button class="text-button" id="worldWorkshopButton" type="button">Мастерская и сохранённые дороги</button>
+        </div>
+        <p class="world-entry-honesty" id="worldEntryHonesty"></p>
+      </section>
+
+      <section class="screen" data-screen="home" hidden>
+        <p class="eyebrow">Личная лаборатория</p>
+        <h1>Между отношениями, которых мы хотим, и отношениями, которые создаём, иногда появляется целая дорога.</h1>
+        <p class="lead">Здесь можно остановиться у одной ситуации, увидеть её направление и выбрать небольшой шаг — без диагноза и готового ответа.</p>
+
+        <div class="intro-road" aria-hidden="true">
+          <span class="road-symbol">🧭</span>
+          <span class="road-symbol">✋</span>
+          <span class="road-symbol">🐉</span>
+          <span class="road-symbol">💎</span>
+        </div>
+
+        <div class="actions">
+          <button class="primary-button" id="startButton" type="button">Разобрать новую ситуацию</button>
+        </div>
+
+        <div class="home-guidance" id="homeGuidance" hidden>
+          <strong>Одна дорога ждёт продолжения.</strong>
+          <div>Попробуй выбранный шаг в реальной ситуации, затем нажми «Вернуться с результатом». Новую дорогу открывай, когда появится другая ситуация.</div>
+        </div>
+
+        <div class="pattern-invite" id="patternInvite" hidden>
+          <strong>Две дороги уже можно положить рядом.</strong>
+          <p>Не чтобы вывести правило о себе, а чтобы заметить первое возможное повторение.</p>
+          <div class="actions">
+            <button class="quiet-button" id="patternButton" type="button">Увидеть узор двух дорог</button>
+          </div>
+        </div>
+
+        <div class="living-map-invite" id="livingMapInvite" hidden>
+          <strong>Три дороги уже образуют местность.</strong>
+          <p>Теперь можно увидеть не ответы анкеты, а свой первый мир: направления Компаса, пройденные дороги, Драконов под поверхностью и шаг, который ещё проверяется жизнью.</p>
+          <div class="actions">
+            <button class="primary-button" id="livingMapButton" type="button">Открыть живую карту</button>
+          </div>
+        </div>
+
+        <div class="latest-pattern" id="latestPattern" hidden></div>
+
+        <section class="saved-section" aria-labelledby="savedTitle">
+          <h3 id="savedTitle">Твои сохранённые дороги</h3>
+          <div class="saved-list" id="savedList"></div>
+        </section>
+
+        <p class="notice">Записи остаются только в этом браузере. Они никуда не отправляются.</p>
+      </section>
+
+      <section class="screen" data-screen="journey" hidden>
+        <div class="progress-wrap">
+          <div class="progress-meta"><span id="stepName">Ситуация</span><span id="stepCounter">1 / 7</span></div>
+          <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+
+        <section data-step="0">
+          <p class="eyebrow">Начало пути</p>
+          <h2>Что произошло?</h2>
+          <p class="prompt-copy">Опиши одну конкретную ситуацию. Пока без объяснения чужих мотивов — только то, что можно было увидеть, услышать или подтвердить.</p>
+          <div class="path-context" id="worldCloudJourneyContext" hidden></div>
+          <label for="factsInput">Наблюдаемые события</label>
+          <textarea id="factsInput" rows="6" placeholder="Например: мы договорились поговорить вечером. Разговор снова перенесли, и после этого два дня не было сообщений."></textarea>
+          <p class="helper">Одной ситуации достаточно. Не нужно рассказывать всю историю отношений.</p>
+          <details class="layered-question">
+            <summary>Отделить события от своего объяснения</summary>
+            <p class="helper">Это не ошибка и не скрытый мотив другого человека. Так ситуация сложилась в твоём восприятии в тот момент.</p>
+            <div class="layer-field">
+              <label for="interpretationInput">Как ты объяснил себе увиденные сигналы?</label>
+              <textarea id="interpretationInput" rows="4" placeholder="Я решил, предположил или почувствовал, что это означает…"></textarea>
+            </div>
+          </details>
+        </section>
+
+        <section data-step="1" hidden>
+          <p class="eyebrow">Компас</p>
+          <h2>Чего ты хотел в этой ситуации?</h2>
+          <p class="prompt-copy">Не чего должен был сделать другой человек, а какое качество отношений или состояние было важно тебе.</p>
+          <div class="choice-grid" data-choice-group="compass">
+            <button class="choice-button" type="button" data-value="Ясность и честность">Ясность и честность</button>
+            <button class="choice-button" type="button" data-value="Близость и взаимность">Близость и взаимность</button>
+            <button class="choice-button" type="button" data-value="Спокойствие и надёжность">Спокойствие и надёжность</button>
+            <button class="choice-button" type="button" data-value="Свобода и уважение границ">Свобода и уважение границ</button>
+            <button class="choice-button" type="button" data-value="Совместное движение">Совместное движение</button>
+          </div>
+          <label for="compassInput" style="margin-top:18px">Или сформулируй своё направление</label>
+          <input id="compassInput" type="text" placeholder="Мне было важно…">
+        </section>
+
+        <section data-step="2" hidden>
+          <p class="eyebrow">Рука</p>
+          <h2>Что ты сделал на самом деле?</h2>
+          <p class="prompt-copy">Не оценивай поступок. Зафиксируй слова, действие, молчание, ожидание или уход.</p>
+          <label for="handInput">Твоя наблюдаемая реакция</label>
+          <textarea id="handInput" rows="6" placeholder="Я сказал…, написал…, промолчал…, начал проверять…, ушёл…"></textarea>
+        </section>
+
+        <section data-step="3" hidden>
+          <p class="eyebrow">Вектор</p>
+          <h2>Если это повторится, куда приведёт дорога?</h2>
+          <p class="prompt-copy">Не предсказывай судьбу. Представь только вероятный результат повторения этого же цикла.</p>
+          <label for="vectorInput">Вероятная траектория</label>
+          <textarea id="vectorInput" rows="6" placeholder="Если всё будет повторяться, между нами, вероятно…"></textarea>
+          <div class="reveal">Компас показывает желаемое направление. Вектор — направление, которое создаётся повторяющимися действиями. Они могут совпадать, а могут расходиться.</div>
+        </section>
+
+        <section data-step="4" hidden>
+          <p class="eyebrow">Дракон</p>
+          <h2>Что мешает сделать иначе?</h2>
+          <p class="prompt-copy">Это может быть страх или привычка. Но это также может быть реальная опасность — тогда препятствие не нужно преодолевать.</p>
+          <div class="choice-grid" data-choice-group="dragon">
+            <button class="choice-button" type="button" data-value="Боюсь услышать неприятный ответ">Боюсь услышать неприятный ответ</button>
+            <button class="choice-button" type="button" data-value="Боюсь показаться требовательным">Боюсь показаться требовательным</button>
+            <button class="choice-button" type="button" data-value="Сомневаюсь в праве на свою границу">Сомневаюсь в праве на свою границу</button>
+            <button class="choice-button" type="button" data-value="Меня захватывает сильная эмоция">Меня захватывает сильная эмоция</button>
+            <button class="choice-button" type="button" data-value="Сейчас менять ситуацию небезопасно">Сейчас менять ситуацию небезопасно</button>
+          </div>
+          <label for="dragonInput" style="margin-top:18px">Или назови своего Дракона</label>
+          <input id="dragonInput" type="text" placeholder="Мне мешает…">
+
+          <details class="layered-question" id="dragonLayers">
+            <summary>Разобрать сложность по слоям</summary>
+            <p class="helper">Открывай этот слой, если одного названия недостаточно. Не обязательно заполнять каждое поле.</p>
+
+            <div class="layer-field">
+              <label for="dragonTempoInput">Давление времени</label>
+              <textarea id="dragonTempoInput" rows="3" placeholder="Что от меня могут потребовать ответить или решить слишком быстро?"></textarea>
+            </div>
+            <div class="layer-field">
+              <label for="dragonDependenceInput">Ставки и зависимость</label>
+              <textarea id="dragonDependenceInput" rows="3" placeholder="На что может повлиять этот человек: жильё, деньги, работа, окружение, забота, чувство безопасности?"></textarea>
+            </div>
+            <div class="layer-field">
+              <label for="dragonHistoryInput">Накопленный груз</label>
+              <textarea id="dragonHistoryInput" rows="3" placeholder="Какие прежние факты, обещания или нерешённые темы могут войти в этот разговор?"></textarea>
+            </div>
+            <div class="layer-field">
+              <label for="dragonSafetyInput">Условия безопасного шага</label>
+              <textarea id="dragonSafetyInput" rows="3" placeholder="Мне было бы легче, если обсуждать один вопрос, не решать сразу, иметь право на паузу…"></textarea>
+            </div>
+          </details>
+        </section>
+
+        <section data-step="5" hidden>
+          <p class="eyebrow">Другая тропа</p>
+          <h2>Какой маленький шаг можно проверить?</h2>
+          <p class="prompt-copy">Не меняй всю жизнь. Выбери одно действие, вопрос, границу или паузу, которую можно попробовать и затем оценить.</p>
+          <div class="path-context" id="pathContext" hidden></div>
+          <label for="pathInput">Один обратимый шаг</label>
+          <textarea id="pathInput" rows="5" placeholder="В следующий раз я попробую…"></textarea>
+          <p class="helper">Если ситуация небезопасна, шагом может быть обращение за поддержкой или увеличение дистанции.</p>
+          <div class="layered-question">
+            <div class="layer-field">
+              <label for="predictionInput">Что, по твоему ожиданию, произойдёт после этого шага?</label>
+              <textarea id="predictionInput" rows="4" placeholder="Если я сделаю это, вероятнее всего…"></textarea>
+              <p class="helper">Это не предсказание судьбы. Это прогноз, который позднее можно сопоставить с реальностью.</p>
+            </div>
+            <div class="layer-field">
+              <label for="predictionMarkerInput">По какому наблюдаемому признаку ты это поймёшь?</label>
+              <textarea id="predictionMarkerInput" rows="3" placeholder="Я увижу это, если человек скажет…, сделает…, или ситуация изменится так…"></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section data-step="6" hidden>
+          <p class="eyebrow">Камень</p>
+          <h2>Что ты заметил о своём пути?</h2>
+          <p class="prompt-copy">Не ищи красивую формулировку. Камень остаётся только в твоих словах.</p>
+          <label for="stoneInput">Моё открытие</label>
+          <textarea id="stoneInput" rows="5" placeholder="Я заметил, что…"></textarea>
+        </section>
+
+        <section data-step="7" hidden>
+          <p class="eyebrow">Карта ситуации</p>
+          <h2>Ты не получил окончательный ответ. Ты выбрал, что проверить.</h2>
+          <div class="map-grid" id="summaryMap">
+            <div class="map-piece"><strong>Ситуация</strong><p data-summary="facts"></p></div>
+            <div class="map-piece"><strong>Компас</strong><p data-summary="compass"></p></div>
+            <div class="map-piece"><strong>Рука</strong><p data-summary="hand"></p></div>
+            <div class="map-piece"><strong>Вектор</strong><p data-summary="vector"></p></div>
+            <div class="map-piece"><strong>Дракон</strong><p data-summary="dragon"></p></div>
+            <div class="map-piece"><strong>Другая тропа</strong><p data-summary="path"></p></div>
+            <div class="map-piece"><strong>Прогноз</strong><p data-summary="prediction"></p></div>
+            <div class="map-piece"><strong>Камень</strong><p data-summary="stone"></p></div>
+          </div>
+          <p class="notice">После реального шага вернись к этой дороге и запиши результат. Только тогда карта начнёт меняться вместе с жизнью.</p>
+        </section>
+
+        <div class="actions">
+          <button class="text-button" id="backButton" type="button">Назад</button>
+          <button class="primary-button" id="nextButton" type="button">Продолжить</button>
+          <button class="primary-button" id="saveButton" type="button" hidden>Сохранить дорогу</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="return" hidden>
+        <p class="eyebrow">Возвращение</p>
+        <h2>Что произошло после выбранного шага?</h2>
+        <div class="map-grid" id="returnMap"></div>
+        <div class="return-box">
+          <label for="resultInput">Наблюдаемый результат</label>
+          <textarea id="resultInput" rows="5" placeholder="Что произошло в реальности? Что сказал или сделал другой человек? Что сделал ты?"></textarea>
+        </div>
+        <div class="return-box" id="predictionGapBox" hidden>
+          <label for="predictionGapInput">Где реальность совпала с прогнозом, а где разошлась?</label>
+          <textarea id="predictionGapInput" rows="5" placeholder="Я ожидал…, но в реальности… Совпало… Не совпало…"></textarea>
+          <p class="helper">Именно расхождение даёт карте новую информацию. Здесь не нужно оценивать себя как правого или ошибившегося.</p>
+        </div>
+        <div class="return-box">
+          <label for="reflectionInput">Что теперь обновилось в твоей карте?</label>
+          <textarea id="reflectionInput" rows="5" placeholder="Что теперь кажется более вероятным? Что хочется сохранить, изменить или проверить ещё раз?"></textarea>
+        </div>
+        <div class="actions">
+          <button class="primary-button" id="saveReturnButton" type="button">Обновить карту</button>
+          <button class="text-button" id="cancelReturnButton" type="button">Вернуться без изменений</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="pattern" hidden>
+        <p class="eyebrow">Между дорогами</p>
+        <h2>Что повторяется, когда ситуации разные?</h2>
+        <p class="prompt-copy">Перед тобой две последние дороги. Это ещё не вывод о характере и не диагноз — только возможность увидеть повторяющийся рисунок.</p>
+        <div class="pattern-pair" id="patternRoads"></div>
+
+        <div class="analysis-bridge">
+          <strong>Если дороги получились длинными</strong>
+          <p>Можно передать их на смысловой анализ. В ответ появятся не готовые истины, а предположения: что похоже, что различается и какой узор стоит проверить. Ты сможешь подтвердить их, отвергнуть или переписать своими словами.</p>
+          <div class="actions">
+            <button class="quiet-button" id="copyAnalysisButton" type="button">Скопировать две дороги для анализа</button>
+          </div>
+          <div class="copy-status" id="copyStatus" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="return-box">
+          <label for="repetitionInput">Что похоже?</label>
+          <textarea id="repetitionInput" rows="4" placeholder="В обеих ситуациях я сначала…, хотя хотел…"></textarea>
+          <p class="helper">Ищи не одинаковые события, а похожее действие, ожидание, паузу или расхождение между желаемым и сделанным.</p>
+        </div>
+        <div class="return-box">
+          <label for="differenceInput">Что оказалось разным?</label>
+          <textarea id="differenceInput" rows="4" placeholder="В первой ситуации…, а во второй…"></textarea>
+          <p class="helper">Различие не менее важно: оно может показать условие, при котором твоя дорога меняется.</p>
+        </div>
+        <div class="return-box">
+          <label for="patternHypothesisInput">Как звучит твоя осторожная гипотеза?</label>
+          <textarea id="patternHypothesisInput" rows="4" placeholder="Похоже, когда…, я чаще…, и тогда дорога ведёт…"></textarea>
+          <p class="helper">Формулировку можно начать со слова «похоже». Следующая ситуация сможет её подтвердить, изменить или опровергнуть.</p>
+        </div>
+        <div class="actions">
+          <button class="primary-button" id="savePatternButton" type="button">Сохранить узор</button>
+          <button class="text-button" id="cancelPatternButton" type="button">Вернуться к дорогам</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="living-map" hidden>
+        <p class="eyebrow">Живая карта</p>
+        <h2>Один участок дороги — одним взглядом.</h2>
+        <p class="lead" id="livingMapIntro"></p>
+
+        <section class="focus-scene" id="focusScene" aria-labelledby="focusSceneTitle">
+          <div class="focus-scene-head">
+            <div>
+              <p class="world-label">Дорога в фокусе</p>
+              <h3 id="focusSceneTitle">Выбранная дорога</h3>
+            </div>
+            <div class="scene-status" id="focusSceneStatus"></div>
+          </div>
+
+          <div class="scene-canvas" id="sceneCanvas" aria-label="Направление, препятствие, найденный ключ и следующий шаг">
+            <div class="scene-road" aria-hidden="true"></div>
+
+            <button class="scene-landmark scene-direction" type="button" data-scene-kind="direction">
+              <span class="scene-symbol" aria-hidden="true">🧭</span>
+              <strong>Что было важно</strong>
+              <small>Компас</small>
+            </button>
+
+            <button class="scene-landmark scene-obstacle" type="button" data-scene-kind="obstacle">
+              <span class="scene-symbol" aria-hidden="true">◢</span>
+              <strong>Что мешало</strong>
+              <small>Дракон</small>
+            </button>
+
+            <button class="scene-landmark scene-key" type="button" data-scene-kind="key">
+              <span class="scene-symbol" aria-hidden="true">🔑</span>
+              <strong>Найденный ключ</strong>
+              <small>После репетиции</small>
+            </button>
+
+            <button class="scene-landmark scene-next" type="button" data-scene-kind="next">
+              <span class="scene-symbol" aria-hidden="true">○</span>
+              <strong>Ближайшая точка</strong>
+              <small>Ещё не проверена</small>
+            </button>
+          </div>
+
+          <div class="scene-detail" role="status" aria-live="polite">
+            <strong id="sceneDetailTitle">Найденный ключ</strong>
+            <p id="sceneDetailCopy"></p>
+          </div>
+
+          <div class="actions scene-actions">
+            <button class="primary-button" id="sceneReturnButton" type="button" hidden>Вернуться с реальным результатом</button>
+            <button class="text-button" id="sceneDialogueButton" type="button" hidden>Открыть мастерскую диалога</button>
+          </div>
+        </section>
+
+        <details class="lab-mode" id="labMode">
+          <summary>
+            <span>Как это собрано — открыть лабораторию</span>
+            <small>Истории, полная карта и служебные инструменты</small>
+          </summary>
+          <div class="lab-mode-body">
+        <details class="world-details">
+          <summary>Открыть всю местность и личные слои</summary>
+          <div class="world-map" aria-label="Карта из сохранённых направлений, дорог, препятствий и открытий">
+          <section class="world-sky" aria-labelledby="worldSkyTitle">
+            <p class="world-label">Над дорогой</p>
+            <h3 id="worldSkyTitle">Выбранные направления Компаса</h3>
+            <div class="world-clouds" id="worldClouds"></div>
+          </section>
+
+          <section class="world-surface" aria-labelledby="worldRoadsTitle">
+            <p class="world-label">На поверхности</p>
+            <h3 id="worldRoadsTitle">Три последние дороги</h3>
+            <div class="world-roadline" aria-hidden="true"></div>
+            <div class="world-roads" id="worldRoads"></div>
+            <div class="world-horizon" id="worldHorizon"></div>
+          </section>
+
+          <section class="world-underground" aria-labelledby="worldUndergroundTitle">
+            <p class="world-label">Под поверхностью</p>
+            <h3 id="worldUndergroundTitle">То, что влияло на доступные шаги</h3>
+            <div class="underground-grid">
+              <div class="underground-list" id="worldDragons"></div>
+              <div>
+                <p class="world-label">Оставшиеся камни</p>
+                <div class="world-stones" id="worldStones"></div>
+              </div>
+            </div>
+            <div class="world-pattern" id="worldPattern"></div>
+          </section>
+          </div>
+
+          <p class="map-trust-note">Направления Компаса сейчас выбраны или вписаны тобой, а не выведены ИИ из историй. Полные истории остаются внутри дорог и не показываются на общей карте. Предположения появятся отдельно и останутся редактируемыми.</p>
+        </details>
+
+        <section class="quest-invite" id="questInvite" aria-labelledby="questInviteTitle">
+          <strong id="questInviteTitle">Мастерская, не суд</strong>
+          <p id="questInviteCopy">Преврати замеченный узор в один безопасный эксперимент: заранее обозначь, какой отклик сейчас поможет движению, а что оценивать ещё рано.</p>
+          <div class="actions">
+            <button class="primary-button" id="questButton" type="button">Открыть первый квест</button>
+          </div>
+        </section>
+
+        <section class="dialogue-invite" id="dialogueInvite" aria-labelledby="dialogueInviteTitle" hidden>
+          <strong id="dialogueInviteTitle">Перед реальным разговором</strong>
+          <p id="dialogueInviteCopy">Выбери одну открытую дорогу и попробуй возможный разговор до того, как войти в него. Это не предсказание ответа другого человека, а безопасная репетиция собственных слов и границ.</p>
+          <div class="actions">
+            <button class="primary-button" id="dialogueMapButton" type="button">Открыть мастерскую диалога</button>
+          </div>
+        </section>
+
+        <section class="packaging-bridge" aria-labelledby="packagingTitle">
+          <strong id="packagingTitle">Собрать безопасные обложки дорог</strong>
+          <p>ИИ может предложить нейтральное название и короткие тезисы без имён, подробностей и болезненных цитат. Сначала ты увидишь варианты, затем сам решишь, какие сохранить.</p>
+          <div class="actions">
+            <button class="quiet-button" id="copyCoverRequestButton" type="button">Скопировать три дороги для упаковки</button>
+          </div>
+          <div class="cover-status" id="coverCopyStatus" role="status" aria-live="polite"></div>
+
+          <details>
+            <summary>Вставить подтверждённые обложки</summary>
+            <div class="cover-import">
+              <label for="coverImportInput">Блок обложек, который вернул ИИ</label>
+              <textarea id="coverImportInput" rows="8" placeholder="Вставь сюда весь JSON-блок с обложками трёх дорог"></textarea>
+              <div class="actions">
+                <button class="quiet-button" id="applyCoverImportButton" type="button">Применить обложки</button>
+              </div>
+              <div class="cover-status" id="coverImportStatus" role="status" aria-live="polite"></div>
+            </div>
+          </details>
+        </section>
+          </div>
+        </details>
+        <div class="actions">
+          <button class="primary-button" id="mapActionButton" type="button" hidden></button>
+          <button class="text-button" id="closeLivingMapButton" type="button">Вернуться к дорогам</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="quest" hidden>
+        <p class="eyebrow">Первый квест</p>
+        <h2>Мастерская, не суд</h2>
+        <p class="lead">Не учиться терпеть любую критику, а заранее договориться о нужном отклике и проверить, расширит ли он поле действий.</p>
+
+        <div class="return-box">
+          <label>На какой стадии то, что ты хочешь показать?</label>
+          <div class="choice-grid" data-choice-group="quest-stage">
+            <button class="choice-button" type="button" data-value="Росток">Росток — идея ещё ищет форму</button>
+            <button class="choice-button" type="button" data-value="Черновик">Черновик — уже можно разбирать устройство</button>
+            <button class="choice-button" type="button" data-value="Решение">Решение — я готов к итоговой оценке</button>
+          </div>
+        </div>
+
+        <div class="return-box">
+          <label>Какой отклик сейчас полезнее всего?</label>
+          <div class="choice-grid" data-choice-group="quest-feedback">
+            <button class="choice-button" type="button" data-value="Понятность и интерес">Что понятно и что вызывает интерес</button>
+            <button class="choice-button" type="button" data-value="Вопросы">Вопросы, которые помогут раскрыть идею</button>
+            <button class="choice-button" type="button" data-value="Альтернативы">Другие возможные способы решения</button>
+            <button class="choice-button" type="button" data-value="Риски">Конкретные риски и слабые места</button>
+            <button class="choice-button" type="button" data-value="Итоговая оценка">Итоговая оценка решения</button>
+          </div>
+        </div>
+
+        <div class="return-box">
+          <label for="questBoundaryInput">Что пока не нужно оценивать?</label>
+          <textarea id="questBoundaryInput" rows="4" placeholder="Например: пока не выноси окончательный вердикт всей идее и не оценивай визуальный стиль"></textarea>
+          <p class="helper">Граница не запрещает собеседнику думать иначе. Она уточняет, какой разговор полезен на этой стадии.</p>
+        </div>
+
+        <div class="quest-contract">
+          <label for="questRequestInput">Твоя просьба об обратной связи</label>
+          <textarea id="questRequestInput" rows="6" placeholder="Выбери стадию и нужный отклик — здесь появится черновик просьбы"></textarea>
+          <div class="actions">
+            <button class="quiet-button" id="buildQuestRequestButton" type="button">Собрать просьбу</button>
+            <button class="primary-button" id="saveQuestButton" type="button">Сохранить и перейти к проверке</button>
+            <button class="quiet-button" id="copyQuestButton" type="button" hidden>Скопировать просьбу</button>
+          </div>
+          <div class="cover-status" id="questStatus" role="status" aria-live="polite"></div>
+        </div>
+
+        <section class="quest-return" id="questReturnSection" hidden aria-labelledby="questReturnTitle">
+          <p class="eyebrow">Возвращение в мастерскую</p>
+          <h3 id="questReturnTitle">Что сделал полученный отклик с твоим движением?</h3>
+
+          <div class="return-box">
+            <label for="questResponseInput">Что произошло или что ты услышал?</label>
+            <textarea id="questResponseInput" rows="4" placeholder="Можно сохранить короткий тезис без полной цитаты и личных подробностей"></textarea>
+          </div>
+
+          <div class="return-box">
+            <label>Что произошло с желанием продолжать?</label>
+            <div class="choice-grid" data-choice-group="quest-effect">
+              <button class="choice-button" type="button" data-value="Усилилось">Усилилось</button>
+              <button class="choice-button" type="button" data-value="Не изменилось">Не изменилось</button>
+              <button class="choice-button" type="button" data-value="Ослабло">Ослабло</button>
+            </div>
+          </div>
+
+          <div class="return-box">
+            <label for="questActionsInput">Какие новые действия стали видны — или какие исчезли?</label>
+            <textarea id="questActionsInput" rows="4" placeholder="После отклика мне захотелось…, стало возможным…, перестало хотеться…"></textarea>
+          </div>
+
+          <div class="return-box">
+            <label for="questGeneralizationInput">Что здесь пока нельзя обобщать без других людей?</label>
+            <textarea id="questGeneralizationInput" rows="3" placeholder="Например: я вдохновился этой мыслью, но ещё не знаю, так ли воспримут карту другие пользователи"></textarea>
+          </div>
+
+          <div class="actions">
+            <button class="primary-button" id="saveQuestResultButton" type="button">Сохранить результат квеста</button>
+          </div>
+        </section>
+
+        <div class="quest-result" id="questResult" hidden></div>
+
+        <div class="actions">
+          <button class="text-button" id="cancelQuestButton" type="button">Вернуться к карте</button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="dialogue" hidden>
+        <p class="eyebrow">Мастерская диалога</p>
+        <h2>Попробуй разговор до того, как войти в него.</h2>
+        <p class="lead">Здесь нет «правильной реплики» и нет модели реального человека. Ты проверяешь, удаётся ли сохранить направление, границу и право на паузу при разных возможных ответах.</p>
+
+        <div class="dialogue-context" id="dialogueRoadContext"></div>
+
+        <div class="return-box">
+          <label for="dialogueAimInput">Что важно прояснить или донести в этом разговоре?</label>
+          <textarea id="dialogueAimInput" rows="4" placeholder="После разговора мне важно, чтобы стало яснее…"></textarea>
+        </div>
+
+        <div class="return-box">
+          <label>Какую возможную реакцию хочется сначала отрепетировать?</label>
+          <div class="choice-grid" data-choice-group="dialogue-reaction">
+            <button class="choice-button" type="button" data-value="Спокойный уточняющий вопрос">Спокойный уточняющий вопрос</button>
+            <button class="choice-button" type="button" data-value="Непонимание или уход от темы">Непонимание или уход от темы</button>
+            <button class="choice-button" type="button" data-value="Несогласие или защитная реакция">Несогласие или защитная реакция</button>
+            <button class="choice-button" type="button" data-value="Требование быстрого ответа или решения">Требование быстрого ответа или решения</button>
+          </div>
+        </div>
+
+        <div class="return-box">
+          <label for="dialogueBoundaryInput">Какую границу или условие безопасности важно сохранить?</label>
+          <textarea id="dialogueBoundaryInput" rows="4" placeholder="Например: обсуждать один вопрос, не принимать решение сразу, иметь право остановить разговор"></textarea>
+        </div>
+
+        <div class="return-box">
+          <label for="dialogueOpeningInput">С какой первой фразы ты попробовал бы начать?</label>
+          <textarea id="dialogueOpeningInput" rows="4" placeholder="Можно оставить поле пустым — тогда репетиция сначала поможет собрать фразу"></textarea>
+        </div>
+
+        <div class="quest-contract">
+          <label for="dialogueRequestInput">Сценарий репетиции</label>
+          <textarea id="dialogueRequestInput" rows="12" placeholder="Заполни цель, возможную реакцию и границу — здесь появится сценарий для репетиции"></textarea>
+          <p class="helper">Текст остаётся в этом браузере. Он попадёт в текущий диалог только после твоего явного копирования и отправки.</p>
+          <div class="actions">
+            <button class="quiet-button" id="buildDialogueRequestButton" type="button">Собрать репетицию</button>
+            <button class="primary-button" id="saveDialogueButton" type="button">Сохранить подготовку</button>
+            <button class="quiet-button" id="copyDialogueButton" type="button" hidden>Скопировать и начать репетицию</button>
+          </div>
+          <div class="cover-status" id="dialogueStatus" role="status" aria-live="polite"></div>
+        </div>
+
+        <section class="quest-return" id="dialogueReturnSection" hidden aria-labelledby="dialogueReturnTitle">
+          <p class="eyebrow">После репетиции</p>
+          <h3 id="dialogueReturnTitle">Что стоит взять с собой в реальный разговор?</h3>
+
+          <div class="return-box">
+            <label for="dialogueTakeawayInput">Рабочая фраза или способ ответа</label>
+            <textarea id="dialogueTakeawayInput" rows="4" placeholder="Фраза, которая помогает сохранить направление без нападения и самоотмены"></textarea>
+          </div>
+
+          <div class="return-box">
+            <label for="dialogueUnknownInput">Что всё ещё нельзя узнать без реального разговора?</label>
+            <textarea id="dialogueUnknownInput" rows="3" placeholder="Например: как человек действительно отреагирует и готов ли обсуждать эту тему"></textarea>
+          </div>
+
+          <div class="return-box">
+            <label for="dialogueNextStepInput">Какой один обратимый шаг теперь виден?</label>
+            <textarea id="dialogueNextStepInput" rows="3" placeholder="Например: предложить короткий разговор об одном вопросе и заранее оставить право на паузу"></textarea>
+          </div>
+
+          <div class="actions">
+            <button class="primary-button" id="saveDialogueResultButton" type="button">Сохранить итог репетиции</button>
+          </div>
+        </section>
+
+        <div class="dialogue-result" id="dialogueResult" hidden></div>
+
+        <div class="actions">
+          <button class="text-button" id="cancelDialogueButton" type="button">Вернуться к карте</button>
+        </div>
+      </section>
+    </article>
+  </main>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'hand_compass_journeys_v02';
+      const PATTERN_STORAGE_KEY = 'hand_compass_patterns_v01';
+      const QUEST_STORAGE_KEY = 'hand_compass_first_quest_v01';
+      const DIALOGUE_STORAGE_KEY = 'hand_compass_dialogue_workshop_v01';
+      const screens = Array.from(document.querySelectorAll('[data-screen]'));
+      const steps = Array.from(document.querySelectorAll('[data-step]'));
+      const homeButton = document.getElementById('homeButton');
+      const worldEntryMap = document.getElementById('worldEntryMap');
+      const worldCloudStartButton = document.getElementById('worldCloudStartButton');
+      const worldPathButton = document.getElementById('worldPathButton');
+      const worldWorkshopButton = document.getElementById('worldWorkshopButton');
+      const startButton = document.getElementById('startButton');
+      const backButton = document.getElementById('backButton');
+      const nextButton = document.getElementById('nextButton');
+      const saveButton = document.getElementById('saveButton');
+      const savedList = document.getElementById('savedList');
+      const homeGuidance = document.getElementById('homeGuidance');
+      const patternInvite = document.getElementById('patternInvite');
+      const patternButton = document.getElementById('patternButton');
+      const livingMapInvite = document.getElementById('livingMapInvite');
+      const livingMapButton = document.getElementById('livingMapButton');
+      const latestPattern = document.getElementById('latestPattern');
+      const progressBar = document.getElementById('progressBar');
+      const stepName = document.getElementById('stepName');
+      const stepCounter = document.getElementById('stepCounter');
+
+      const stepNames = ['Ситуация', 'Компас', 'Рука', 'Вектор', 'Дракон', 'Другая тропа', 'Камень', 'Карта'];
+      const WORLD_CLOUDS = [
+        {
+          id: 'clarity',
+          label: 'Ясность',
+          copy: 'Дороги, на которых люди пытаются отделить наблюдаемые события от догадок и понять происходящее до решения.',
+          terms: ['ясност', 'честност']
+        },
+        {
+          id: 'mutuality',
+          label: 'Взаимность',
+          copy: 'Дороги о встречном движении: замечают ли люди вклад друг друга и возможно ли участие без принуждения.',
+          terms: ['взаимност', 'близост']
+        },
+        {
+          id: 'freedom',
+          label: 'Свобода',
+          copy: 'Дороги, где важно сохранить право выбирать, менять темп и не терять себя внутри связи.',
+          terms: ['свобод', 'автоном']
+        },
+        {
+          id: 'trust',
+          label: 'Доверие',
+          copy: 'Дороги, на которых проверяется, можно ли опираться на слова, действия и повторяющийся опыт.',
+          terms: ['довер', 'надёжност', 'надежност']
+        },
+        {
+          id: 'boundaries',
+          label: 'Границы',
+          copy: 'Дороги о возможности сказать «да», «нет», «не сейчас» или попросить паузу без исчезновения собственной позиции.',
+          terms: ['границ', 'пауза']
+        },
+        {
+          id: 'movement',
+          label: 'Совместное движение',
+          copy: 'Дороги, где люди пытаются понять, существует ли общее направление и как оно проявляется в действиях.',
+          terms: ['совместн', 'движен', 'развит']
+        },
+        {
+          id: 'belonging',
+          label: 'Принадлежность',
+          copy: 'Дороги о принятии, своём месте рядом с другими и возможности оставаться частью связи без необходимости притворяться.',
+          terms: ['принадлеж', 'принят', 'поддерж']
+        },
+        {
+          id: 'expression',
+          label: 'Самовыражение',
+          copy: 'Дороги, на которых человек показывает важное, создаёт новое и проверяет, сохраняется ли его инициатива во взаимодействии.',
+          terms: ['самовыраж', 'творч', 'иде']
+        }
+      ];
+      let step = 0;
+      let returnId = null;
+      let dialogueJourneyId = null;
+      let patternJourneyIds = [];
+      let selectedWorldCloudId = null;
+      let draft = emptyDraft();
+
+      const promptVariants = [
+        {
+          facts: ['Опиши одну конкретную ситуацию. Пока без объяснения чужих мотивов — только то, что можно было увидеть, услышать или подтвердить.', 'Например: мы договорились поговорить вечером. Разговор снова перенесли, и после этого два дня не было сообщений.', 'Одной ситуации достаточно. Не нужно рассказывать всю историю отношений.'],
+          compass: ['Не чего должен был сделать другой человек, а какое качество отношений или состояние было важно тебе.', 'Мне было важно…'],
+          hand: ['Не оценивай поступок. Зафиксируй слова, действие, молчание, ожидание или уход.', 'Я сказал…, написал…, промолчал…, начал проверять…, ушёл…'],
+          vector: ['Не предсказывай судьбу. Представь только вероятный результат повторения этого же цикла.', 'Если всё будет повторяться, между нами, вероятно…'],
+          dragon: ['Это может быть страх или привычка. Но это также может быть реальная опасность — тогда препятствие не нужно преодолевать.', 'Мне мешает…'],
+          path: ['Не меняй всю жизнь. Выбери одно действие, вопрос, границу или паузу, которую можно попробовать и затем оценить.', 'В следующий раз я попробую…', 'Если ситуация небезопасна, шагом может быть обращение за поддержкой или увеличение дистанции.'],
+          stone: ['Не ищи красивую формулировку. Камень остаётся только в твоих словах.', 'Я заметил, что…']
+        },
+        {
+          facts: ['Представь, что эту сцену видела камера без звука мыслей. Что именно попало бы в запись?', 'Где вы были? Что было сказано или сделано? Чем закончился эпизод?', 'Сейчас важен один эпизод, а не объяснение всей истории.'],
+          compass: ['Если на минуту убрать требования к другому человеку, что ты хотел сохранить или почувствовать между вами?', 'Я хотел, чтобы между нами было…'],
+          hand: ['Что увидела бы та же камера с твоей стороны — включая ожидание, повторные сообщения, шутку, паузу или уход?', 'С моей стороны произошло следующее…'],
+          vector: ['Представь, что эта сцена становится привычной. Каким постепенно делается пространство между вами?', 'Если этот эпизод станет правилом, между нами…'],
+          dragon: ['Остановись в точке, где ещё можно было выбрать другой шаг. Что сделало привычную реакцию более доступной или безопасной?', 'В тот момент меня остановило…'],
+          path: ['Как выглядел бы шаг всего на десять процентов иной — достаточно маленький, чтобы его действительно попробовать?', 'В похожей сцене я могу на десять процентов иначе…', 'Шаг не обязан быть сближением. Пауза, граница и поиск поддержки тоже меняют дорогу.'],
+          stone: ['Закончи мысль не о другом человеке, а о своём движении в этой сцене.', 'В этой ситуации я впервые увидел, что…']
+        },
+        {
+          facts: ['Выбери момент, после которого внутри что-то изменилось. Что было непосредственно до него и сразу после?', 'Сначала произошло…, затем…, после этого…', 'Не доказывай, кто прав. Собери последовательность событий.'],
+          compass: ['Какое негромкое желание стояло за твоей реакцией: быть услышанным, не потерять связь, сохранить себя — или что-то другое?', 'На самом деле мне хотелось…'],
+          hand: ['Что ты сделал для этого желания — даже если действие получилось совсем не таким, как задумывалось?', 'Пытаясь получить это, я…'],
+          vector: ['Если желание останется тем же, а способ действия не изменится, что будет возникать между вами снова?', 'При повторении этого способа, скорее всего…'],
+          dragon: ['Какую цену, по твоему ощущению, пришлось бы заплатить за непривычный ответ?', 'Если я поступлю иначе, я опасаюсь, что…'],
+          path: ['Какое действие позволит проверить опасение, не ставя на кон слишком много?', 'Чтобы проверить это безопасно, я могу…', 'Хороший эксперимент даёт новую информацию, даже если реакция другого человека не изменится.'],
+          stone: ['Что теперь стало видно, хотя до разбора оставалось смешанным или безымянным?', 'Теперь я могу назвать словами…']
+        }
+      ];
+
+      function emptyDraft() {
+        return {
+          entryCloud: '',
+          facts: '',
+          interpretation: '',
+          compass: '',
+          hand: '',
+          vector: '',
+          dragon: '',
+          dragonTempo: '',
+          dragonDependence: '',
+          dragonHistory: '',
+          dragonSafety: '',
+          path: '',
+          prediction: '',
+          predictionMarker: '',
+          stone: ''
+        };
+      }
+
+      function readJourneys() {
+        try {
+          const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+          return Array.isArray(value) ? value : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function writeJourneys(items) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      }
+
+      function readPatterns() {
+        try {
+          const value = JSON.parse(localStorage.getItem(PATTERN_STORAGE_KEY) || '[]');
+          return Array.isArray(value) ? value : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function writePatterns(items) {
+        localStorage.setItem(PATTERN_STORAGE_KEY, JSON.stringify(items));
+      }
+
+      function readQuest() {
+        try {
+          const value = JSON.parse(localStorage.getItem(QUEST_STORAGE_KEY) || 'null');
+          return value && typeof value === 'object' ? value : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function writeQuest(quest) {
+        localStorage.setItem(QUEST_STORAGE_KEY, JSON.stringify(quest));
+      }
+
+      function readDialogueSessions() {
+        try {
+          const value = JSON.parse(localStorage.getItem(DIALOGUE_STORAGE_KEY) || '[]');
+          return Array.isArray(value) ? value : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function writeDialogueSessions(items) {
+        localStorage.setItem(DIALOGUE_STORAGE_KEY, JSON.stringify(items));
+      }
+
+      function dialogueForJourney(journeyId) {
+        return readDialogueSessions().find((item) => item.journeyId === journeyId) || null;
+      }
+
+      function showScreen(name) {
+        screens.forEach((screen) => { screen.hidden = screen.dataset.screen !== name; });
+        homeButton.hidden = name === 'world-entry';
+      }
+
+      function renderWorldEntry() {
+        const items = readJourneys();
+        document.querySelectorAll('[data-world-cloud]').forEach((button) => {
+          const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === button.dataset.worldCloud);
+          const localCount = cloud ? items.filter((item) => journeyMatchesCloud(item, cloud)).length : 0;
+          button.classList.toggle('has-local-trace', localCount > 0);
+          const count = button.querySelector('[data-world-cloud-count]');
+          count.textContent = localCount ? localTraceLabel(localCount) : 'Область мира';
+        });
+
+        const honesty = document.getElementById('worldEntryHonesty');
+        worldPathButton.hidden = !items.length;
+        if (items.length) {
+          worldPathButton.textContent = items.length >= 3 ? 'Продолжить мой путь' : 'Посмотреть мои следы';
+          honesty.textContent = 'Зелёным отмечены области, которых уже касаются твои локальные дороги. Чужих профилей и вымышленных участников на этой карте пока нет.';
+        } else {
+          honesty.textContent = 'Сейчас видна архитектура будущего мира. Реальных чужих следов и вымышленных участников здесь пока нет.';
+        }
+
+        if (selectedWorldCloudId) selectWorldCloud(selectedWorldCloudId);
+      }
+
+      function journeyMatchesCloud(item, cloud) {
+        const source = [item.entryCloud, item.coverTitle, item.compass, item.stoneLabel]
+          .map((value) => String(value || '').toLowerCase())
+          .join(' ');
+        return source.includes(cloud.label.toLowerCase()) || cloud.terms.some((term) => source.includes(term));
+      }
+
+      function localTraceLabel(count) {
+        const word = count === 1 ? 'твой след' : count >= 2 && count <= 4 ? 'твоих следа' : 'твоих следов';
+        return `${count} ${word}`;
+      }
+
+      function selectWorldCloud(id) {
+        const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === id);
+        if (!cloud) return;
+        selectedWorldCloudId = id;
+        document.querySelectorAll('[data-world-cloud]').forEach((button) => {
+          const selected = button.dataset.worldCloud === id;
+          button.classList.toggle('is-selected', selected);
+          button.setAttribute('aria-pressed', String(selected));
+        });
+
+        const localCount = readJourneys().filter((item) => journeyMatchesCloud(item, cloud)).length;
+        document.getElementById('worldCloudTitle').textContent = cloud.label;
+        document.getElementById('worldCloudCopy').textContent = cloud.copy;
+        document.getElementById('worldCloudLocal').textContent = localCount
+          ? `В твоей карте с этой областью уже ${localCount === 1 ? 'соприкасается' : 'соприкасаются'} ${localTraceLabel(localCount)}.`
+          : 'В твоей локальной карте здесь пока нет следа.';
+        document.getElementById('worldCloudGate').textContent = 'Чтобы мир понял, какие дороги могут откликнуться тебе, оставь первый след: что в последнее время тебя задело, удивило или заставило остановиться?';
+        document.getElementById('worldCloudDetail').hidden = false;
+        worldCloudStartButton.textContent = localCount ? 'Оставить ещё один след здесь' : 'Оставить след здесь';
+      }
+
+      function openWorldPath() {
+        const items = readJourneys();
+        if (items.length >= 3) {
+          openLivingMap();
+          return;
+        }
+        renderSaved();
+        showScreen('home');
+      }
+
+      function showStep(index) {
+        step = index;
+        steps.forEach((panel) => { panel.hidden = Number(panel.dataset.step) !== step; });
+        stepName.textContent = stepNames[step];
+        stepCounter.textContent = `${Math.min(step + 1, 7)} / 7`;
+        progressBar.style.width = `${Math.min((step + 1) / 7 * 100, 100)}%`;
+        backButton.hidden = step === 0;
+        nextButton.hidden = step === 7;
+        saveButton.hidden = step !== 7;
+        if (step === 5) renderPathContext();
+        if (step === 7) renderSummary();
+      }
+
+      function selectedValue(group) {
+        const selected = document.querySelector(`[data-choice-group="${group}"] .is-selected`);
+        return selected ? selected.dataset.value : '';
+      }
+
+      function syncDraft() {
+        draft.facts = document.getElementById('factsInput').value.trim();
+        draft.interpretation = document.getElementById('interpretationInput').value.trim();
+        draft.compass = document.getElementById('compassInput').value.trim() || selectedValue('compass');
+        draft.hand = document.getElementById('handInput').value.trim();
+        draft.vector = document.getElementById('vectorInput').value.trim();
+        draft.dragonTempo = document.getElementById('dragonTempoInput').value.trim();
+        draft.dragonDependence = document.getElementById('dragonDependenceInput').value.trim();
+        draft.dragonHistory = document.getElementById('dragonHistoryInput').value.trim();
+        draft.dragonSafety = document.getElementById('dragonSafetyInput').value.trim();
+        draft.dragon = document.getElementById('dragonInput').value.trim()
+          || selectedValue('dragon')
+          || draft.dragonTempo
+          || draft.dragonDependence
+          || draft.dragonHistory
+          || draft.dragonSafety;
+        draft.path = document.getElementById('pathInput').value.trim();
+        draft.prediction = document.getElementById('predictionInput').value.trim();
+        draft.predictionMarker = document.getElementById('predictionMarkerInput').value.trim();
+        draft.stone = document.getElementById('stoneInput').value.trim();
+      }
+
+      function currentValue() {
+        syncDraft();
+        const keys = ['facts', 'compass', 'hand', 'vector', 'dragon', 'path', 'stone'];
+        if (step === 5) return draft.path && draft.prediction;
+        return keys[step] ? draft[keys[step]] : 'ready';
+      }
+
+      function resetForm() {
+        draft = emptyDraft();
+        [
+          'factsInput',
+          'interpretationInput',
+          'compassInput',
+          'handInput',
+          'vectorInput',
+          'dragonInput',
+          'dragonTempoInput',
+          'dragonDependenceInput',
+          'dragonHistoryInput',
+          'dragonSafetyInput',
+          'pathInput',
+          'predictionInput',
+          'predictionMarkerInput',
+          'stoneInput'
+        ].forEach((id) => {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('dragonLayers').open = false;
+        document.querySelectorAll('.choice-button').forEach((button) => button.classList.remove('is-selected'));
+      }
+
+      function applyPromptVariant() {
+        const variant = promptVariants[readJourneys().length % promptVariants.length];
+        const mappings = [
+          ['facts', 'factsInput'],
+          ['compass', 'compassInput'],
+          ['hand', 'handInput'],
+          ['vector', 'vectorInput'],
+          ['dragon', 'dragonInput'],
+          ['path', 'pathInput'],
+          ['stone', 'stoneInput']
+        ];
+        mappings.forEach(([key, inputId], index) => {
+          const panel = document.querySelector(`[data-step="${index}"]`);
+          panel.querySelector('.prompt-copy').textContent = variant[key][0];
+          document.getElementById(inputId).placeholder = variant[key][1];
+          const helper = panel.querySelector('.helper');
+          if (helper && variant[key][2]) helper.textContent = variant[key][2];
+        });
+      }
+
+      function startJourney(entryCloud = '') {
+        resetForm();
+        draft.entryCloud = entryCloud;
+        const worldContext = document.getElementById('worldCloudJourneyContext');
+        worldContext.hidden = !entryCloud;
+        worldContext.textContent = entryCloud
+          ? `Ты вошёл через облако «${entryCloud}». Это только точка входа: направление дороги можно уточнить или изменить дальше.`
+          : '';
+        applyPromptVariant();
+        showScreen('journey');
+        showStep(0);
+      }
+
+      function dragonLines(item) {
+        const lines = [];
+        if (item.dragon) lines.push(item.dragon);
+        if (item.dragonTempo) lines.push(`Давление времени: ${item.dragonTempo}`);
+        if (item.dragonDependence) lines.push(`Ставки и зависимость: ${item.dragonDependence}`);
+        if (item.dragonHistory) lines.push(`Накопленный груз: ${item.dragonHistory}`);
+        if (item.dragonSafety) lines.push(`Условия безопасного шага: ${item.dragonSafety}`);
+        return lines;
+      }
+
+      function formatDragon(item) {
+        return dragonLines(item).join('\n') || 'Пока не сформулировано';
+      }
+
+      function renderPathContext() {
+        syncDraft();
+        const context = document.getElementById('pathContext');
+        const conditions = [];
+        if (draft.dragonSafety) conditions.push(draft.dragonSafety);
+        if (draft.dragonTempo && !draft.dragonSafety) conditions.push(`учесть давление времени: ${draft.dragonTempo}`);
+        context.hidden = !conditions.length;
+        context.replaceChildren();
+        if (!conditions.length) return;
+        const strong = document.createElement('strong');
+        strong.textContent = 'Условие, которое стоит взять с собой на тропу: ';
+        context.append(strong, document.createTextNode(conditions.join(' ')));
+      }
+
+      function renderSummary() {
+        syncDraft();
+        document.querySelectorAll('[data-summary]').forEach((target) => {
+          target.textContent = target.dataset.summary === 'dragon'
+            ? formatDragon(draft)
+            : draft[target.dataset.summary] || 'Пока не сформулировано';
+        });
+      }
+
+      function saveJourney() {
+        syncDraft();
+        const items = readJourneys();
+        items.unshift({
+          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          createdAt: new Date().toISOString(),
+          status: 'waiting',
+          ...draft,
+          result: '',
+          predictionGap: '',
+          reflection: ''
+        });
+        writeJourneys(items);
+        renderSaved();
+        showScreen('home');
+      }
+
+      function formatDate(value) {
+        try {
+          return new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
+        } catch {
+          return '';
+        }
+      }
+
+      function renderSaved() {
+        const items = readJourneys();
+        savedList.replaceChildren();
+        homeGuidance.hidden = !items.some((item) => item.status !== 'returned');
+        patternInvite.hidden = items.length < 2;
+        livingMapInvite.hidden = items.length < 3;
+        renderLatestPattern();
+        if (!items.length) {
+          const empty = document.createElement('p');
+          empty.className = 'empty-state';
+          empty.textContent = 'Пока здесь нет сохранённых дорог.';
+          savedList.append(empty);
+          return;
+        }
+
+        items.forEach((item) => {
+          const card = document.createElement('article');
+          card.className = 'saved-card';
+          const top = document.createElement('div');
+          top.className = 'saved-card-top';
+          const titleWrap = document.createElement('div');
+          const title = document.createElement('h3');
+          title.textContent = item.facts.length > 86 ? `${item.facts.slice(0, 86)}…` : item.facts;
+          const date = document.createElement('p');
+          date.textContent = formatDate(item.createdAt);
+          titleWrap.append(title, date);
+          const status = document.createElement('span');
+          status.className = 'saved-status';
+          status.textContent = item.status === 'returned' ? 'Карта обновлена' : 'Ждёт возвращения';
+          top.append(titleWrap, status);
+          const compass = document.createElement('p');
+          compass.textContent = `Компас: ${item.compass}`;
+          const nextPath = document.createElement('p');
+          nextPath.textContent = `Следующий шаг: ${item.path}`;
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+          const returnButton = document.createElement('button');
+          returnButton.className = 'quiet-button';
+          returnButton.type = 'button';
+          returnButton.dataset.returnId = item.id;
+          returnButton.textContent = item.status === 'returned' ? 'Посмотреть и дополнить' : 'Вернуться с результатом';
+          const dialogueButton = document.createElement('button');
+          dialogueButton.className = 'text-button';
+          dialogueButton.type = 'button';
+          dialogueButton.dataset.dialogueId = item.id;
+          dialogueButton.textContent = dialogueForJourney(item.id) ? 'Продолжить репетицию' : 'Подготовить разговор';
+          actions.append(returnButton, dialogueButton);
+          card.append(top, compass, nextPath, actions);
+          savedList.append(card);
+        });
+      }
+
+      function renderLatestPattern() {
+        const pattern = readPatterns()[0];
+        latestPattern.hidden = !pattern;
+        latestPattern.replaceChildren();
+        if (!pattern) return;
+        const title = document.createElement('strong');
+        title.textContent = 'Последний замеченный узор';
+        const copy = document.createElement('div');
+        copy.textContent = pattern.hypothesis;
+        latestPattern.append(title, copy);
+      }
+
+      function shorten(value, limit = 150) {
+        const text = String(value || '').trim();
+        return text.length > limit ? `${text.slice(0, limit).trim()}…` : text;
+      }
+
+      function roadCountLabel(count) {
+        const mod10 = count % 10;
+        const mod100 = count % 100;
+        const word = mod10 === 1 && mod100 !== 11
+          ? 'дорога'
+          : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)
+            ? 'дороги'
+            : 'дорог';
+        return `${count} ${word}`;
+      }
+
+      function selectSceneLandmark(kind) {
+        const detailTitle = document.getElementById('sceneDetailTitle');
+        const detailCopy = document.getElementById('sceneDetailCopy');
+        document.querySelectorAll('[data-scene-kind]').forEach((button) => {
+          const selected = button.dataset.sceneKind === kind;
+          button.classList.toggle('is-selected', selected);
+          button.setAttribute('aria-pressed', String(selected));
+          if (selected) {
+            detailTitle.textContent = button.dataset.detailTitle || '';
+            detailCopy.textContent = button.dataset.detailCopy || '';
+          }
+        });
+      }
+
+      function renderFocusScene(allItems) {
+        const sessions = readDialogueSessions();
+        const session = sessions.find((candidate) => candidate.status === 'returned'
+          && allItems.some((item) => item.id === candidate.journeyId))
+          || sessions.find((candidate) => allItems.some((item) => item.id === candidate.journeyId))
+          || null;
+        const item = session
+          ? allItems.find((candidate) => candidate.id === session.journeyId)
+          : allItems.find((candidate) => candidate.status !== 'returned') || allItems[0];
+        if (!item) return null;
+
+        const isReturned = item.status === 'returned';
+        document.getElementById('focusScene').classList.toggle('is-returned', isReturned);
+
+        document.getElementById('focusSceneTitle').textContent = item.coverTitle || item.compass || 'Выбранная дорога';
+        const status = document.getElementById('focusSceneStatus');
+        if (isReturned) {
+          status.textContent = 'Получен результат · карта изменилась';
+        } else if (session?.status === 'returned') {
+          status.textContent = 'Ключ найден · жизнью не проверен';
+        } else if (session) {
+          status.textContent = 'Репетиция начата';
+        } else {
+          status.textContent = 'Открытая дорога';
+        }
+
+        const sceneValues = {
+          direction: {
+            title: 'Что было важно',
+            copy: item.compass || 'Направление пока не названо.'
+          },
+          obstacle: {
+            title: 'Что влияло на доступные действия',
+            copy: item.dragonThesis || item.dragon || 'Препятствие осталось внутри личной истории.'
+          },
+          key: {
+            title: 'Найденный ключ',
+            copy: session?.takeaway || 'Ключ появится после репетиции возможного разговора.'
+          },
+          next: {
+            title: isReturned ? 'Что изменила реальность' : 'Ближайшая непроверенная точка',
+            copy: isReturned
+              ? item.reflection || item.predictionGap || item.result || 'Результат сохранён, но обновление карты пока не названо.'
+              : session?.nextStep || item.path || 'Следующий шаг пока не выбран.'
+          }
+        };
+
+        const nextLandmark = document.querySelector('[data-scene-kind="next"]');
+        nextLandmark.querySelector('.scene-symbol').textContent = isReturned ? '◆' : '○';
+        nextLandmark.querySelector('strong').textContent = isReturned ? 'Камень опыта' : 'Ближайшая точка';
+        nextLandmark.querySelector('small').textContent = isReturned ? 'После проверки' : 'Ещё не проверена';
+        document.getElementById('sceneCanvas').setAttribute(
+          'aria-label',
+          isReturned
+            ? 'Направление, препятствие, найденный ключ и Камень опыта'
+            : 'Направление, препятствие, найденный ключ и следующий шаг'
+        );
+
+        document.querySelectorAll('[data-scene-kind]').forEach((button) => {
+          const value = sceneValues[button.dataset.sceneKind];
+          button.dataset.detailTitle = value.title;
+          button.dataset.detailCopy = shorten(value.copy, 220);
+        });
+
+        const returnButton = document.getElementById('sceneReturnButton');
+        returnButton.hidden = false;
+        returnButton.removeAttribute('data-return-id');
+        returnButton.dataset.returnId = item.id;
+        returnButton.textContent = isReturned ? 'Посмотреть сохранённый результат' : 'Вернуться с реальным результатом';
+
+        const dialogueButton = document.getElementById('sceneDialogueButton');
+        dialogueButton.hidden = false;
+        dialogueButton.dataset.dialogueId = item.id;
+        dialogueButton.textContent = session ? 'Открыть найденный ключ' : 'Найти ключ в репетиции';
+
+        selectSceneLandmark(isReturned ? 'next' : session?.status === 'returned' ? 'key' : 'direction');
+        return item;
+      }
+
+      function renderLivingMap() {
+        const allItems = readJourneys();
+        const items = allItems.slice(0, 3).reverse();
+        if (items.length < 3) {
+          showScreen('home');
+          return;
+        }
+
+        document.getElementById('livingMapIntro').textContent = `Карта собрана из ${roadCountLabel(allItems.length)}. Нажми на знак — откроется только один короткий смысл.`;
+        const focusItem = renderFocusScene(allItems);
+
+        const compassCounts = new Map();
+        allItems.forEach((item) => {
+          const compass = String(item.compass || '').trim();
+          if (!compass) return;
+          compassCounts.set(compass, (compassCounts.get(compass) || 0) + 1);
+        });
+        const clouds = document.getElementById('worldClouds');
+        clouds.replaceChildren();
+        compassCounts.forEach((count, compass) => {
+          const cloud = document.createElement('span');
+          cloud.className = 'world-cloud';
+          cloud.append(document.createTextNode(compass));
+          const countLabel = document.createElement('small');
+          countLabel.textContent = count > 1 ? ` · выбрано в ${roadCountLabel(count)}` : ' · выбрано тобой';
+          cloud.append(countLabel);
+          clouds.append(cloud);
+        });
+
+        const roads = document.getElementById('worldRoads');
+        roads.replaceChildren();
+        items.forEach((item, index) => {
+          const node = document.createElement('article');
+          node.className = 'world-road-node';
+          const marker = document.createElement('div');
+          marker.className = 'world-road-marker';
+          marker.setAttribute('aria-hidden', 'true');
+          const title = document.createElement('h3');
+          title.textContent = item.coverTitle || item.compass || `Дорога ${index + 1}`;
+          const thesis = document.createElement('p');
+          thesis.className = item.coverThesis ? '' : 'road-private-note';
+          thesis.textContent = item.coverThesis || 'Полная история скрыта внутри этой дороги.';
+          const hand = document.createElement('p');
+          hand.textContent = item.handThesis ? `Движение: ${item.handThesis}` : 'Движение Руки ждёт короткой формулировки.';
+          const state = document.createElement('p');
+          state.textContent = item.status === 'returned' ? 'Есть реальный результат' : 'Эксперимент ещё открыт';
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+          const openButton = document.createElement('button');
+          openButton.className = 'text-button';
+          openButton.type = 'button';
+          openButton.dataset.mapRoadId = item.id;
+          openButton.textContent = 'Открыть личную историю';
+          const dialogueButton = document.createElement('button');
+          dialogueButton.className = 'text-button';
+          dialogueButton.type = 'button';
+          dialogueButton.dataset.dialogueRoadId = item.id;
+          dialogueButton.textContent = dialogueForJourney(item.id) ? 'Продолжить репетицию' : 'Подготовить разговор';
+          actions.append(openButton, dialogueButton);
+          node.append(marker, title, thesis, hand, state, actions);
+          roads.append(node);
+        });
+
+        const active = allItems.find((item) => item.status !== 'returned');
+        const horizon = document.getElementById('worldHorizon');
+        horizon.replaceChildren();
+        const horizonTitle = document.createElement('strong');
+        const horizonCopy = document.createElement('p');
+        const mapActionButton = document.getElementById('mapActionButton');
+        mapActionButton.hidden = true;
+        mapActionButton.removeAttribute('data-return-id');
+        if (active) {
+          horizonTitle.textContent = 'На горизонте — проверяемая тропа';
+          const forecast = active.prediction ? `\nОжидание: ${active.prediction}` : '';
+          horizonCopy.textContent = `${active.path}${forecast}`;
+          mapActionButton.textContent = 'Вернуться с результатом';
+          mapActionButton.dataset.returnId = active.id;
+        } else {
+          horizonTitle.textContent = 'Все открытые тропы получили результат';
+          horizonCopy.textContent = 'Следующая ситуация сможет не просто добавить анкету, а проверить, сохраняется ли уже замеченный рисунок.';
+        }
+        horizon.append(horizonTitle, horizonCopy);
+
+        const dragons = document.getElementById('worldDragons');
+        dragons.replaceChildren();
+        items.forEach((item, index) => {
+          const dragon = document.createElement('div');
+          dragon.className = 'underground-item';
+          dragon.textContent = item.dragonThesis
+            ? `${item.coverTitle || `Дорога ${index + 1}`}: ${item.dragonThesis}`
+            : `${item.coverTitle || `Дорога ${index + 1}`}: личное препятствие скрыто внутри`;
+          dragons.append(dragon);
+        });
+
+        const stones = document.getElementById('worldStones');
+        stones.replaceChildren();
+        const stoneValues = allItems.slice(0, 6).map((item, index) => item.stoneLabel || `Камень дороги ${index + 1} ждёт имени`);
+        if (!stoneValues.length) {
+          const emptyStone = document.createElement('span');
+          emptyStone.className = 'world-stone';
+          emptyStone.textContent = 'Камни ещё не названы';
+          stones.append(emptyStone);
+        } else {
+          stoneValues.forEach((value) => {
+            const stone = document.createElement('span');
+            stone.className = 'world-stone';
+            stone.textContent = shorten(value, 110);
+            stones.append(stone);
+          });
+        }
+
+        const worldPattern = document.getElementById('worldPattern');
+        worldPattern.replaceChildren();
+        const pattern = readPatterns()[0];
+        const patternTitle = document.createElement('strong');
+        const patternCopy = document.createElement('div');
+        if (pattern) {
+          patternTitle.textContent = 'Гипотеза, которую ты уже оставил на карте';
+          patternCopy.textContent = pattern.hypothesis;
+        } else {
+          patternTitle.textContent = 'Общий узор пока не подтверждён';
+          patternCopy.textContent = 'Карта не дорисовывает смысл автоматически. Сначала дороги нужно сопоставить и выбрать формулировку, которая действительно отзывается.';
+        }
+        worldPattern.append(patternTitle, patternCopy);
+        renderQuestInvite();
+
+        const dialogueInvite = document.getElementById('dialogueInvite');
+        const dialogueInviteCopy = document.getElementById('dialogueInviteCopy');
+        const dialogueMapButton = document.getElementById('dialogueMapButton');
+        const dialogueCandidate = focusItem || active || allItems[0];
+        dialogueMapButton.removeAttribute('data-dialogue-id');
+        if (dialogueCandidate) {
+          dialogueMapButton.dataset.dialogueId = dialogueCandidate.id;
+          const existingDialogue = dialogueForJourney(dialogueCandidate.id);
+          dialogueInvite.hidden = existingDialogue?.status === 'returned';
+          dialogueMapButton.textContent = existingDialogue ? 'Продолжить репетицию' : 'Открыть мастерскую диалога';
+          dialogueInviteCopy.textContent = existingDialogue?.status === 'returned'
+            ? 'У этой дороги уже есть итог репетиции. Его можно открыть, изменить или проверить в реальном разговоре.'
+            : 'Попробуй возможный разговор до того, как войти в него. Это не предсказание ответа другого человека, а безопасная репетиция собственных слов и границ.';
+        } else {
+          dialogueInvite.hidden = true;
+        }
+      }
+
+      function openLivingMap() {
+        renderLivingMap();
+        if (readJourneys().length >= 3) showScreen('living-map');
+      }
+
+      function selectQuestChoice(group, value) {
+        const container = document.querySelector(`[data-choice-group="${group}"]`);
+        container.querySelectorAll('.choice-button').forEach((button) => {
+          button.classList.toggle('is-selected', button.dataset.value === value);
+        });
+      }
+
+      function renderQuestInvite() {
+        const quest = readQuest();
+        const copy = document.getElementById('questInviteCopy');
+        const button = document.getElementById('questButton');
+        if (!quest) {
+          copy.textContent = 'Преврати замеченный узор в один безопасный эксперимент: заранее обозначь, какой отклик сейчас поможет движению, а что оценивать ещё рано.';
+          button.textContent = 'Открыть первый квест';
+          return;
+        }
+        if (quest.status === 'returned') {
+          copy.textContent = `Квест завершён. Желание продолжать: ${String(quest.effect || '').toLowerCase()}. Открой результат и посмотри, какие действия появились.`;
+          button.textContent = 'Посмотреть результат квеста';
+          return;
+        }
+        copy.textContent = 'Просьба об обратной связи уже собрана. После разговора вернись и отметь, расширился ли набор доступных действий.';
+        button.textContent = 'Вернуться в мастерскую';
+      }
+
+      function buildQuestRequest() {
+        const stage = selectedValue('quest-stage');
+        const feedback = selectedValue('quest-feedback');
+        const boundary = document.getElementById('questBoundaryInput').value.trim();
+        const status = document.getElementById('questStatus');
+        if (!stage || !feedback) {
+          status.textContent = 'Сначала выбери стадию и нужный формат отклика.';
+          return '';
+        }
+
+        const stageText = {
+          'Росток': 'Перед тобой ранняя идея, которая ещё ищет форму.',
+          'Черновик': 'Перед тобой рабочий черновик: основная идея уже видна, но устройство ещё меняется.',
+          'Решение': 'Перед тобой решение, которое уже готово к итоговой оценке.'
+        }[stage];
+        const feedbackText = {
+          'Понятность и интерес': 'Посмотри и напиши, что тебе понятно и что привлекает внимание. Если смысл где-то теряется, покажи конкретный момент.',
+          'Вопросы': 'Задай вопросы, ответы на которые помогут точнее раскрыть и продолжить идею.',
+          'Альтернативы': 'Предложи другие возможные способы решения, не объявляя один вариант единственно правильным.',
+          'Риски': 'Назови конкретные риски и слабые места и поясни, на каком наблюдении основано каждое сомнение.',
+          'Итоговая оценка': 'Дай итоговую оценку, отдельно назвав понятные сильные стороны, ограничения и основания вывода.'
+        }[feedback];
+        const boundaryText = boundary ? ` Пока не оценивай: ${boundary.replace(/[.!?]+$/, '')}.` : '';
+        const request = `${stageText} ${feedbackText}${boundaryText}`;
+        document.getElementById('questRequestInput').value = request;
+        status.textContent = 'Черновик собран. Его можно изменить своими словами перед сохранением.';
+        return request;
+      }
+
+      function renderQuestResult(quest) {
+        const result = document.getElementById('questResult');
+        result.hidden = !quest || quest.status !== 'returned';
+        result.replaceChildren();
+        if (!quest || quest.status !== 'returned') return;
+        const title = document.createElement('strong');
+        title.textContent = 'Что показал этот проход';
+        const effect = document.createElement('div');
+        effect.textContent = `Желание продолжать: ${String(quest.effect || '').toLowerCase()}.`;
+        result.append(title, effect);
+        if (quest.actions) {
+          const actions = document.createElement('div');
+          actions.textContent = `Доступные действия: ${quest.actions}`;
+          result.append(actions);
+        }
+        if (quest.generalization) {
+          const unknown = document.createElement('div');
+          unknown.textContent = `Пока нельзя обобщать: ${quest.generalization}`;
+          result.append(unknown);
+        }
+      }
+
+      function renderQuestScreen() {
+        const quest = readQuest();
+        ['quest-stage', 'quest-feedback', 'quest-effect'].forEach((group) => selectQuestChoice(group, ''));
+        document.getElementById('questBoundaryInput').value = quest?.boundary || '';
+        document.getElementById('questRequestInput').value = quest?.request || '';
+        document.getElementById('questResponseInput').value = quest?.response || '';
+        document.getElementById('questActionsInput').value = quest?.actions || '';
+        document.getElementById('questGeneralizationInput').value = quest?.generalization || '';
+        document.getElementById('questStatus').textContent = '';
+        if (quest) {
+          selectQuestChoice('quest-stage', quest.stage || '');
+          selectQuestChoice('quest-feedback', quest.feedback || '');
+          selectQuestChoice('quest-effect', quest.effect || '');
+        }
+        document.getElementById('copyQuestButton').hidden = !quest?.request;
+        document.getElementById('questReturnSection').hidden = !quest;
+        renderQuestResult(quest);
+      }
+
+      function openQuest() {
+        renderQuestScreen();
+        showScreen('quest');
+      }
+
+      function saveQuest() {
+        const stage = selectedValue('quest-stage');
+        const feedback = selectedValue('quest-feedback');
+        const boundary = document.getElementById('questBoundaryInput').value.trim();
+        let request = document.getElementById('questRequestInput').value.trim();
+        const status = document.getElementById('questStatus');
+        if (!stage || !feedback) {
+          status.textContent = 'Сначала выбери стадию и нужный формат отклика.';
+          return;
+        }
+        if (!request) request = buildQuestRequest();
+        if (!request) return;
+        const existing = readQuest();
+        const quest = {
+          id: existing?.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          createdAt: existing?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          title: 'Мастерская, не суд',
+          status: 'prepared',
+          stage,
+          feedback,
+          boundary,
+          request,
+          response: '',
+          effect: '',
+          actions: '',
+          generalization: ''
+        };
+        writeQuest(quest);
+        document.getElementById('copyQuestButton').hidden = false;
+        document.getElementById('questReturnSection').hidden = false;
+        renderQuestResult(quest);
+        status.textContent = 'Просьба сохранена. Её можно проверить здесь в диалоге или в реальном разговоре.';
+      }
+
+      async function copyQuestRequest() {
+        const status = document.getElementById('questStatus');
+        const request = document.getElementById('questRequestInput').value.trim();
+        if (!request) {
+          status.textContent = 'Сначала собери или напиши просьбу.';
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(request);
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = request;
+          area.setAttribute('readonly', '');
+          area.style.position = 'absolute';
+          area.style.left = '-9999px';
+          document.body.append(area);
+          area.select();
+          const copied = document.execCommand('copy');
+          area.remove();
+          if (!copied) {
+            status.textContent = 'Не удалось скопировать автоматически.';
+            return;
+          }
+        }
+        status.textContent = 'Просьба скопирована.';
+      }
+
+      function saveQuestResult() {
+        const quest = readQuest();
+        if (!quest) return;
+        const effect = selectedValue('quest-effect');
+        if (!effect) {
+          document.getElementById('questStatus').textContent = 'Отметь, что произошло с желанием продолжать.';
+          return;
+        }
+        const updated = {
+          ...quest,
+          status: 'returned',
+          returnedAt: new Date().toISOString(),
+          response: document.getElementById('questResponseInput').value.trim(),
+          effect,
+          actions: document.getElementById('questActionsInput').value.trim(),
+          generalization: document.getElementById('questGeneralizationInput').value.trim()
+        };
+        writeQuest(updated);
+        renderQuestResult(updated);
+        document.getElementById('questStatus').textContent = 'Результат сохранён. Квест вернулся на живую карту.';
+      }
+
+      function renderDialogueContext(item) {
+        const context = document.getElementById('dialogueRoadContext');
+        context.replaceChildren();
+        const title = document.createElement('strong');
+        title.textContent = item.coverTitle || item.compass || 'Выбранная дорога';
+        const thesis = document.createElement('p');
+        thesis.textContent = item.coverThesis || 'Полная история остаётся внутри выбранной дороги.';
+        const direction = document.createElement('p');
+        direction.textContent = `Компас: ${item.compass}\nПроверяемая тропа: ${item.path}`;
+        context.append(title, thesis, direction);
+      }
+
+      function renderDialogueResult(session) {
+        const result = document.getElementById('dialogueResult');
+        result.hidden = !session || session.status !== 'returned';
+        result.replaceChildren();
+        if (!session || session.status !== 'returned') return;
+        const title = document.createElement('strong');
+        title.textContent = 'Что осталось после репетиции';
+        result.append(title);
+        if (session.takeaway) {
+          const takeaway = document.createElement('div');
+          takeaway.textContent = `Рабочая фраза: ${session.takeaway}`;
+          result.append(takeaway);
+        }
+        if (session.unknown) {
+          const unknown = document.createElement('div');
+          unknown.textContent = `Пока неизвестно: ${session.unknown}`;
+          result.append(unknown);
+        }
+        if (session.nextStep) {
+          const nextStep = document.createElement('div');
+          nextStep.textContent = `Следующий шаг: ${session.nextStep}`;
+          result.append(nextStep);
+        }
+      }
+
+      function openDialogue(journeyId) {
+        const item = readJourneys().find((candidate) => candidate.id === journeyId);
+        if (!item) return;
+        dialogueJourneyId = journeyId;
+        const session = dialogueForJourney(journeyId);
+        selectQuestChoice('dialogue-reaction', '');
+        renderDialogueContext(item);
+        document.getElementById('dialogueAimInput').value = session?.aim || '';
+        document.getElementById('dialogueBoundaryInput').value = session?.boundary || item.dragonSafety || '';
+        document.getElementById('dialogueOpeningInput').value = session?.opening || '';
+        document.getElementById('dialogueRequestInput').value = session?.request || '';
+        document.getElementById('dialogueTakeawayInput').value = session?.takeaway || '';
+        document.getElementById('dialogueUnknownInput').value = session?.unknown || '';
+        document.getElementById('dialogueNextStepInput').value = session?.nextStep || '';
+        document.getElementById('dialogueStatus').textContent = '';
+        if (session?.reaction) selectQuestChoice('dialogue-reaction', session.reaction);
+        document.getElementById('copyDialogueButton').hidden = !session?.request;
+        document.getElementById('dialogueReturnSection').hidden = !session;
+        renderDialogueResult(session);
+        showScreen('dialogue');
+      }
+
+      function buildDialogueRequest() {
+        const item = readJourneys().find((candidate) => candidate.id === dialogueJourneyId);
+        const aim = document.getElementById('dialogueAimInput').value.trim();
+        const reaction = selectedValue('dialogue-reaction');
+        const boundary = document.getElementById('dialogueBoundaryInput').value.trim();
+        const opening = document.getElementById('dialogueOpeningInput').value.trim();
+        const status = document.getElementById('dialogueStatus');
+        if (!item) return '';
+        if (!aim) {
+          status.textContent = 'Сначала назови, что важно прояснить или донести.';
+          document.getElementById('dialogueAimInput').focus();
+          return '';
+        }
+        if (!reaction) {
+          status.textContent = 'Выбери одну возможную реакцию для первого прохода.';
+          return '';
+        }
+        if (!boundary) {
+          status.textContent = 'Назови хотя бы одно условие, которое сделает репетицию безопаснее.';
+          document.getElementById('dialogueBoundaryInput').focus();
+          return '';
+        }
+
+        const lines = [
+          'Помоги провести безопасную репетицию одного разговора Hand & Compass.',
+          '',
+          'Правила:',
+          '- это модель возможного разговора, а не предсказание поведения реального человека;',
+          '- не угадывай мотивы и мысли другого человека;',
+          '- не ставь диагнозов и не присваивай типы личности;',
+          '- не называй мои слова правильными или неправильными;',
+          '- проигрывай только одну реплику собеседника за раз и жди моего ответа;',
+          '- после моего ответа коротко покажи, что моя фраза прояснила, что оставила неясным и сохранилась ли заявленная граница;',
+          '- проведи не более трёх обменов репликами;',
+          '- если из контекста видно, что разговор может быть небезопасен, не подталкивай к контакту и предложи паузу или поддержку;',
+          '- в конце помоги сохранить одну рабочую фразу, одну границу, одно неизвестное и один обратимый следующий шаг.',
+          '',
+          'КОНТЕКСТ ВЫБРАННОЙ ДОРОГИ',
+          `Ситуация: ${item.facts}`,
+          item.interpretation ? `Моё объяснение сигналов: ${item.interpretation}` : 'Моё объяснение сигналов: отдельно не записано',
+          `Компас: ${item.compass}`,
+          `Мой прежний способ действия: ${item.hand}`,
+          `Возможное препятствие: ${item.dragon || 'отдельно не сформулировано'}`,
+          `Проверяемая тропа: ${item.path}`,
+          '',
+          'НАСТРОЙКА РЕПЕТИЦИИ',
+          `Что я хочу прояснить или донести: ${aim}`,
+          `Первой отрепетируй такую возможную реакцию: ${reaction}`,
+          `Граница или условие безопасности: ${boundary}`,
+          opening ? `Моя пробная первая фраза: ${opening}` : 'Пробная первая фраза: помоги мне собрать её одним коротким вопросом перед началом.',
+          '',
+          'Начни с краткого напоминания, что собеседник здесь вымышленный, затем дай только первую возможную реплику.'
+        ];
+        const request = lines.join('\n');
+        document.getElementById('dialogueRequestInput').value = request;
+        status.textContent = 'Сценарий собран. Его можно изменить своими словами перед сохранением.';
+        return request;
+      }
+
+      function saveDialogue() {
+        const item = readJourneys().find((candidate) => candidate.id === dialogueJourneyId);
+        const aim = document.getElementById('dialogueAimInput').value.trim();
+        const reaction = selectedValue('dialogue-reaction');
+        const boundary = document.getElementById('dialogueBoundaryInput').value.trim();
+        const opening = document.getElementById('dialogueOpeningInput').value.trim();
+        let request = document.getElementById('dialogueRequestInput').value.trim();
+        const status = document.getElementById('dialogueStatus');
+        if (!item) return;
+        if (!request) request = buildDialogueRequest();
+        if (!request) return;
+        const sessions = readDialogueSessions();
+        const existing = sessions.find((candidate) => candidate.journeyId === dialogueJourneyId);
+        const updated = {
+          id: existing?.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          journeyId: dialogueJourneyId,
+          createdAt: existing?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          status: 'prepared',
+          aim,
+          reaction,
+          boundary,
+          opening,
+          request,
+          takeaway: existing?.takeaway || '',
+          unknown: existing?.unknown || '',
+          nextStep: existing?.nextStep || ''
+        };
+        const nextSessions = sessions.filter((candidate) => candidate.journeyId !== dialogueJourneyId);
+        nextSessions.unshift(updated);
+        writeDialogueSessions(nextSessions);
+        document.getElementById('copyDialogueButton').hidden = false;
+        document.getElementById('dialogueReturnSection').hidden = false;
+        renderDialogueResult(updated);
+        status.textContent = 'Подготовка сохранена. Теперь можно скопировать сценарий и начать репетицию в текущем диалоге.';
+      }
+
+      async function copyDialogueRequest() {
+        const request = document.getElementById('dialogueRequestInput').value.trim();
+        const status = document.getElementById('dialogueStatus');
+        if (!request) {
+          status.textContent = 'Сначала собери или напиши сценарий репетиции.';
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(request);
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = request;
+          area.setAttribute('readonly', '');
+          area.style.position = 'absolute';
+          area.style.left = '-9999px';
+          document.body.append(area);
+          area.select();
+          const copied = document.execCommand('copy');
+          area.remove();
+          if (!copied) {
+            status.textContent = 'Не удалось скопировать автоматически.';
+            return;
+          }
+        }
+        status.textContent = 'Сценарий скопирован. Вставь его сюда — начнём с одной возможной реплики.';
+      }
+
+      function saveDialogueResult() {
+        const sessions = readDialogueSessions();
+        const session = sessions.find((candidate) => candidate.journeyId === dialogueJourneyId);
+        const takeaway = document.getElementById('dialogueTakeawayInput').value.trim();
+        const unknown = document.getElementById('dialogueUnknownInput').value.trim();
+        const nextStep = document.getElementById('dialogueNextStepInput').value.trim();
+        const status = document.getElementById('dialogueStatus');
+        if (!session) return;
+        if (!takeaway) {
+          status.textContent = 'Сохрани хотя бы одну фразу или способ ответа, который хочется взять с собой.';
+          document.getElementById('dialogueTakeawayInput').focus();
+          return;
+        }
+        if (!nextStep) {
+          status.textContent = 'Назови один обратимый следующий шаг — им может быть и пауза.';
+          document.getElementById('dialogueNextStepInput').focus();
+          return;
+        }
+        const updated = {
+          ...session,
+          status: 'returned',
+          returnedAt: new Date().toISOString(),
+          takeaway,
+          unknown,
+          nextStep
+        };
+        writeDialogueSessions([updated, ...sessions.filter((candidate) => candidate.journeyId !== dialogueJourneyId)]);
+        renderDialogueResult(updated);
+        status.textContent = 'Итог репетиции сохранён. Реальная реакция другого человека всё ещё остаётся неизвестной до разговора.';
+      }
+
+      function buildCoverRequest() {
+        const items = readJourneys().slice(0, 3).reverse();
+        const roads = items.map((item, index) => [
+          `ДОРОГА ${index + 1}`,
+          `id: ${item.id}`,
+          `Ситуация: ${item.facts}`,
+          item.interpretation ? `Моё объяснение: ${item.interpretation}` : 'Моё объяснение: отдельно не записано',
+          `Компас: ${item.compass}`,
+          `Рука: ${item.hand}`,
+          `Вектор: ${item.vector}`,
+          `Дракон:\n${formatDragon(item)}`,
+          `Другая тропа: ${item.path}`,
+          `Камень: ${item.stone}`,
+          item.result ? `Реальный результат: ${item.result}` : 'Реальный результат: ещё не записан',
+          item.reflection ? `Обновление карты: ${item.reflection}` : 'Обновление карты: ещё не записано'
+        ].join('\n')).join('\n\n');
+
+        return [
+          'Помоги создать безопасные обложки трёх дорог Hand & Compass.',
+          '',
+          'Полные истории останутся приватными. На общей карте должны быть только нейтральные короткие тезисы.',
+          '',
+          'Правила:',
+          '- не ставь диагнозов и не присваивай тип личности;',
+          '- не упоминай имена, роли людей, болезненные подробности и прямые цитаты;',
+          '- не угадывай мотивы другого человека;',
+          '- не меняй смысл моих слов и не придумывай отсутствующие факты;',
+          '- название дороги: 2–5 нейтральных слов;',
+          '- общий тезис: не более 12 слов;',
+          '- тезис Руки: не более 10 слов о наблюдаемом способе действия;',
+          '- тезис Дракона: не более 10 слов об ограничении, без ярлыка;',
+          '- имя Камня: 1–4 слова;',
+          '- если данных недостаточно, оставь поле пустым;',
+          '- верни только JSON без пояснений.',
+          '',
+          'Формат:',
+          '[{"id":"точный id дороги","coverTitle":"...","coverThesis":"...","handThesis":"...","dragonThesis":"...","stoneLabel":"..."}]',
+          '',
+          roads
+        ].join('\n');
+      }
+
+      async function copyCoverRequest() {
+        const status = document.getElementById('coverCopyStatus');
+        const text = buildCoverRequest();
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = text;
+          area.setAttribute('readonly', '');
+          area.style.position = 'absolute';
+          area.style.left = '-9999px';
+          document.body.append(area);
+          area.select();
+          const copied = document.execCommand('copy');
+          area.remove();
+          if (!copied) {
+            status.textContent = 'Не удалось скопировать автоматически. Попробуй ещё раз или разреши браузеру доступ к буферу обмена.';
+            return;
+          }
+        }
+        status.textContent = 'Запрос скопирован. Вставь его в этот диалог — я верну короткие варианты для твоего подтверждения.';
+      }
+
+      function applyCoverImport() {
+        const status = document.getElementById('coverImportStatus');
+        const raw = document.getElementById('coverImportInput').value.trim();
+        if (!raw) {
+          status.textContent = 'Сначала вставь блок обложек.';
+          return;
+        }
+        let covers;
+        try {
+          const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+          const value = JSON.parse(cleaned);
+          covers = Array.isArray(value) ? value : value.covers;
+        } catch {
+          status.textContent = 'Не получилось прочитать блок. Вставь JSON целиком, вместе с квадратными скобками.';
+          return;
+        }
+        if (!Array.isArray(covers)) {
+          status.textContent = 'В блоке не найден список обложек.';
+          return;
+        }
+
+        const byId = new Map(covers.filter((cover) => cover && typeof cover.id === 'string').map((cover) => [cover.id, cover]));
+        let updated = 0;
+        const fields = ['coverTitle', 'coverThesis', 'handThesis', 'dragonThesis', 'stoneLabel'];
+        const items = readJourneys().map((item) => {
+          const cover = byId.get(item.id);
+          if (!cover) return item;
+          const next = { ...item };
+          fields.forEach((field) => {
+            if (typeof cover[field] === 'string') next[field] = shorten(cover[field], field === 'coverTitle' ? 70 : 150);
+          });
+          updated += 1;
+          return next;
+        });
+        if (!updated) {
+          status.textContent = 'Идентификаторы в обложках не совпали с сохранёнными дорогами.';
+          return;
+        }
+        writeJourneys(items);
+        status.textContent = `Сохранено обложек: ${updated}. Полные истории остались внутри дорог.`;
+        renderLivingMap();
+      }
+
+      function openPattern() {
+        const items = readJourneys().slice(0, 2);
+        if (items.length < 2) return;
+        patternJourneyIds = items.map((item) => item.id);
+        const container = document.getElementById('patternRoads');
+        container.replaceChildren();
+        items.reverse().forEach((item, index) => {
+          const road = document.createElement('article');
+          road.className = 'pattern-road';
+          const title = document.createElement('h3');
+          title.textContent = index === 0 ? 'Предыдущая дорога' : 'Новая дорога';
+          const facts = document.createElement('p');
+          facts.textContent = item.facts;
+          const fields = [
+            ['Компас', item.compass],
+            ['Рука', item.hand],
+            ['Дракон', formatDragon(item)],
+            ['Тропа', item.path]
+          ];
+          if (item.interpretation) fields.splice(1, 0, ['Моё объяснение', item.interpretation]);
+          if (item.prediction) fields.push(['Прогноз', item.prediction]);
+          road.append(title, facts);
+          fields.forEach(([label, value]) => {
+            const line = document.createElement('p');
+            const strong = document.createElement('strong');
+            strong.textContent = `${label}: `;
+            line.append(strong, document.createTextNode(value));
+            road.append(line);
+          });
+          if (item.result) {
+            const result = document.createElement('p');
+            const strong = document.createElement('strong');
+            strong.textContent = 'Результат: ';
+            result.append(strong, document.createTextNode(item.result));
+            road.append(result);
+          }
+          container.append(road);
+        });
+        ['repetitionInput', 'differenceInput', 'patternHypothesisInput'].forEach((id) => {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('copyStatus').textContent = '';
+        showScreen('pattern');
+      }
+
+      function buildAnalysisRequest() {
+        const byId = new Map(readJourneys().map((item) => [item.id, item]));
+        const items = patternJourneyIds.map((id) => byId.get(id)).filter(Boolean).reverse();
+        const roadText = items.map((item, index) => [
+          `ДОРОГА ${index + 1}`,
+          `Ситуация: ${item.facts}`,
+          item.interpretation ? `Моё объяснение сигналов: ${item.interpretation}` : 'Моё объяснение сигналов: отдельно не записано',
+          `Компас: ${item.compass}`,
+          `Рука: ${item.hand}`,
+          `Вектор: ${item.vector}`,
+          `Дракон и его слои:\n${formatDragon(item)}`,
+          `Другая тропа: ${item.path}`,
+          item.prediction ? `Прогноз перед шагом: ${item.prediction}` : 'Прогноз перед шагом: отдельно не записан',
+          item.predictionMarker ? `Наблюдаемый признак прогноза: ${item.predictionMarker}` : 'Наблюдаемый признак прогноза: отдельно не записан',
+          `Камень: ${item.stone}`,
+          item.result ? `Реальный результат: ${item.result}` : 'Реальный результат: ещё не записан',
+          item.predictionGap ? `Расхождение прогноза и результата: ${item.predictionGap}` : 'Расхождение прогноза и результата: ещё не записано',
+          item.reflection ? `Размышление после результата: ${item.reflection}` : 'Размышление после результата: ещё не записано'
+        ].join('\n')).join('\n\n');
+
+        return [
+          'Помоги сопоставить две дороги Hand & Compass.',
+          '',
+          'Правила анализа:',
+          '- не ставь диагнозов и не присваивай мне тип личности;',
+          '- отделяй мои слова от своих предположений;',
+          '- не угадывай мотивы другого человека;',
+          '- опирай каждое предположение на короткие фрагменты обеих дорог;',
+          '- если данных недостаточно, прямо скажи об этом;',
+          '- формулируй всё как проверяемые гипотезы, а не как правильные ответы.',
+          '',
+          'Предложи:',
+          '1. До трёх вариантов того, что может повторяться.',
+          '2. До трёх значимых различий между дорогами.',
+          '3. Две осторожные формулировки общего узора в форме: «Похоже, когда…, я чаще…, и тогда дорога ведёт…».',
+          '4. Для каждого варианта добавь: «на чём основано» и «что может опровергнуть».',
+          '5. В конце задай один вопрос, который поможет мне выбрать или исправить предложенные версии.',
+          '',
+          roadText
+        ].join('\n');
+      }
+
+      async function copyForAnalysis() {
+        const text = buildAnalysisRequest();
+        const status = document.getElementById('copyStatus');
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = text;
+          area.setAttribute('readonly', '');
+          area.style.position = 'absolute';
+          area.style.left = '-9999px';
+          document.body.append(area);
+          area.select();
+          const copied = document.execCommand('copy');
+          area.remove();
+          if (!copied) {
+            status.textContent = 'Не удалось скопировать автоматически. Попробуй ещё раз или разреши браузеру доступ к буферу обмена.';
+            return;
+          }
+        }
+        status.textContent = 'Дороги скопированы. Вставь текст в этот диалог — я предложу версии для подтверждения или исправления.';
+      }
+
+      function savePattern() {
+        const repetition = document.getElementById('repetitionInput').value.trim();
+        const difference = document.getElementById('differenceInput').value.trim();
+        const hypothesis = document.getElementById('patternHypothesisInput').value.trim();
+        if (!repetition) {
+          document.getElementById('repetitionInput').focus();
+          return;
+        }
+        if (!hypothesis) {
+          document.getElementById('patternHypothesisInput').focus();
+          return;
+        }
+        const patterns = readPatterns();
+        patterns.unshift({
+          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          createdAt: new Date().toISOString(),
+          journeyIds: patternJourneyIds,
+          repetition,
+          difference,
+          hypothesis
+        });
+        writePatterns(patterns);
+        patternJourneyIds = [];
+        renderSaved();
+        showScreen('home');
+      }
+
+      function openReturn(id) {
+        const item = readJourneys().find((candidate) => candidate.id === id);
+        if (!item) return;
+        returnId = id;
+        const map = document.getElementById('returnMap');
+        map.replaceChildren();
+        const fields = [
+          ['Компас', item.compass],
+          ['Рука', item.hand],
+          ['Вектор', item.vector],
+          ['Дракон', formatDragon(item)],
+          ['Выбранная тропа', item.path]
+        ];
+        if (item.interpretation) fields.splice(1, 0, ['Твоё объяснение сигналов', item.interpretation]);
+        if (item.prediction) fields.push(['Ожидание перед шагом', item.prediction]);
+        if (item.predictionMarker) fields.push(['Признак, который искали', item.predictionMarker]);
+        fields.forEach(([label, value]) => {
+          const piece = document.createElement('div');
+          piece.className = 'map-piece';
+          const strong = document.createElement('strong');
+          strong.textContent = label;
+          const paragraph = document.createElement('p');
+          paragraph.textContent = value;
+          piece.append(strong, paragraph);
+          map.append(piece);
+        });
+        document.getElementById('resultInput').value = item.result || '';
+        const predictionGapBox = document.getElementById('predictionGapBox');
+        predictionGapBox.hidden = !item.prediction;
+        document.getElementById('predictionGapInput').value = item.predictionGap || '';
+        document.getElementById('reflectionInput').value = item.reflection || '';
+        showScreen('return');
+      }
+
+      function saveReturn() {
+        const result = document.getElementById('resultInput').value.trim();
+        const predictionGap = document.getElementById('predictionGapInput').value.trim();
+        const reflection = document.getElementById('reflectionInput').value.trim();
+        if (!result) {
+          document.getElementById('resultInput').focus();
+          return;
+        }
+        const items = readJourneys().map((item) => item.id === returnId
+          ? { ...item, status: 'returned', result, predictionGap, reflection, returnedAt: new Date().toISOString() }
+          : item);
+        writeJourneys(items);
+        returnId = null;
+        renderSaved();
+        showScreen('home');
+      }
+
+      document.querySelectorAll('[data-choice-group]').forEach((group) => {
+        group.addEventListener('click', (event) => {
+          const button = event.target.closest('.choice-button');
+          if (!button) return;
+          group.querySelectorAll('.choice-button').forEach((candidate) => candidate.classList.remove('is-selected'));
+          button.classList.add('is-selected');
+        });
+      });
+
+      worldEntryMap.addEventListener('click', (event) => {
+        const cloud = event.target.closest('[data-world-cloud]');
+        if (cloud) selectWorldCloud(cloud.dataset.worldCloud);
+      });
+      worldCloudStartButton.addEventListener('click', () => {
+        const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === selectedWorldCloudId);
+        if (cloud) startJourney(cloud.label);
+      });
+      worldPathButton.addEventListener('click', openWorldPath);
+      worldWorkshopButton.addEventListener('click', () => { renderSaved(); showScreen('home'); });
+      startButton.addEventListener('click', () => startJourney());
+      patternButton.addEventListener('click', openPattern);
+      livingMapButton.addEventListener('click', openLivingMap);
+      homeButton.addEventListener('click', () => { renderWorldEntry(); showScreen('world-entry'); });
+      backButton.addEventListener('click', () => { if (step > 0) showStep(step - 1); });
+      nextButton.addEventListener('click', () => {
+        if (!currentValue()) {
+          const panel = document.querySelector(`[data-step="${step}"]`);
+          const field = step === 5 && draft.path
+            ? document.getElementById('predictionInput')
+            : panel.querySelector('textarea, input');
+          if (field) field.focus();
+          return;
+        }
+        if (step < 7) showStep(step + 1);
+      });
+      saveButton.addEventListener('click', saveJourney);
+      savedList.addEventListener('click', (event) => {
+        const dialogueButton = event.target.closest('[data-dialogue-id]');
+        if (dialogueButton) {
+          openDialogue(dialogueButton.dataset.dialogueId);
+          return;
+        }
+        const button = event.target.closest('[data-return-id]');
+        if (button) openReturn(button.dataset.returnId);
+      });
+      document.getElementById('saveReturnButton').addEventListener('click', saveReturn);
+      document.getElementById('cancelReturnButton').addEventListener('click', () => { renderSaved(); showScreen('home'); });
+      document.getElementById('savePatternButton').addEventListener('click', savePattern);
+      document.getElementById('cancelPatternButton').addEventListener('click', () => { renderSaved(); showScreen('home'); });
+      document.getElementById('copyAnalysisButton').addEventListener('click', copyForAnalysis);
+      document.getElementById('copyCoverRequestButton').addEventListener('click', copyCoverRequest);
+      document.getElementById('applyCoverImportButton').addEventListener('click', applyCoverImport);
+      document.getElementById('questButton').addEventListener('click', openQuest);
+      document.getElementById('buildQuestRequestButton').addEventListener('click', buildQuestRequest);
+      document.getElementById('saveQuestButton').addEventListener('click', saveQuest);
+      document.getElementById('copyQuestButton').addEventListener('click', copyQuestRequest);
+      document.getElementById('saveQuestResultButton').addEventListener('click', saveQuestResult);
+      document.getElementById('cancelQuestButton').addEventListener('click', openLivingMap);
+      document.getElementById('dialogueMapButton').addEventListener('click', (event) => {
+        if (event.currentTarget.dataset.dialogueId) openDialogue(event.currentTarget.dataset.dialogueId);
+      });
+      document.getElementById('buildDialogueRequestButton').addEventListener('click', buildDialogueRequest);
+      document.getElementById('saveDialogueButton').addEventListener('click', saveDialogue);
+      document.getElementById('copyDialogueButton').addEventListener('click', copyDialogueRequest);
+      document.getElementById('saveDialogueResultButton').addEventListener('click', saveDialogueResult);
+      document.getElementById('cancelDialogueButton').addEventListener('click', openLivingMap);
+      document.getElementById('sceneCanvas').addEventListener('click', (event) => {
+        const landmark = event.target.closest('[data-scene-kind]');
+        if (landmark) selectSceneLandmark(landmark.dataset.sceneKind);
+      });
+      document.getElementById('sceneReturnButton').addEventListener('click', (event) => {
+        if (event.currentTarget.dataset.returnId) openReturn(event.currentTarget.dataset.returnId);
+      });
+      document.getElementById('sceneDialogueButton').addEventListener('click', (event) => {
+        if (event.currentTarget.dataset.dialogueId) openDialogue(event.currentTarget.dataset.dialogueId);
+      });
+      document.getElementById('worldRoads').addEventListener('click', (event) => {
+        const dialogueButton = event.target.closest('[data-dialogue-road-id]');
+        if (dialogueButton) {
+          openDialogue(dialogueButton.dataset.dialogueRoadId);
+          return;
+        }
+        const button = event.target.closest('[data-map-road-id]');
+        if (button) openReturn(button.dataset.mapRoadId);
+      });
+      document.getElementById('closeLivingMapButton').addEventListener('click', () => { renderSaved(); showScreen('home'); });
+      document.getElementById('mapActionButton').addEventListener('click', (event) => {
+        if (event.currentTarget.dataset.returnId) openReturn(event.currentTarget.dataset.returnId);
+      });
+
+      renderSaved();
+      renderWorldEntry();
+      showScreen('world-entry');
+    })();
+  </script>
+</body>
+</html>
