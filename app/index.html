@@ -555,6 +555,12 @@
       animation: worldLineFlow 10s linear infinite;
     }
 
+    .world-graph-line.is-entry {
+      opacity: 0.7;
+      stroke: rgba(93, 113, 119, 0.46);
+      stroke-dasharray: 1 8;
+    }
+
     .world-graph-line.is-shared-road {
       stroke: rgba(163, 97, 83, 0.34);
       stroke-dasharray: 2 5;
@@ -687,6 +693,13 @@
       background: rgba(255, 248, 226, 0.68);
     }
 
+    .world-entry-map .world-cloud.is-entry-trace {
+      opacity: 0.78;
+      border-style: dotted;
+      border-color: rgba(93, 113, 119, 0.46);
+      background: rgba(238, 243, 241, 0.58);
+    }
+
     .world-entry-map .world-cloud.is-unexplored { opacity: 0.66; }
 
     .world-entry-map .world-cloud strong { display: block; font-size: 0.86rem; line-height: 1.2; }
@@ -730,6 +743,13 @@
     .world-graph-legend .nearby::before {
       border-color: rgba(198, 147, 69, 0.5);
       background: rgba(255, 248, 226, 0.88);
+    }
+
+    .world-graph-legend .entry::before {
+      opacity: 0.72;
+      border-style: dotted;
+      border-color: rgba(93, 113, 119, 0.52);
+      background: rgba(238, 243, 241, 0.72);
     }
 
     .world-graph-legend .unknown::before { opacity: 0.45; background: transparent; }
@@ -1260,6 +1280,7 @@
 
         <div class="world-graph-legend" aria-label="Состояния областей карты">
           <span>Есть твои дороги</span>
+          <span class="entry">След входа</span>
           <span class="nearby">Рядом по смыслу — гипотеза</span>
           <span class="unknown">Пока не исследовано</span>
         </div>
@@ -2047,15 +2068,19 @@
         document.querySelectorAll('[data-world-cloud]').forEach((button) => {
           const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === button.dataset.worldCloud);
           const localCount = cloud ? model.matches.get(cloud.id).length : 0;
-          const state = localCount ? 'confirmed' : model.nearby.has(cloud?.id) ? 'nearby' : 'unexplored';
+          const entryCount = cloud ? model.entryMatches.get(cloud.id).length : 0;
+          const state = localCount
+            ? 'confirmed'
+            : entryCount ? 'entry' : model.nearby.has(cloud?.id) ? 'nearby' : 'unexplored';
           button.classList.toggle('has-local-trace', state === 'confirmed');
+          button.classList.toggle('is-entry-trace', state === 'entry');
           button.classList.toggle('is-nearby', state === 'nearby');
           button.classList.toggle('is-unexplored', state === 'unexplored');
           button.dataset.worldState = state;
           const count = button.querySelector('[data-world-cloud-count]');
           count.textContent = localCount
             ? localTraceLabel(localCount)
-            : state === 'nearby' ? 'Рядом по смыслу' : 'Не исследовано';
+            : state === 'entry' ? 'След входа' : state === 'nearby' ? 'Рядом по смыслу' : 'Не исследовано';
         });
 
         const honesty = document.getElementById('worldEntryHonesty');
@@ -2066,7 +2091,7 @@
           worldPathButton.textContent = items.length >= 3 ? 'Продолжить мой путь' : 'Посмотреть мои следы';
           heartLabel.textContent = 'Твоя карта сейчас';
           heartState.textContent = roadCountLabel(items.length);
-          honesty.textContent = 'Зелёные области опираются на твои дороги. Золотистые показаны рядом как проверяемые смысловые гипотезы, а не выводы о тебе. Чужих профилей здесь пока нет.';
+          honesty.textContent = 'Зелёные области подтверждены твоим Компасом или Камнем. Бледный пунктир сохраняет только точку входа. Золотистые области — проверяемые смысловые гипотезы, а не выводы о тебе.';
         } else {
           heartLabel.textContent = 'Здесь пересекаются дороги';
           heartState.textContent = 'Точка наблюдения пока свободна';
@@ -2077,11 +2102,25 @@
         requestAnimationFrame(() => renderWorldConnections(items));
       }
 
-      function journeyMatchesCloud(item, cloud) {
-        const source = [item.entryCloud, item.coverTitle, item.compass, item.stoneLabel]
-          .map((value) => String(value || '').toLowerCase())
-          .join(' ');
+      function valueMatchesCloud(value, cloud) {
+        const source = String(value || '').toLowerCase();
+        if (!source) return false;
         return source.includes(cloud.label.toLowerCase()) || cloud.terms.some((term) => source.includes(term));
+      }
+
+      function cloudEvidenceLabels(item, cloud) {
+        const labels = [];
+        if (valueMatchesCloud(item.compass, cloud)) labels.push('Компас');
+        if (valueMatchesCloud(item.stoneLabel || item.stone, cloud)) labels.push('Камень');
+        return labels;
+      }
+
+      function journeyMatchesCloud(item, cloud) {
+        return cloudEvidenceLabels(item, cloud).length > 0;
+      }
+
+      function journeyEnteredCloud(item, cloud) {
+        return valueMatchesCloud(item.entryCloud, cloud);
       }
 
       function buildWorldCloudModel(items) {
@@ -2089,17 +2128,24 @@
           cloud.id,
           items.filter((item) => journeyMatchesCloud(item, cloud))
         ]));
+        const entryMatches = new Map(WORLD_CLOUDS.map((cloud) => [
+          cloud.id,
+          items.filter((item) => journeyEnteredCloud(item, cloud))
+        ]));
         const confirmed = new Set(WORLD_CLOUDS
           .filter((cloud) => matches.get(cloud.id).length)
           .map((cloud) => cloud.id));
+        const entries = new Set(WORLD_CLOUDS
+          .filter((cloud) => !confirmed.has(cloud.id) && entryMatches.get(cloud.id).length)
+          .map((cloud) => cloud.id));
         const nearby = new Set();
         WORLD_CLOUDS.forEach((cloud) => {
-          if (confirmed.has(cloud.id)) return;
+          if (confirmed.has(cloud.id) || entries.has(cloud.id)) return;
           const touchesConfirmed = cloud.related.some((id) => confirmed.has(id))
             || WORLD_CLOUDS.some((candidate) => confirmed.has(candidate.id) && candidate.related.includes(cloud.id));
           if (touchesConfirmed) nearby.add(cloud.id);
         });
-        return { matches, confirmed, nearby };
+        return { matches, entryMatches, confirmed, entries, nearby };
       }
 
       function cloudPoint(mapRect, id) {
@@ -2144,6 +2190,10 @@
           appendWorldGraphLine(center, cloudPoint(mapRect, id), 'is-confirmed', [id]);
         });
 
+        model.entries.forEach((id) => {
+          appendWorldGraphLine(center, cloudPoint(mapRect, id), 'is-entry', [id]);
+        });
+
         model.nearby.forEach((id) => {
           const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === id);
           const source = WORLD_CLOUDS.find((candidate) => model.confirmed.has(candidate.id)
@@ -2185,7 +2235,10 @@
         const items = readJourneys();
         const model = buildWorldCloudModel(items);
         const matched = model.matches.get(id);
-        const state = matched.length ? 'confirmed' : model.nearby.has(id) ? 'nearby' : 'unexplored';
+        const entryMatched = model.entryMatches.get(id);
+        const state = matched.length
+          ? 'confirmed'
+          : entryMatched.length ? 'entry' : model.nearby.has(id) ? 'nearby' : 'unexplored';
         document.querySelectorAll('[data-world-cloud]').forEach((button) => {
           const selected = button.dataset.worldCloud === id;
           button.classList.toggle('is-selected', selected);
@@ -2198,7 +2251,10 @@
         const gate = document.getElementById('worldCloudGate');
         if (state === 'confirmed') {
           localCopy.textContent = `С этой областью уже ${matched.length === 1 ? 'соприкасается' : 'соприкасаются'} ${localTraceLabel(matched.length)}.`;
-          gate.textContent = 'Ниже видны только безопасные обложки дорог. Полные истории остаются внутри твоей личной карты.';
+          gate.textContent = 'Связь подтверждена словами Компаса или Камня. Ниже видны только безопасные обложки дорог.';
+        } else if (state === 'entry') {
+          localCopy.textContent = `Через эту область ${entryMatched.length === 1 ? 'началась одна дорога' : `начались ${roadCountLabel(entryMatched.length)}`}, но её смысл не был подтверждён Компасом или Камнем.`;
+          gate.textContent = 'Карта помнит, куда ты вошёл из любопытства, но не превращает этот выбор в вывод о тебе.';
         } else if (state === 'nearby') {
           const sources = WORLD_CLOUDS.filter((candidate) => model.confirmed.has(candidate.id)
             && (cloud.related.includes(candidate.id) || candidate.related.includes(id)));
@@ -2209,13 +2265,15 @@
           gate.textContent = 'Если область откликается, можно оставить первый след: что в последнее время тебя задело, удивило или заставило остановиться?';
         }
 
-        renderWorldCloudOrigins(cloud, matched, state, model);
+        renderWorldCloudOrigins(cloud, matched, entryMatched, state, model);
         document.getElementById('worldCloudDetail').hidden = false;
-        worldCloudStartButton.textContent = matched.length ? 'Оставить ещё один след здесь' : 'Исследовать этой дорогой';
+        worldCloudStartButton.textContent = matched.length
+          ? 'Оставить ещё один след здесь'
+          : state === 'entry' ? 'Исследовать ещё одной дорогой' : 'Исследовать этой дорогой';
         syncWorldConnectionFocus();
       }
 
-      function renderWorldCloudOrigins(cloud, matched, state, model) {
+      function renderWorldCloudOrigins(cloud, matched, entryMatched, state, model) {
         const origins = document.getElementById('worldCloudOrigins');
         const title = document.getElementById('worldCloudOriginsTitle');
         const list = document.getElementById('worldCloudOriginList');
@@ -2234,7 +2292,26 @@
             name.textContent = item.coverTitle || item.compass || 'Сохранённая дорога';
             const thesis = document.createElement('small');
             thesis.textContent = item.coverThesis || 'Полная история скрыта внутри этой дороги.';
-            button.append(name, thesis);
+            const evidence = document.createElement('small');
+            evidence.textContent = `Подтверждено через: ${cloudEvidenceLabels(item, cloud).join(' и ')}`;
+            button.append(name, thesis, evidence);
+            list.append(button);
+          });
+          return;
+        }
+
+        if (state === 'entry') {
+          title.textContent = 'Какая дорога началась здесь';
+          entryMatched.slice(0, 4).forEach((item) => {
+            const button = document.createElement('button');
+            button.className = 'world-cloud-origin';
+            button.type = 'button';
+            button.dataset.worldOriginId = item.id;
+            const name = document.createElement('strong');
+            name.textContent = item.coverTitle || item.compass || 'Сохранённая дорога';
+            const note = document.createElement('small');
+            note.textContent = 'Это точка входа, а не подтверждение смысла области.';
+            button.append(name, note);
             list.append(button);
           });
           return;
