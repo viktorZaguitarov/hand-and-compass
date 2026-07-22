@@ -796,6 +796,42 @@
     .world-cloud-origin strong { display: block; font-size: 0.78rem; }
     .world-cloud-origin small { display: block; margin-top: 3px; color: var(--muted); line-height: 1.35; }
 
+    .world-cloud-experiences {
+      grid-column: 1 / -1;
+      padding-top: 12px;
+      border-top: 1px solid rgba(151, 130, 90, 0.22);
+    }
+
+    .world-cloud-experiences[hidden] { display: none; }
+    .world-cloud-experiences > strong { color: var(--forest-dark); font-size: 0.82rem; }
+    .world-experience-list { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 9px; }
+
+    .world-experience-stone {
+      position: relative;
+      max-width: 330px;
+      padding: 11px 13px 11px 39px;
+      border: 1px solid rgba(169, 119, 49, 0.35);
+      border-radius: 15px;
+      background: linear-gradient(135deg, rgba(255, 251, 237, 0.92), rgba(234, 241, 232, 0.8));
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-align: left;
+      box-shadow: 0 8px 20px rgba(62, 73, 66, 0.08);
+    }
+
+    .world-experience-stone::before {
+      content: '◆';
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      color: var(--gold-dark);
+      font-size: 1rem;
+    }
+
+    .world-experience-stone strong { display: block; font-size: 0.8rem; }
+    .world-experience-stone span { display: block; margin-top: 4px; line-height: 1.4; }
+    .world-experience-stone small { display: block; margin-top: 5px; color: var(--muted); line-height: 1.35; }
+
     .world-entry-nav {
       display: flex;
       flex-wrap: wrap;
@@ -1299,6 +1335,10 @@
             <strong id="worldCloudOriginsTitle">Откуда появилась связь</strong>
             <div class="world-cloud-origin-list" id="worldCloudOriginList"></div>
           </div>
+          <div class="world-cloud-experiences" id="worldCloudExperiences" hidden>
+            <strong>Что уже проверялось в жизни</strong>
+            <div class="world-experience-list" id="worldExperienceList"></div>
+          </div>
         </section>
 
         <div class="world-entry-nav">
@@ -1470,10 +1510,10 @@
         </section>
 
         <section data-step="6" hidden>
-          <p class="eyebrow">Камень</p>
+          <p class="eyebrow">Камень-наблюдение</p>
           <h2>Что ты заметил о своём пути?</h2>
-          <p class="prompt-copy">Не ищи красивую формулировку. Камень остаётся только в твоих словах.</p>
-          <label for="stoneInput">Моё открытие</label>
+          <p class="prompt-copy">Это открытие появилось при разборе ситуации. Камень опыта возникнет только после возвращения с реальным результатом.</p>
+          <label for="stoneInput">Моё открытие до проверки</label>
           <textarea id="stoneInput" rows="5" placeholder="Я заметил, что…"></textarea>
         </section>
 
@@ -1488,7 +1528,7 @@
             <div class="map-piece"><strong>Дракон</strong><p data-summary="dragon"></p></div>
             <div class="map-piece"><strong>Другая тропа</strong><p data-summary="path"></p></div>
             <div class="map-piece"><strong>Прогноз</strong><p data-summary="prediction"></p></div>
-            <div class="map-piece"><strong>Камень</strong><p data-summary="stone"></p></div>
+            <div class="map-piece"><strong>Камень-наблюдение</strong><p data-summary="stone"></p></div>
           </div>
           <p class="notice">После реального шага вернись к этой дороге и запиши результат. Только тогда карта начнёт меняться вместе с жизнью.</p>
         </section>
@@ -1641,7 +1681,7 @@
             <div class="underground-grid">
               <div class="underground-list" id="worldDragons"></div>
               <div>
-                <p class="world-label">Оставшиеся камни</p>
+                <p class="world-label">Открытия до проверки</p>
                 <div class="world-stones" id="worldStones"></div>
               </div>
             </div>
@@ -1884,7 +1924,7 @@
       const stepName = document.getElementById('stepName');
       const stepCounter = document.getElementById('stepCounter');
 
-      const stepNames = ['Ситуация', 'Компас', 'Рука', 'Вектор', 'Дракон', 'Другая тропа', 'Камень', 'Карта'];
+      const stepNames = ['Ситуация', 'Компас', 'Рука', 'Вектор', 'Дракон', 'Другая тропа', 'Наблюдение', 'Карта'];
       const WORLD_CLOUDS = [
         {
           id: 'clarity',
@@ -1959,7 +1999,7 @@
           vector: ['Не предсказывай судьбу. Представь только вероятный результат повторения этого же цикла.', 'Если всё будет повторяться, между нами, вероятно…'],
           dragon: ['Это может быть страх или привычка. Но это также может быть реальная опасность — тогда препятствие не нужно преодолевать.', 'Мне мешает…'],
           path: ['Не меняй всю жизнь. Выбери одно действие, вопрос, границу или паузу, которую можно попробовать и затем оценить.', 'В следующий раз я попробую…', 'Если ситуация небезопасна, шагом может быть обращение за поддержкой или увеличение дистанции.'],
-          stone: ['Не ищи красивую формулировку. Камень остаётся только в твоих словах.', 'Я заметил, что…']
+          stone: ['Назови открытие, которое появилось при разборе. Реальность ещё может его уточнить.', 'Я заметил, что…']
         },
         {
           facts: ['Представь, что эту сцену видела камера без звука мыслей. Что именно попало бы в запись?', 'Где вы были? Что было сказано или сделано? Чем закончился эпизод?', 'Сейчас важен один эпизод, а не объяснение всей истории.'],
@@ -2091,7 +2131,7 @@
           worldPathButton.textContent = items.length >= 3 ? 'Продолжить мой путь' : 'Посмотреть мои следы';
           heartLabel.textContent = 'Твоя карта сейчас';
           heartState.textContent = roadCountLabel(items.length);
-          honesty.textContent = 'Зелёные области подтверждены твоим Компасом или Камнем. Бледный пунктир сохраняет только точку входа. Золотистые области — проверяемые смысловые гипотезы, а не выводы о тебе.';
+          honesty.textContent = 'Зелёные области подтверждены твоим Компасом или собственным открытием. Камни опыта появляются отдельно — только после возвращения с реальным результатом. Бледный пунктир сохраняет точку входа, золотистые области остаются гипотезами.';
         } else {
           heartLabel.textContent = 'Здесь пересекаются дороги';
           heartState.textContent = 'Точка наблюдения пока свободна';
@@ -2111,7 +2151,7 @@
       function cloudEvidenceLabels(item, cloud) {
         const labels = [];
         if (valueMatchesCloud(item.compass, cloud)) labels.push('Компас');
-        if (valueMatchesCloud(item.stoneLabel || item.stone, cloud)) labels.push('Камень');
+        if (valueMatchesCloud(item.stoneLabel || item.stone, cloud)) labels.push('открытие до проверки');
         return labels;
       }
 
@@ -2251,9 +2291,9 @@
         const gate = document.getElementById('worldCloudGate');
         if (state === 'confirmed') {
           localCopy.textContent = `С этой областью уже ${matched.length === 1 ? 'соприкасается' : 'соприкасаются'} ${localTraceLabel(matched.length)}.`;
-          gate.textContent = 'Связь подтверждена словами Компаса или Камня. Ниже видны только безопасные обложки дорог.';
+          gate.textContent = 'Связь подтверждена Компасом или твоим открытием до проверки. Отдельно ниже виден опыт, уже получивший реальный результат.';
         } else if (state === 'entry') {
-          localCopy.textContent = `Через эту область ${entryMatched.length === 1 ? 'началась одна дорога' : `начались ${roadCountLabel(entryMatched.length)}`}, но её смысл не был подтверждён Компасом или Камнем.`;
+          localCopy.textContent = `Через эту область ${entryMatched.length === 1 ? 'началась одна дорога' : `начались ${roadCountLabel(entryMatched.length)}`}, но её смысл не был подтверждён Компасом или собственным открытием.`;
           gate.textContent = 'Карта помнит, куда ты вошёл из любопытства, но не превращает этот выбор в вывод о тебе.';
         } else if (state === 'nearby') {
           const sources = WORLD_CLOUDS.filter((candidate) => model.confirmed.has(candidate.id)
@@ -2266,6 +2306,7 @@
         }
 
         renderWorldCloudOrigins(cloud, matched, entryMatched, state, model);
+        renderWorldExperienceStones(matched, state);
         document.getElementById('worldCloudDetail').hidden = false;
         worldCloudStartButton.textContent = matched.length
           ? 'Оставить ещё один след здесь'
@@ -2282,7 +2323,7 @@
         if (state === 'unexplored') return;
 
         if (state === 'confirmed') {
-          title.textContent = 'Какие твои дороги создали эту связь';
+          title.textContent = 'Почему этот смысл важен на твоей карте';
           matched.slice(0, 4).forEach((item) => {
             const button = document.createElement('button');
             button.className = 'world-cloud-origin';
@@ -2329,6 +2370,39 @@
         thesis.textContent = 'Связь задана черновой картой соседних смыслов. Она станет личной только после твоего подтверждения опытом.';
         note.append(name, thesis);
         list.append(note);
+      }
+
+      function renderWorldExperienceStones(matched, state) {
+        const section = document.getElementById('worldCloudExperiences');
+        const list = document.getElementById('worldExperienceList');
+        list.replaceChildren();
+
+        const returned = state === 'confirmed'
+          ? matched.filter((item) => item.status === 'returned')
+          : [];
+        section.hidden = !returned.length;
+        if (!returned.length) return;
+
+        returned.slice(0, 4).forEach((item) => {
+          const button = document.createElement('button');
+          button.className = 'world-experience-stone';
+          button.type = 'button';
+          button.dataset.worldOriginId = item.id;
+
+          const name = document.createElement('strong');
+          name.textContent = item.coverTitle || 'Опыт одной дороги';
+          const insight = document.createElement('span');
+          insight.textContent = item.reflection
+            ? shorten(item.reflection, 140)
+            : 'Результат сохранён, но его значение для карты пока не названо.';
+          const note = document.createElement('small');
+          note.textContent = item.reflection
+            ? 'Камень опыта · сформулирован после реального результата'
+            : 'Вернись к дороге, чтобы назвать Камень опыта своими словами';
+
+          button.append(name, insight, note);
+          list.append(button);
+        });
       }
 
       function openWorldPath() {
@@ -2776,11 +2850,11 @@
 
         const stones = document.getElementById('worldStones');
         stones.replaceChildren();
-        const stoneValues = allItems.slice(0, 6).map((item, index) => item.stoneLabel || `Камень дороги ${index + 1} ждёт имени`);
+        const stoneValues = allItems.slice(0, 6).map((item, index) => item.stoneLabel || `Открытие дороги ${index + 1} ждёт короткого имени`);
         if (!stoneValues.length) {
           const emptyStone = document.createElement('span');
           emptyStone.className = 'world-stone';
-          emptyStone.textContent = 'Камни ещё не названы';
+          emptyStone.textContent = 'Открытия ещё не названы';
           stones.append(emptyStone);
         } else {
           stoneValues.forEach((value) => {
@@ -3238,7 +3312,7 @@
           `Вектор: ${item.vector}`,
           `Дракон:\n${formatDragon(item)}`,
           `Другая тропа: ${item.path}`,
-          `Камень: ${item.stone}`,
+          `Камень-наблюдение: ${item.stone}`,
           item.result ? `Реальный результат: ${item.result}` : 'Реальный результат: ещё не записан',
           item.reflection ? `Обновление карты: ${item.reflection}` : 'Обновление карты: ещё не записано'
         ].join('\n')).join('\n\n');
@@ -3257,7 +3331,7 @@
           '- общий тезис: не более 12 слов;',
           '- тезис Руки: не более 10 слов о наблюдаемом способе действия;',
           '- тезис Дракона: не более 10 слов об ограничении, без ярлыка;',
-          '- имя Камня: 1–4 слова;',
+          '- имя Камня-наблюдения: 1–4 слова;',
           '- если данных недостаточно, оставь поле пустым;',
           '- верни только JSON без пояснений.',
           '',
@@ -3393,7 +3467,7 @@
           `Другая тропа: ${item.path}`,
           item.prediction ? `Прогноз перед шагом: ${item.prediction}` : 'Прогноз перед шагом: отдельно не записан',
           item.predictionMarker ? `Наблюдаемый признак прогноза: ${item.predictionMarker}` : 'Наблюдаемый признак прогноза: отдельно не записан',
-          `Камень: ${item.stone}`,
+          `Камень-наблюдение: ${item.stone}`,
           item.result ? `Реальный результат: ${item.result}` : 'Реальный результат: ещё не записан',
           item.predictionGap ? `Расхождение прогноза и результата: ${item.predictionGap}` : 'Расхождение прогноза и результата: ещё не записано',
           item.reflection ? `Размышление после результата: ${item.reflection}` : 'Размышление после результата: ещё не записано'
