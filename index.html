@@ -118,6 +118,16 @@
       pointer-events: none;
     }
 
+    .page.is-prologue-shell {
+      overflow: visible;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .page.is-prologue-shell::after { display: none; }
+
     .screen { position: relative; z-index: 1; }
     .screen[hidden] { display: none; }
 
@@ -500,6 +510,315 @@
 
     .scene-detail p { margin: 5px 0 0; color: var(--muted); }
     .scene-actions { padding: 0 24px 22px; }
+
+    .prologue-invite {
+      min-height: min(620px, calc(100vh - 150px));
+      display: grid;
+      align-content: center;
+    }
+
+    .prologue-card {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: clamp(28px, 5vw, 48px);
+      border: 1px solid rgba(151, 130, 90, 0.3);
+      border-radius: 26px;
+      background: rgba(255, 255, 255, 0.44);
+      box-shadow: 0 14px 38px rgba(42, 54, 46, 0.08);
+    }
+
+    .prologue-card h1 { font-size: clamp(2rem, 5vw, 3.35rem); }
+    .prologue-card .lead { font-size: 1.08rem; }
+
+    .prologue-stage {
+      display: flex;
+      min-height: 590px;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: clamp(24px, 4vw, 38px);
+      flex-direction: column;
+      border: 1px solid rgba(151, 130, 90, 0.28);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.46);
+      box-shadow: 0 14px 38px rgba(42, 54, 46, 0.07);
+    }
+
+    .prologue-stage[hidden] { display: none; }
+
+    .prologue-progress {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+    }
+
+    .prologue-progress span:first-child {
+      color: var(--rose);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .prologue-scene-copy {
+      margin: 20px 0 0;
+      padding: 18px 20px;
+      border-left: 3px solid var(--gold);
+      background: rgba(234, 217, 181, 0.18);
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    .prologue-question { margin-top: 24px; }
+
+    .prologue-question h2 {
+      font-size: clamp(1.45rem, 3.5vw, 2.05rem);
+    }
+
+    .prologue-stage .choice-grid { gap: 10px; margin-top: 16px; }
+
+    .prologue-stage .choice-button {
+      padding: 14px 16px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.7);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.38;
+    }
+
+    .prologue-map {
+      position: relative;
+      min-height: 190px;
+      margin-top: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(151, 130, 90, 0.3);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 22% 50%, rgba(255, 248, 226, 0.94), transparent 8rem),
+        linear-gradient(145deg, rgba(234, 217, 181, 0.36), rgba(241, 234, 217, 0.2));
+    }
+
+    .prologue-origin {
+      position: absolute;
+      top: 50%;
+      left: 18%;
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(198, 147, 69, 0.5);
+      border-radius: 50%;
+      background: rgba(255, 248, 226, 0.94);
+      color: var(--forest-dark);
+      transform: translate(-50%, -50%);
+      box-shadow: 0 10px 26px rgba(62, 73, 66, 0.12);
+    }
+
+    .prologue-trace {
+      position: absolute;
+      top: 50%;
+      left: calc(18% + 28px);
+      width: 0;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--gold), var(--forest));
+      transform: rotate(-4deg);
+      transform-origin: left center;
+      transition: width 420ms ease;
+    }
+
+    .prologue-map.has-trace .prologue-trace { width: 49%; }
+
+    .prologue-trace-label {
+      position: absolute;
+      top: 30%;
+      left: 48%;
+      max-width: 235px;
+      padding: 9px 12px;
+      border: 1px solid rgba(49, 95, 82, 0.22);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      opacity: 0;
+      transform: translateY(5px);
+      transition: opacity 220ms ease 260ms, transform 220ms ease 260ms;
+    }
+
+    .prologue-map.has-trace .prologue-trace-label {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .prologue-direction {
+      position: absolute;
+      right: 9%;
+      bottom: 18%;
+      max-width: 210px;
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+
+    .prologue-map.has-direction .prologue-direction { opacity: 1; }
+
+    .prologue-reaction {
+      margin-top: 16px;
+      padding: 15px 17px;
+      border-radius: 14px;
+      background: rgba(49, 95, 82, 0.065);
+      line-height: 1.52;
+    }
+
+    .prologue-road-result {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .prologue-road-result::before {
+      content: "";
+      position: absolute;
+      top: 17px;
+      right: 10%;
+      left: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--forest));
+      opacity: 0.48;
+    }
+
+    .prologue-road-node {
+      position: relative;
+      min-width: 0;
+      padding-top: 42px;
+      text-align: center;
+    }
+
+    .prologue-road-node::before {
+      content: "";
+      position: absolute;
+      z-index: 1;
+      top: 9px;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      border: 4px solid var(--paper);
+      border-radius: 50%;
+      background: var(--forest);
+      transform: translateX(-50%);
+      box-shadow: 0 0 0 1px rgba(49, 95, 82, 0.3);
+    }
+
+    .prologue-road-node:first-child::before { background: var(--gold); }
+    .prologue-road-node:last-child::before {
+      border-style: dashed;
+      background: var(--paper);
+    }
+
+    .prologue-road-node strong {
+      display: block;
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.76rem;
+    }
+
+    .prologue-road-node p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.83rem;
+      line-height: 1.38;
+      overflow-wrap: anywhere;
+    }
+
+    .prologue-summary {
+      margin-top: 22px;
+      padding: 17px 19px;
+      border-left: 3px solid var(--gold);
+      background: rgba(234, 217, 181, 0.18);
+      line-height: 1.5;
+    }
+
+    .prologue-honesty {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .prologue-actions {
+      position: sticky;
+      z-index: 3;
+      bottom: 0;
+      margin: 24px -8px -8px;
+      padding: 16px 8px 8px;
+      border-top: 1px solid rgba(151, 130, 90, 0.22);
+      background: linear-gradient(180deg, rgba(251, 248, 239, 0), rgba(251, 248, 239, 0.98) 30%);
+    }
+
+    .prologue-stage > .prologue-actions { margin-top: auto; }
+
+    .prologue-own {
+      margin-top: 14px;
+      padding: 15px;
+      border: 1px dashed rgba(49, 95, 82, 0.28);
+      border-radius: 15px;
+      background: rgba(49, 95, 82, 0.045);
+    }
+
+    .prologue-own[hidden] { display: none; }
+    .prologue-own textarea, .prologue-own input { margin-bottom: 10px; }
+
+    .prologue-sketch {
+      display: grid;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .prologue-sketch-piece {
+      padding: 15px 17px;
+      border: 1px solid rgba(151, 130, 90, 0.26);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .prologue-sketch-piece strong {
+      display: block;
+      color: var(--forest-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 0.8rem;
+    }
+
+    .prologue-sketch-piece p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .world-scenario-sketch {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      margin-top: 16px;
+      padding: 16px 18px;
+      border: 1px dashed rgba(198, 147, 69, 0.48);
+      border-radius: 16px;
+      background: rgba(255, 248, 226, 0.6);
+    }
+
+    .world-scenario-sketch[hidden] { display: none; }
+    .world-scenario-sketch strong { color: var(--forest-dark); }
+    .world-scenario-sketch p { margin: 5px 0 0; color: var(--muted); line-height: 1.42; }
 
     .world-entry-screen { position: relative; }
 
@@ -1231,6 +1550,31 @@
       .scene-landmark small { font-size: 0.72rem; }
       .scene-detail { margin: 0 16px 18px; }
       .scene-actions { padding: 0 16px 18px; }
+      .prologue-invite { min-height: 520px; }
+      .prologue-card, .prologue-stage { padding: 22px 18px; border-radius: 19px; }
+      .prologue-stage { min-height: 0; }
+      .prologue-map { min-height: 210px; }
+      .prologue-origin { left: 14%; }
+      .prologue-trace { left: calc(14% + 28px); }
+      .prologue-map.has-trace .prologue-trace { width: 55%; }
+      .prologue-trace-label { top: 25%; left: 36%; max-width: 190px; }
+      .prologue-direction { right: 6%; bottom: 12%; max-width: 180px; }
+      .prologue-road-result { grid-template-columns: 1fr; gap: 14px; }
+      .prologue-road-result::before {
+        top: 10px;
+        right: auto;
+        bottom: 10px;
+        left: 9px;
+        width: 2px;
+        height: auto;
+      }
+      .prologue-road-node {
+        min-height: 48px;
+        padding: 0 0 0 38px;
+        text-align: left;
+      }
+      .prologue-road-node::before { top: 2px; left: 9px; }
+      .world-scenario-sketch { grid-template-columns: 1fr; }
       .world-entry-map {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1270,6 +1614,115 @@
     </header>
 
     <article class="page">
+      <section class="screen prologue-invite" data-screen="prologue-invite" hidden>
+        <div class="prologue-card">
+          <p class="eyebrow" id="prologueInviteEyebrow">Первая глава · 2–3 минуты</p>
+          <h1 id="prologueInviteTitle">Между отношениями, которых мы хотим, и отношениями, которые создаём, иногда появляется целая дорога.</h1>
+          <p class="lead" id="prologueInviteCopy">Пройди три короткие вымышленные сцены. Мир покажет не «кто ты», а какие шаги и направления повторились в твоих выборах.</p>
+          <div class="actions prologue-actions">
+            <button class="primary-button" id="prologuePrimaryButton" type="button">Начать три сцены</button>
+            <button class="quiet-button" id="prologueSecondaryButton" type="button">У меня уже есть дороги</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="prologue" hidden>
+        <section class="prologue-stage" data-prologue-step="0">
+          <div class="prologue-progress"><span>Вымышленная сцена</span><span data-prologue-progress>Сцена 1 из 3</span></div>
+          <h1 id="prologueSceneTitle"></h1>
+          <p class="prologue-scene-copy" id="prologueSceneCopy"></p>
+          <div class="path-context" id="prologueEntryCloudContext" hidden></div>
+          <div class="prologue-question">
+            <h2>Что ты скорее сделаешь первым?</h2>
+            <p class="helper">Правильного варианта нет. Это один выбор в одной модели ситуации.</p>
+            <div class="choice-grid" id="prologueActionChoices"></div>
+            <div class="prologue-own" id="prologueOwnAction" hidden>
+              <label for="prologueOwnActionInput">Твой первый шаг</label>
+              <textarea id="prologueOwnActionInput" rows="3" placeholder="Я бы…"></textarea>
+              <button class="quiet-button" id="prologueOwnActionApply" type="button">Использовать мой вариант</button>
+            </div>
+          </div>
+          <div class="prologue-own" id="prologueOwnScene" hidden>
+            <label for="prologueOwnSceneInput">Твоя короткая ситуация</label>
+            <textarea id="prologueOwnSceneInput" rows="4" placeholder="Только наблюдаемые события — без объяснения чужих мотивов"></textarea>
+            <button class="quiet-button" id="prologueOwnSceneApply" type="button">Использовать эту ситуацию</button>
+          </div>
+          <div class="actions prologue-actions">
+            <button class="quiet-button" id="prologueChangeSceneButton" type="button">Сменить ситуацию</button>
+            <button class="text-button" id="prologueCustomSceneButton" type="button">Предложить свою</button>
+          </div>
+        </section>
+
+        <section class="prologue-stage" data-prologue-step="1" hidden>
+          <div class="prologue-progress"><span>След появился</span><span data-prologue-progress>Сцена 1 из 3</span></div>
+          <h2>На карте появился временный след.</h2>
+          <div class="prologue-map has-trace" aria-label="Временная линия выбранного действия">
+            <div class="prologue-origin" aria-hidden="true">◉</div>
+            <div class="prologue-trace" aria-hidden="true"></div>
+            <div class="prologue-trace-label" id="prologueTraceLabel"></div>
+            <div class="prologue-direction" id="prologueDirectionLabel"></div>
+          </div>
+          <div class="prologue-reaction" id="prologueReaction" aria-live="polite"></div>
+          <div class="actions prologue-actions">
+            <button class="primary-button" id="prologueReactionNextButton" type="button">Увидеть направление</button>
+          </div>
+        </section>
+
+        <section class="prologue-stage" data-prologue-step="2" hidden>
+          <div class="prologue-progress"><span>Направление</span><span data-prologue-progress>Сцена 1 из 3</span></div>
+          <h2>Что для тебя важнее всего получить этим шагом?</h2>
+          <div class="choice-grid" id="prologueDirectionChoices"></div>
+          <div class="prologue-own" id="prologueOwnDirection" hidden>
+            <label for="prologueOwnDirectionInput">Твоё направление</label>
+            <input id="prologueOwnDirectionInput" type="text" placeholder="Для меня важно…">
+            <button class="quiet-button" id="prologueOwnDirectionApply" type="button">Использовать моё направление</button>
+          </div>
+        </section>
+
+        <section class="prologue-stage" data-prologue-step="3" hidden>
+          <div class="prologue-progress"><span>Условие дороги</span><span data-prologue-progress>Сцена 1 из 3</span></div>
+          <h2>Что могло бы помешать тебе сделать именно так?</h2>
+          <p class="helper">Это не тест на страх. Выбор показывает только условие этой сцены.</p>
+          <div class="choice-grid" id="prologueConditionChoices"></div>
+          <div class="prologue-own" id="prologueOwnCondition" hidden>
+            <label for="prologueOwnConditionInput">Твоё условие</label>
+            <input id="prologueOwnConditionInput" type="text" placeholder="Мне могло бы помешать…">
+            <button class="quiet-button" id="prologueOwnConditionApply" type="button">Использовать моё условие</button>
+          </div>
+        </section>
+
+        <section class="prologue-stage" data-prologue-step="4" hidden>
+          <div class="prologue-progress"><span>Возможная дорога</span><span data-prologue-progress>Сцена 1 из 3</span></div>
+          <h2>Один шаг уже делает маршрут видимым.</h2>
+          <div class="prologue-road-result" aria-label="Направление, первый шаг, условие и неизвестное">
+            <div class="prologue-road-node"><strong>Направление</strong><p id="prologueResultDirection"></p></div>
+            <div class="prologue-road-node"><strong>Первый шаг</strong><p id="prologueResultAction"></p></div>
+            <div class="prologue-road-node"><strong>Условие</strong><p id="prologueResultCondition"></p></div>
+            <div class="prologue-road-node"><strong>Неизвестное</strong><p id="prologueResultUnknown"></p></div>
+          </div>
+          <div class="prologue-summary" id="prologueResultFormula"></div>
+          <p class="prologue-honesty">Вымышленная сцена ничего не доказывает о тебе. Этот след не создаёт личную дорогу, зелёное облако или постоянный профиль.</p>
+          <div class="actions prologue-actions">
+            <button class="primary-button" id="prologueLeaveTraceButton" type="button">Следующая ситуация</button>
+            <button class="quiet-button" id="prologueWorldButton" type="button">Вернуться в мир</button>
+            <button class="text-button" id="prologueRestartButton" type="button">Пройти сцену иначе</button>
+          </div>
+        </section>
+
+        <section class="prologue-stage" data-prologue-step="5" hidden>
+          <div class="prologue-progress"><span>Предварительный эскиз</span><span>3 сцены</span></div>
+          <h2>На карте видны повторения, но ещё нет вывода о личности.</h2>
+          <div class="prologue-sketch" id="prologueSketch" aria-live="polite"></div>
+          <p class="prologue-honesty">Эскиз собран только из выборов в трёх смоделированных ситуациях. Его можно сохранить как предварительное наблюдение, изменить или не принимать.</p>
+          <div class="actions prologue-actions">
+            <button class="primary-button" id="prologueSaveSketchButton" type="button">Сохранить предварительный эскиз</button>
+            <button class="quiet-button" id="prologueEditSketchButton" type="button">Изменить ответы</button>
+            <button class="text-button" id="prologueRejectSketchButton" type="button">Не сохранять</button>
+            <button class="text-button" id="prologuePersonalJourneyButton" type="button">Разобрать реальную ситуацию</button>
+          </div>
+        </section>
+      </section>
+
       <section class="screen world-entry-screen" data-screen="world-entry" hidden>
         <div class="world-entry-head">
           <p class="eyebrow">Общий мир · ранняя карта</p>
@@ -1343,8 +1796,16 @@
 
         <div class="world-entry-nav">
           <button class="quiet-button" id="worldPathButton" type="button" hidden>Продолжить мой путь</button>
-          <button class="text-button" id="worldWorkshopButton" type="button">Мастерская и сохранённые дороги</button>
+          <button class="quiet-button" id="worldPrologueButton" type="button">Пройти три сцены</button>
+          <button class="text-button" id="worldWorkshopButton" type="button">Личная мастерская и сохранённые дороги</button>
         </div>
+        <section class="world-scenario-sketch" id="worldScenarioSketch" hidden>
+          <div>
+            <strong>Предварительный эскиз по трём сценам</strong>
+            <p id="worldScenarioSketchCopy"></p>
+          </div>
+          <button class="quiet-button" id="worldScenarioSketchButton" type="button">Пройти ещё три сцены</button>
+        </section>
         <p class="world-entry-honesty" id="worldEntryHonesty"></p>
       </section>
 
@@ -1361,7 +1822,7 @@
         </div>
 
         <div class="actions">
-          <button class="primary-button" id="startButton" type="button">Разобрать новую ситуацию</button>
+          <button class="primary-button" id="startButton" type="button">Разобрать реальную ситуацию подробно</button>
         </div>
 
         <div class="home-guidance" id="homeGuidance" hidden>
@@ -1404,6 +1865,7 @@
         <section data-step="0">
           <p class="eyebrow">Начало пути</p>
           <h2>Что произошло?</h2>
+          <div class="path-context"><strong>Здесь начинается личная дорога.</strong> Её можно пройти сейчас или вернуться позже.</div>
           <p class="prompt-copy">Опиши одну конкретную ситуацию. Пока без объяснения чужих мотивов — только то, что можно было увидеть, услышать или подтвердить.</p>
           <div class="path-context" id="worldCloudJourneyContext" hidden></div>
           <label for="factsInput">Наблюдаемые события</label>
@@ -1535,6 +1997,7 @@
 
         <div class="actions">
           <button class="text-button" id="backButton" type="button">Назад</button>
+          <button class="text-button" id="journeySkipButton" type="button">Пропустить и вернуться в мир</button>
           <button class="primary-button" id="nextButton" type="button">Продолжить</button>
           <button class="primary-button" id="saveButton" type="button" hidden>Сохранить дорогу</button>
         </div>
@@ -1901,16 +2364,23 @@
       const PATTERN_STORAGE_KEY = 'hand_compass_patterns_v01';
       const QUEST_STORAGE_KEY = 'hand_compass_first_quest_v01';
       const DIALOGUE_STORAGE_KEY = 'hand_compass_dialogue_workshop_v01';
+      const SCENARIO_SKETCH_STORAGE_KEY = 'hand_compass_scenario_sketch_v01';
+      const page = document.querySelector('.page');
       const screens = Array.from(document.querySelectorAll('[data-screen]'));
       const steps = Array.from(document.querySelectorAll('[data-step]'));
+      const prologueStages = Array.from(document.querySelectorAll('[data-prologue-step]'));
       const homeButton = document.getElementById('homeButton');
+      const prologuePrimaryButton = document.getElementById('prologuePrimaryButton');
+      const prologueSecondaryButton = document.getElementById('prologueSecondaryButton');
       const worldEntryMap = document.getElementById('worldEntryMap');
       const worldGraphLines = document.getElementById('worldGraphLines');
       const worldCloudStartButton = document.getElementById('worldCloudStartButton');
       const worldPathButton = document.getElementById('worldPathButton');
+      const worldPrologueButton = document.getElementById('worldPrologueButton');
       const worldWorkshopButton = document.getElementById('worldWorkshopButton');
       const startButton = document.getElementById('startButton');
       const backButton = document.getElementById('backButton');
+      const journeySkipButton = document.getElementById('journeySkipButton');
       const nextButton = document.getElementById('nextButton');
       const saveButton = document.getElementById('saveButton');
       const savedList = document.getElementById('savedList');
@@ -1990,6 +2460,59 @@
       let selectedWorldCloudId = null;
       let worldResizeFrame = null;
       let draft = emptyDraft();
+      let prologue = emptyPrologue();
+
+      const PROLOGUE_SCENARIOS = [
+        {
+          id: 'distance',
+          title: 'След исчезнувшей близости',
+          copy: 'Ещё недавно вы общались тепло и часто. Последние несколько дней ответы стали короче и реже. Открытого конфликта не было. Причина отдаления неизвестна.',
+          unknown: 'Причина дистанции и будущий ответ',
+          actions: [
+            { id: 'direct', label: 'Спрошу прямо: «Что происходит?»', trace: 'Прямой вопрос', reaction: 'Ты не остался в догадках и пошёл к прояснению. Ответ другого человека всё ещё неизвестен.' },
+            { id: 'wait', label: 'Подожду и посмотрю, вернётся ли общение', trace: 'Ожидание', reaction: 'Ты оставил ситуации пространство и решил собрать больше сигналов. Неопределённость пока сохраняется.' },
+            { id: 'observe', label: 'Скажу, что замечаю дистанцию, без требования ответа', trace: 'Наблюдение вслух', reaction: 'Ты сделал видимым собственное наблюдение, не назначая другому человеку мотив.' }
+          ],
+          directions: ['Понять, что происходит', 'Вернуть близость', 'Сохранить уважение к себе и другому'],
+          conditions: ['Неприятный ответ', 'Разговор потребует быстрого решения', 'Риск давления или конфликта']
+        },
+        {
+          id: 'feedback',
+          title: 'Идея встречает быстрый вердикт',
+          copy: 'Ты показываешь близкому человеку раннюю идею, над которой только начал работать. В ответ слышишь: «По-моему, это никому не нужно». Конкретных причин пока не названо.',
+          unknown: 'Что именно не сработало и изменится ли мнение после уточнения',
+          actions: [
+            { id: 'clarify', label: 'Спрошу, что именно кажется слабым или непонятным', trace: 'Уточнение', reaction: 'Ты запросил наблюдаемое основание оценки. Ответ может дать материал для действия, а может остаться общим мнением.' },
+            { id: 'defend', label: 'Сразу начну доказывать, почему идея хорошая', trace: 'Защита идеи', reaction: 'Ты направил усилие на защиту замысла. Пока неизвестно, услышал ли собеседник суть и появится ли новая информация.' },
+            { id: 'close', label: 'Перестану обсуждать эту идею с этим человеком', trace: 'Закрытие разговора', reaction: 'Ты сократил доступ собеседника к идее. Это может сохранить инициативу или лишить тебя полезного отклика — результат пока неизвестен.' }
+          ],
+          directions: ['Сохранить желание продолжать', 'Быть понятым точнее', 'Получить материал для улучшения'],
+          conditions: ['Ощущение обесценивания', 'Зависимость от мнения этого человека', 'Идея ещё слишком хрупкая']
+        },
+        {
+          id: 'pressure',
+          title: 'Ответ нужен прямо сейчас',
+          copy: 'Близкий человек предлагает решение, которое заметно повлияет на вас обоих, и просит ответить сегодня. У тебя недостаточно времени всё обдумать. Последствия отказа или паузы неизвестны.',
+          unknown: 'Как человек отнесётся к паузе и какие последствия действительно возникнут',
+          actions: [
+            { id: 'agree', label: 'Соглашусь сейчас, чтобы не обострять ситуацию', trace: 'Быстрое согласие', reaction: 'Ты сохранил текущий контакт и отложил собственную неопределённость. Цена этого решения пока неизвестна.' },
+            { id: 'pause', label: 'Попрошу конкретное время на обдумывание', trace: 'Запрошенная пауза', reaction: 'Ты сделал свой темп видимым и предложил ограниченную паузу. Реакция другого человека пока неизвестна.' },
+            { id: 'boundary', label: 'Скажу, что не принимаю важные решения под давлением', trace: 'Обозначенная граница', reaction: 'Ты обозначил условие, при котором готов продолжать разговор. Это не предсказывает, будет ли граница принята.' }
+          ],
+          directions: ['Сохранить право на свой темп', 'Не разрушить связь', 'Принять обдуманное решение'],
+          conditions: ['Страх отказа или конфликта', 'Реальные последствия задержки', 'Зависимость от решения другого человека']
+        }
+      ];
+      const CLOUD_SCENARIO_INDEX = {
+        clarity: 0,
+        mutuality: 0,
+        freedom: 2,
+        trust: 0,
+        boundaries: 2,
+        movement: 2,
+        belonging: 0,
+        expression: 1
+      };
 
       const promptVariants = [
         {
@@ -2038,6 +2561,18 @@
           prediction: '',
           predictionMarker: '',
           stone: ''
+        };
+      }
+
+      function emptyPrologue() {
+        return {
+          scenarioIndex: 0,
+          entryCloud: '',
+          customScenario: null,
+          action: null,
+          direction: '',
+          condition: '',
+          responses: []
         };
       }
 
@@ -2093,18 +2628,302 @@
         localStorage.setItem(DIALOGUE_STORAGE_KEY, JSON.stringify(items));
       }
 
+      function readScenarioSketch() {
+        try {
+          const value = JSON.parse(localStorage.getItem(SCENARIO_SKETCH_STORAGE_KEY) || 'null');
+          return value && typeof value === 'object' ? value : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function writeScenarioSketch(sketch) {
+        localStorage.setItem(SCENARIO_SKETCH_STORAGE_KEY, JSON.stringify(sketch));
+      }
+
       function dialogueForJourney(journeyId) {
         return readDialogueSessions().find((item) => item.journeyId === journeyId) || null;
       }
 
       function showScreen(name) {
         screens.forEach((screen) => { screen.hidden = screen.dataset.screen !== name; });
-        homeButton.hidden = name === 'world-entry';
+        page.classList.toggle('is-prologue-shell', name === 'prologue' || name === 'prologue-invite');
+        homeButton.hidden = name === 'world-entry' || name === 'prologue-invite';
+        homeButton.textContent = name === 'prologue' ? 'Выйти в мир' : 'В мир';
+      }
+
+      function renderPrologueInvite() {
+        const hasJourneys = readJourneys().length > 0;
+        document.getElementById('prologueInviteEyebrow').textContent = hasJourneys
+          ? 'Твоя карта сохранена'
+          : 'Первая глава · 2–3 минуты';
+        document.getElementById('prologueInviteTitle').textContent = hasJourneys
+          ? 'Продолжить свою карту или пройти три короткие вымышленные сцены?'
+          : 'Между отношениями, которых мы хотим, и отношениями, которые создаём, иногда появляется целая дорога.';
+        document.getElementById('prologueInviteCopy').textContent = hasJourneys
+          ? 'Сохранённые дороги не изменятся. Три сцены соберут отдельный предварительный эскиз, который можно не сохранять.'
+          : 'Пройди три короткие вымышленные сцены. Мир покажет не «кто ты», а какие шаги и направления повторились в твоих выборах.';
+        prologuePrimaryButton.textContent = hasJourneys ? 'Продолжить мою карту' : 'Начать три сцены';
+        prologueSecondaryButton.textContent = hasJourneys ? 'Пройти три сцены' : 'У меня уже есть дороги';
+        prologuePrimaryButton.dataset.action = hasJourneys ? 'continue' : 'scene';
+        prologueSecondaryButton.dataset.action = hasJourneys ? 'scene' : 'world';
+      }
+
+      function showWorld() {
+        renderWorldEntry();
+        showScreen('world-entry');
+      }
+
+      function showPrologueStep(index) {
+        prologueStages.forEach((stage) => {
+          stage.hidden = Number(stage.dataset.prologueStep) !== index;
+        });
+        showScreen('prologue');
+      }
+
+      function currentPrologueScenario() {
+        return prologue.customScenario || PROLOGUE_SCENARIOS[prologue.scenarioIndex];
+      }
+
+      function makeCustomScenario(copy) {
+        return {
+          id: `custom-${Date.now()}`,
+          title: 'Твоя ситуация',
+          copy,
+          unknown: 'Мотивы других людей и будущий результат',
+          actions: [
+            { id: 'custom-direct', label: 'Спрошу прямо, что происходит', trace: 'Прямой вопрос', reaction: 'Ты пошёл к прояснению. Ответ и мотивы других людей пока неизвестны.' },
+            { id: 'custom-wait', label: 'Возьму паузу и соберу больше сигналов', trace: 'Пауза и наблюдение', reaction: 'Ты решил не действовать сразу и собрать больше наблюдаемых сигналов. Неопределённость пока сохраняется.' },
+            { id: 'custom-boundary', label: 'Обозначу своё наблюдение или границу', trace: 'Наблюдение или граница', reaction: 'Ты сделал собственную позицию видимой, не назначая другим людям скрытый мотив.' }
+          ],
+          directions: ['Получить больше ясности', 'Сохранить связь', 'Сохранить уважение к себе'],
+          conditions: ['Неприятная реакция', 'Давление времени', 'Риск конфликта или небезопасности']
+        };
+      }
+
+      function renderPrologueChoices(containerId, values, datasetKey, ownKind) {
+        const container = document.getElementById(containerId);
+        container.replaceChildren();
+        values.forEach((value) => {
+          const button = document.createElement('button');
+          button.className = 'choice-button';
+          button.type = 'button';
+          button.dataset[datasetKey] = typeof value === 'string' ? value : value.id;
+          button.textContent = typeof value === 'string' ? value : value.label;
+          container.append(button);
+        });
+        const own = document.createElement('button');
+        own.className = 'choice-button';
+        own.type = 'button';
+        own.dataset.prologueOwn = ownKind;
+        own.textContent = 'Свой вариант';
+        container.append(own);
+      }
+
+      function closePrologueOwnPanels() {
+        ['prologueOwnAction', 'prologueOwnDirection', 'prologueOwnCondition', 'prologueOwnScene']
+          .forEach((id) => { document.getElementById(id).hidden = true; });
+      }
+
+      function renderCurrentPrologueScenario() {
+        const scenario = currentPrologueScenario();
+        const sceneNumber = Math.min(prologue.responses.length + 1, 3);
+        document.querySelectorAll('[data-prologue-progress]').forEach((node) => {
+          node.textContent = `Сцена ${sceneNumber} из 3`;
+        });
+        document.getElementById('prologueSceneTitle').textContent = scenario.title;
+        document.getElementById('prologueSceneCopy').textContent = scenario.copy;
+        const entryContext = document.getElementById('prologueEntryCloudContext');
+        entryContext.hidden = !prologue.entryCloud;
+        entryContext.textContent = prologue.entryCloud
+          ? `Ты вошёл через область «${prologue.entryCloud}». Это направление любопытства, а не вывод о тебе.`
+          : '';
+        renderPrologueChoices('prologueActionChoices', scenario.actions, 'prologueAction', 'action');
+        renderPrologueChoices('prologueDirectionChoices', scenario.directions, 'prologueDirection', 'direction');
+        renderPrologueChoices('prologueConditionChoices', scenario.conditions, 'prologueCondition', 'condition');
+      }
+
+      function resetCurrentPrologueScenario() {
+        prologue.action = null;
+        prologue.direction = '';
+        prologue.condition = '';
+        closePrologueOwnPanels();
+        ['prologueOwnActionInput', 'prologueOwnDirectionInput', 'prologueOwnConditionInput']
+          .forEach((id) => { document.getElementById(id).value = ''; });
+        document.querySelectorAll('.prologue-map').forEach((map) => map.classList.remove('has-direction'));
+        document.getElementById('prologueDirectionLabel').textContent = '';
+        document.getElementById('prologueReactionNextButton').textContent = 'Увидеть направление';
+        renderCurrentPrologueScenario();
+      }
+
+      function startPrologue(options = {}) {
+        prologue = emptyPrologue();
+        if (options.cloudId && Object.hasOwn(CLOUD_SCENARIO_INDEX, options.cloudId)) {
+          prologue.scenarioIndex = CLOUD_SCENARIO_INDEX[options.cloudId];
+          prologue.entryCloud = options.cloudLabel || '';
+        }
+        document.getElementById('prologueOwnSceneInput').value = '';
+        resetCurrentPrologueScenario();
+        showPrologueStep(0);
+      }
+
+      function startPrologueFromCloud(cloud) {
+        startPrologue({ cloudId: cloud.id, cloudLabel: cloud.label });
+      }
+
+      function choosePrologueAction(actionId) {
+        const action = currentPrologueScenario().actions.find((candidate) => candidate.id === actionId);
+        if (!action) return;
+        prologue.action = action;
+        document.getElementById('prologueTraceLabel').textContent = action.trace;
+        document.getElementById('prologueReaction').textContent = `${action.reaction} В этом мире наблюдаемый шаг называют Рукой.`;
+        showPrologueStep(1);
+      }
+
+      function chooseOwnPrologueAction(label) {
+        prologue.action = {
+          id: 'own',
+          label,
+          trace: 'Свой первый шаг',
+          reaction: 'Ты выбрал собственный способ действия. Его результат и реакция других людей пока неизвестны.'
+        };
+        document.getElementById('prologueTraceLabel').textContent = prologue.action.trace;
+        document.getElementById('prologueReaction').textContent = `${prologue.action.reaction} В этом мире наблюдаемый шаг называют Рукой.`;
+        showPrologueStep(1);
+      }
+
+      function choosePrologueDirection(direction) {
+        prologue.direction = direction;
+        const action = prologue.action;
+        const label = document.getElementById('prologueDirectionLabel');
+        label.textContent = `Компас: ${direction}`;
+        label.closest('.prologue-map')?.classList.add('has-direction');
+        document.getElementById('prologueReaction').textContent =
+          `${action?.reaction || ''} «${direction}» — направление твоего выбора в этой сцене. В Hand & Compass мы называем его Компасом.`;
+        document.getElementById('prologueReactionNextButton').textContent = 'Увидеть условие дороги';
+        showPrologueStep(1);
+      }
+
+      function choosePrologueCondition(condition) {
+        prologue.condition = condition;
+        const scenario = currentPrologueScenario();
+        const response = {
+          scenarioId: scenario.id,
+          scenarioTitle: scenario.title,
+          scenarioCopy: scenario.copy,
+          actionLabel: prologue.action.label,
+          actionTrace: prologue.action.trace,
+          direction: prologue.direction,
+          condition: prologue.condition,
+          unknown: scenario.unknown
+        };
+        prologue.responses.push(response);
+        renderPrologueResult();
+        showPrologueStep(4);
+      }
+
+      function renderPrologueResult() {
+        const action = prologue.action;
+        const scenario = currentPrologueScenario();
+        document.getElementById('prologueResultDirection').textContent = prologue.direction;
+        document.getElementById('prologueResultAction').textContent = action?.trace || '';
+        document.getElementById('prologueResultCondition').textContent = prologue.condition;
+        document.getElementById('prologueResultUnknown').textContent = scenario.unknown;
+        document.getElementById('prologueResultFormula').textContent =
+          `В этой сцене ты выбрал(а) «${action?.label || ''}», чтобы приблизиться к «${prologue.direction}». «${prologue.condition}» могло бы изменить доступный тебе маршрут. В Hand & Compass такой образ препятствия или предупреждения называют Драконом. Это не вывод о личности — только одна возможная дорога.`;
+        document.getElementById('prologueLeaveTraceButton').textContent = prologue.responses.length >= 3
+          ? 'Собрать предварительную карту'
+          : 'Следующая ситуация';
+      }
+
+      function continuePrologueDeck() {
+        if (prologue.responses.length >= 3) {
+          renderPrologueSketch();
+          showPrologueStep(5);
+          return;
+        }
+        prologue.customScenario = null;
+        prologue.scenarioIndex = (prologue.scenarioIndex + 1) % PROLOGUE_SCENARIOS.length;
+        resetCurrentPrologueScenario();
+        showPrologueStep(0);
+      }
+
+      function replayCurrentPrologueScenario() {
+        const scenario = currentPrologueScenario();
+        const latest = prologue.responses[prologue.responses.length - 1];
+        if (latest?.scenarioId === scenario.id) prologue.responses.pop();
+        resetCurrentPrologueScenario();
+        showPrologueStep(0);
+      }
+
+      function valueCounts(values) {
+        return values.reduce((counts, value) => {
+          counts.set(value, (counts.get(value) || 0) + 1);
+          return counts;
+        }, new Map());
+      }
+
+      function buildPrologueSketchSummary(responses = prologue.responses) {
+        const directionCounts = valueCounts(responses.map((item) => item.direction));
+        const repeatedDirections = Array.from(directionCounts.entries()).filter(([, count]) => count > 1);
+        const directionCopy = repeatedDirections.length
+          ? `Повторилось направление: ${repeatedDirections.map(([value, count]) => `«${value}» — ${count} раза`).join(', ')}.`
+          : `В трёх сценах были выбраны разные направления: ${responses.map((item) => `«${item.direction}»`).join(', ')}.`;
+        return {
+          directionCopy,
+          actionCopy: responses.map((item) => `${item.scenarioTitle}: ${item.actionTrace}`).join(' · '),
+          conditionCopy: responses.map((item) => item.condition).join(' · '),
+          unknownCopy: 'Три смоделированные сцены не показывают, как человек поступит в жизни. Повторения можно подтвердить, изменить или отвергнуть.'
+        };
+      }
+
+      function renderPrologueSketch() {
+        const sketch = document.getElementById('prologueSketch');
+        const summary = buildPrologueSketchSummary();
+        sketch.replaceChildren();
+        [
+          ['Направления', summary.directionCopy],
+          ['Первые шаги', summary.actionCopy],
+          ['Условия, меняющие маршрут', summary.conditionCopy],
+          ['Что пока неизвестно', summary.unknownCopy]
+        ].forEach(([title, copy]) => {
+          const piece = document.createElement('section');
+          piece.className = 'prologue-sketch-piece';
+          const strong = document.createElement('strong');
+          strong.textContent = title;
+          const paragraph = document.createElement('p');
+          paragraph.textContent = copy;
+          piece.append(strong, paragraph);
+          sketch.append(piece);
+        });
+      }
+
+      function savePrologueSketch() {
+        const summary = buildPrologueSketchSummary();
+        writeScenarioSketch({
+          version: 1,
+          confirmedAt: new Date().toISOString(),
+          entryCloud: prologue.entryCloud,
+          responses: prologue.responses,
+          summary
+        });
+        showWorld();
+      }
+
+      function renderWorldScenarioSketch() {
+        const section = document.getElementById('worldScenarioSketch');
+        const copy = document.getElementById('worldScenarioSketchCopy');
+        const sketch = readScenarioSketch();
+        section.hidden = !sketch?.summary;
+        copy.textContent = sketch?.summary
+          ? `${sketch.summary.directionCopy} Это сохранённое предварительное наблюдение, а не подтверждённая ценность или тип личности.`
+          : '';
       }
 
       function renderWorldEntry() {
         const items = readJourneys();
         const model = buildWorldCloudModel(items);
+        renderWorldScenarioSketch();
         document.querySelectorAll('[data-world-cloud]').forEach((button) => {
           const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === button.dataset.worldCloud);
           const localCount = cloud ? model.matches.get(cloud.id).length : 0;
@@ -2127,6 +2946,7 @@
         const heartLabel = document.getElementById('worldMapHeartLabel');
         const heartState = document.getElementById('worldMapHeartState');
         worldPathButton.hidden = !items.length;
+        worldWorkshopButton.hidden = !items.length;
         if (items.length) {
           worldPathButton.textContent = items.length >= 3 ? 'Продолжить мой путь' : 'Посмотреть мои следы';
           heartLabel.textContent = 'Твоя карта сейчас';
@@ -2302,15 +3122,15 @@
           gate.textContent = 'Это предложение карты, а не вывод о тебе. Его можно исследовать новой дорогой или оставить без ответа.';
         } else {
           localCopy.textContent = 'В твоей локальной карте здесь пока нет следа или смысловой связи.';
-          gate.textContent = 'Если область откликается, можно оставить первый след: что в последнее время тебя задело, удивило или заставило остановиться?';
+          gate.textContent = 'Если область откликается, можно начать с короткой вымышленной ситуации. Рассказывать личную историю не нужно.';
         }
 
         renderWorldCloudOrigins(cloud, matched, entryMatched, state, model);
         renderWorldExperienceStones(matched, state);
         document.getElementById('worldCloudDetail').hidden = false;
         worldCloudStartButton.textContent = matched.length
-          ? 'Оставить ещё один след здесь'
-          : state === 'entry' ? 'Исследовать ещё одной дорогой' : 'Исследовать этой дорогой';
+          ? 'Пройти новую короткую ситуацию'
+          : state === 'entry' ? 'Продолжить через короткую ситуацию' : 'Пройти короткую ситуацию';
         syncWorldConnectionFocus();
       }
 
@@ -2422,6 +3242,7 @@
         stepCounter.textContent = `${Math.min(step + 1, 7)} / 7`;
         progressBar.style.width = `${Math.min((step + 1) / 7 * 100, 100)}%`;
         backButton.hidden = step === 0;
+        journeySkipButton.hidden = step !== 0;
         nextButton.hidden = step === 7;
         saveButton.hidden = step !== 7;
         if (step === 5) renderPathContext();
@@ -3605,25 +4426,115 @@
         });
       });
 
+      prologuePrimaryButton.addEventListener('click', (event) => {
+        if (event.currentTarget.dataset.action === 'continue') openWorldPath();
+        else startPrologue();
+      });
+      prologueSecondaryButton.addEventListener('click', (event) => {
+        if (event.currentTarget.dataset.action === 'scene') startPrologue();
+        else showWorld();
+      });
+      document.getElementById('prologueActionChoices').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-prologue-action]');
+        if (button) {
+          choosePrologueAction(button.dataset.prologueAction);
+          return;
+        }
+        if (event.target.closest('[data-prologue-own="action"]')) {
+          document.getElementById('prologueOwnAction').hidden = false;
+          document.getElementById('prologueOwnActionInput').focus();
+        }
+      });
+      document.getElementById('prologueReactionNextButton').addEventListener('click', () => {
+        showPrologueStep(prologue.direction ? 3 : 2);
+      });
+      document.getElementById('prologueDirectionChoices').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-prologue-direction]');
+        if (button) {
+          choosePrologueDirection(button.dataset.prologueDirection);
+          return;
+        }
+        if (event.target.closest('[data-prologue-own="direction"]')) {
+          document.getElementById('prologueOwnDirection').hidden = false;
+          document.getElementById('prologueOwnDirectionInput').focus();
+        }
+      });
+      document.getElementById('prologueConditionChoices').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-prologue-condition]');
+        if (button) {
+          choosePrologueCondition(button.dataset.prologueCondition);
+          return;
+        }
+        if (event.target.closest('[data-prologue-own="condition"]')) {
+          document.getElementById('prologueOwnCondition').hidden = false;
+          document.getElementById('prologueOwnConditionInput').focus();
+        }
+      });
+      document.getElementById('prologueOwnActionApply').addEventListener('click', () => {
+        const value = document.getElementById('prologueOwnActionInput').value.trim();
+        if (value) chooseOwnPrologueAction(value);
+        else document.getElementById('prologueOwnActionInput').focus();
+      });
+      document.getElementById('prologueOwnDirectionApply').addEventListener('click', () => {
+        const value = document.getElementById('prologueOwnDirectionInput').value.trim();
+        if (value) choosePrologueDirection(value);
+        else document.getElementById('prologueOwnDirectionInput').focus();
+      });
+      document.getElementById('prologueOwnConditionApply').addEventListener('click', () => {
+        const value = document.getElementById('prologueOwnConditionInput').value.trim();
+        if (value) choosePrologueCondition(value);
+        else document.getElementById('prologueOwnConditionInput').focus();
+      });
+      document.getElementById('prologueChangeSceneButton').addEventListener('click', () => {
+        prologue.customScenario = null;
+        prologue.scenarioIndex = (prologue.scenarioIndex + 1) % PROLOGUE_SCENARIOS.length;
+        resetCurrentPrologueScenario();
+        showPrologueStep(0);
+      });
+      document.getElementById('prologueCustomSceneButton').addEventListener('click', () => {
+        document.getElementById('prologueOwnScene').hidden = false;
+        document.getElementById('prologueOwnSceneInput').focus();
+      });
+      document.getElementById('prologueOwnSceneApply').addEventListener('click', () => {
+        const value = document.getElementById('prologueOwnSceneInput').value.trim();
+        if (!value) {
+          document.getElementById('prologueOwnSceneInput').focus();
+          return;
+        }
+        prologue.customScenario = makeCustomScenario(value);
+        resetCurrentPrologueScenario();
+        showPrologueStep(0);
+      });
+      document.getElementById('prologueLeaveTraceButton').addEventListener('click', continuePrologueDeck);
+      document.getElementById('prologueWorldButton').addEventListener('click', showWorld);
+      document.getElementById('prologueRestartButton').addEventListener('click', replayCurrentPrologueScenario);
+      document.getElementById('prologueSaveSketchButton').addEventListener('click', savePrologueSketch);
+      document.getElementById('prologueEditSketchButton').addEventListener('click', startPrologue);
+      document.getElementById('prologueRejectSketchButton').addEventListener('click', showWorld);
+      document.getElementById('prologuePersonalJourneyButton').addEventListener('click', () => startJourney());
+
       worldEntryMap.addEventListener('click', (event) => {
         const cloud = event.target.closest('[data-world-cloud]');
         if (cloud) selectWorldCloud(cloud.dataset.worldCloud);
       });
       worldCloudStartButton.addEventListener('click', () => {
         const cloud = WORLD_CLOUDS.find((candidate) => candidate.id === selectedWorldCloudId);
-        if (cloud) startJourney(cloud.label);
+        if (cloud) startPrologueFromCloud(cloud);
       });
       document.getElementById('worldCloudDetail').addEventListener('click', (event) => {
         const origin = event.target.closest('[data-world-origin-id]');
         if (origin) openReturn(origin.dataset.worldOriginId);
       });
       worldPathButton.addEventListener('click', openWorldPath);
+      worldPrologueButton.addEventListener('click', startPrologue);
+      document.getElementById('worldScenarioSketchButton').addEventListener('click', startPrologue);
       worldWorkshopButton.addEventListener('click', () => { renderSaved(); showScreen('home'); });
       startButton.addEventListener('click', () => startJourney());
       patternButton.addEventListener('click', openPattern);
       livingMapButton.addEventListener('click', openLivingMap);
-      homeButton.addEventListener('click', () => { renderWorldEntry(); showScreen('world-entry'); });
+      homeButton.addEventListener('click', showWorld);
       backButton.addEventListener('click', () => { if (step > 0) showStep(step - 1); });
+      journeySkipButton.addEventListener('click', showWorld);
       nextButton.addEventListener('click', () => {
         if (!currentValue()) {
           const panel = document.querySelector(`[data-step="${step}"]`);
@@ -3697,7 +4608,8 @@
 
       renderSaved();
       renderWorldEntry();
-      showScreen('world-entry');
+      renderPrologueInvite();
+      showScreen('prologue-invite');
     })();
   </script>
 </body>
