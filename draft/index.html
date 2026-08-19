@@ -414,6 +414,21 @@
 
     .word-token.is-custom { border-style: dashed; }
 
+    .word-field.has-shelf-focus .word-token:not(.is-shelf-focus) {
+      opacity: 0.3;
+      filter: saturate(0.55);
+    }
+
+    .word-token.is-shelf-focus {
+      border-color: rgba(189, 136, 64, 0.82);
+      box-shadow: 0 0 0 3px rgba(189, 136, 64, 0.13), 0 8px 19px rgba(42, 55, 47, 0.12);
+    }
+
+    body.wave-two .word-token.is-shelf-focus {
+      border-color: #e2c993;
+      box-shadow: 0 0 0 3px rgba(226, 201, 147, 0.2), 0 9px 22px rgba(3, 8, 16, 0.28);
+    }
+
     .custom-card {
       max-width: 690px;
       margin: 0 auto 18px;
@@ -599,6 +614,27 @@
       justify-content: space-between;
       gap: 12px;
       margin-bottom: 13px;
+    }
+
+    .shelf-title-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .shelf-deepen {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      padding: 0 0 2px;
+      border: 1px solid rgba(83, 104, 96, 0.18);
+      border-radius: 50%;
+      color: var(--forest);
+      background: rgba(255, 255, 255, 0.52);
+      font-family: var(--sans);
+      font-size: 1.15rem;
+      line-height: 1;
     }
 
     .shelf-title {
@@ -821,6 +857,7 @@
 
       let storageWasBroken = false;
       let state = restoreState();
+      let focusedShelfId = null;
       const scatterSeed = createScatterSeed();
       const scatterOrder = shuffled(WORDS, scatterSeed);
 
@@ -933,10 +970,12 @@
 
       function renderScatter() {
         wordField.replaceChildren();
+        wordField.classList.toggle('has-shelf-focus', Boolean(focusedShelfId));
         scatterOrder.forEach((item) => {
           const hash = Math.abs(hashValue(item.id));
           const button = document.createElement('button');
           button.className = 'word-token';
+          button.classList.toggle('is-shelf-focus', Boolean(focusedShelfId && item.shelves.includes(focusedShelfId)));
           button.type = 'button';
           button.dataset.wordId = item.id;
           button.textContent = item.word;
@@ -1077,7 +1116,17 @@
         count.className = 'shelf-count';
         count.textContent = String(words.length);
         count.setAttribute('aria-label', shelfCountLabel(words.length));
-        titleRow.append(title, count);
+        const actions = document.createElement('div');
+        actions.className = 'shelf-title-actions';
+        const deepen = document.createElement('button');
+        deepen.className = 'shelf-deepen';
+        deepen.type = 'button';
+        deepen.dataset.deepenShelf = shelf.id;
+        deepen.textContent = '+';
+        deepen.setAttribute('aria-label', `Углубить полку «${shelf.title}»`);
+        if (shelf.id !== 'custom') actions.append(deepen);
+        actions.append(count);
+        titleRow.append(title, actions);
 
         const list = document.createElement('div');
         list.className = 'shelf-words';
@@ -1154,6 +1203,15 @@
         if (state.wave === 2) showView('snapshot');
       });
 
+      shelfGrid.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-deepen-shelf]');
+        if (!button) return;
+        focusedShelfId = button.dataset.deepenShelf;
+        state.wave = 1;
+        showView('scatter');
+        renderScatter();
+      });
+
       backWaveButton.addEventListener('click', () => {
         if (state.wave !== 2) return;
         state.wave = 1;
@@ -1166,6 +1224,7 @@
       });
 
       document.getElementById('editButton').addEventListener('click', () => {
+        focusedShelfId = null;
         state.wave = 1;
         showView('scatter');
         renderWaveUI();
