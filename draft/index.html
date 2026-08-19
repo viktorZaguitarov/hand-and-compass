@@ -751,6 +751,7 @@
         </section>
 
         <div class="screen-actions">
+          <button class="secondary-button" id="backWaveButton" type="button" hidden>Назад к откликающемуся</button>
           <button class="secondary-button" id="skipButton" type="button" hidden>Пропустить</button>
           <button class="primary-button" id="doneButton" type="button" disabled>Дальше</button>
         </div>
@@ -772,7 +773,7 @@
         <div class="shelf-grid" id="shelfGrid"></div>
 
         <div class="snapshot-actions">
-          <button class="secondary-button" id="editButton" type="button">Править выбор</button>
+          <button class="secondary-button" id="editButton" type="button">Дополнить</button>
           <button class="future-button" type="button" disabled>Смотреть граф<span class="future-note">следующий этап</span></button>
           <button class="future-button" type="button" disabled>С кем я пересекаюсь<span class="future-note">следующий этап</span></button>
         </div>
@@ -809,6 +810,7 @@
       const selectedCountLabel = document.getElementById('selectedCountLabel');
       const selectionHint = document.getElementById('selectionHint');
       const doneButton = document.getElementById('doneButton');
+      const backWaveButton = document.getElementById('backWaveButton');
       const skipButton = document.getElementById('skipButton');
       const customWordForm = document.getElementById('customWordForm');
       const customWordInput = document.getElementById('customWordInput');
@@ -972,6 +974,7 @@
         scatterLead.textContent = isSecondWave
           ? 'Камни и триггеры тоже часть карты — без них она нечестная.'
           : 'Выбери хотя бы 3 слова, которые откликаются. 8–15 — ориентир, не предел.';
+        backWaveButton.hidden = !isSecondWave;
         skipButton.hidden = !isSecondWave;
         doneButton.textContent = isSecondWave ? 'Готово' : 'Дальше';
       }
@@ -1151,7 +1154,23 @@
         if (state.wave === 2) showView('snapshot');
       });
 
-      document.getElementById('editButton').addEventListener('click', () => showView('scatter'));
+      backWaveButton.addEventListener('click', () => {
+        if (state.wave !== 2) return;
+        state.wave = 1;
+        state.view = 'scatter';
+        persistState();
+        renderWaveUI();
+        updateSelectionUI();
+        window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        window.requestAnimationFrame(() => scatterTitle.focus?.());
+      });
+
+      document.getElementById('editButton').addEventListener('click', () => {
+        state.wave = 1;
+        showView('scatter');
+        renderWaveUI();
+        updateSelectionUI();
+      });
 
       renderScatter();
       if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
