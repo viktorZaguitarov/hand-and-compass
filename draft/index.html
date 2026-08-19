@@ -1580,6 +1580,7 @@
       const GRAPH_WIDTH = GRAPH_CONTENT_WIDTH + GRAPH_PADDING * 2;
       const GRAPH_HEIGHT = GRAPH_CONTENT_HEIGHT + GRAPH_PADDING * 2;
       const GRAPH_CLOUD_RADIUS = 190;
+      const GRAPH_CLEAR_CENTER_RADIUS = GRAPH_CLOUD_RADIUS * 0.68;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
@@ -2370,10 +2371,9 @@
         const points = [...graphTouchPoints.values()];
         if (points.length === 1) {
           graphGesture = {
-            type: graphScreen.classList.contains('is-fullscreen') ? 'pan' : 'pending',
-            startX: points[0].x, startY: points[0].y, startedAt: performance.now(),
+            type: 'pan', startX: points[0].x, startY: points[0].y,
             startLeft: graphViewport.scrollLeft, startTop: graphViewport.scrollTop,
-            startPageY: window.scrollY, moved: false
+            moved: false
           };
           return;
         }
@@ -2419,6 +2419,38 @@
         return pressure;
       }
 
+      function keepGraphNodeInRadialBand(position) {
+        let dx = position.x - position.anchorX;
+        let dy = position.y - position.anchorY;
+        let distance = Math.hypot(dx, dy);
+        if (distance < 0.1) {
+          dx = Math.cos(position.angle);
+          dy = Math.sin(position.angle);
+          distance = 1;
+        }
+        if (distance < position.minimumRadius) {
+          position.x = position.anchorX + dx / distance * position.minimumRadius;
+          position.y = position.anchorY + dy / distance * position.minimumRadius;
+        } else if (distance > position.maximumRadius) {
+          position.x = position.anchorX + dx / distance * position.maximumRadius;
+          position.y = position.anchorY + dy / distance * position.maximumRadius;
+        }
+      }
+
+      function keepGraphNodeOffShelfLabel(position) {
+        const shelf = SHELF_BY_ID.get(position.shelf);
+        if (!shelf) return;
+        const labelCenterY = position.anchorY - 9;
+        const dx = position.x - position.anchorX;
+        const dy = position.y - labelCenterY;
+        const labelHalfWidth = Math.max(82, shelf.title.length * 18);
+        const requiredX = labelHalfWidth + position.width / 2 + 10;
+        const requiredY = 28 + position.height / 2 + 10;
+        if (Math.abs(dx) >= requiredX || Math.abs(dy) >= requiredY) return;
+        const direction = dy < 0 || (Math.abs(dy) < 0.1 && Math.sin(position.angle) < 0) ? -1 : 1;
+        position.y = labelCenterY + direction * requiredY;
+      }
+
       function computeGraphLayout(items, adjacency, pressureSources) {
         const positions = new Map();
         const shelfIndexes = new Map();
@@ -2429,7 +2461,10 @@
           const zone = GRAPH_ZONES[shelf] || GRAPH_ZONES.custom;
           const angle = ((Math.abs(hashValue(item.id)) % 628) / 100) + index * 1.7;
           const pressureCount = (pressureSources.get(item.id) || new Set()).size;
-          const normalRadius = Math.min(GRAPH_CLOUD_RADIUS * 0.74, 28 + (index % 4) * 18 + Math.floor(index / 4) * 10);
+          const normalRadius = Math.min(
+            GRAPH_CLOUD_RADIUS * 0.9,
+            GRAPH_CLEAR_CENTER_RADIUS + (index % 3) * GRAPH_CLOUD_RADIUS * 0.1
+          );
           const pressureRadius = pressureCount
             ? GRAPH_CLOUD_RADIUS * (0.87 + 0.21 * Math.min(3, pressureCount))
             : normalRadius;
@@ -2440,12 +2475,14 @@
             y: targetY,
             targetX,
             targetY,
+            angle,
             anchorX: zone.x,
             anchorY: zone.y,
             width: graphNodeWidth(item),
             height: shelf === 'stones' || shelf === 'triggers' ? 56 : 48,
             shelf,
             pressureCount,
+            minimumRadius: pressureCount ? pressureRadius : GRAPH_CLEAR_CENTER_RADIUS,
             maximumRadius: pressureCount ? pressureRadius : GRAPH_CLOUD_RADIUS
           });
         });
@@ -2497,14 +2534,8 @@
           });
 
           entries.forEach(([, position]) => {
-            const dx = position.x - position.anchorX;
-            const dy = position.y - position.anchorY;
-            const distance = Math.max(1, Math.hypot(dx, dy));
-            const maximumRadius = position.maximumRadius;
-            if (distance > maximumRadius) {
-              position.x = position.anchorX + dx / distance * maximumRadius;
-              position.y = position.anchorY + dy / distance * maximumRadius;
-            }
+            keepGraphNodeOffShelfLabel(position);
+            keepGraphNodeInRadialBand(position);
             position.x = Math.max(position.width / 2 + 34, Math.min(GRAPH_WIDTH - position.width / 2 - 34, position.x));
             position.y = Math.max(position.height / 2 + 34, Math.min(GRAPH_HEIGHT - position.height / 2 - 34, position.y));
           });
@@ -2541,13 +2572,8 @@
             }
           }
           entries.forEach(([, position]) => {
-            const dx = position.x - position.anchorX;
-            const dy = position.y - position.anchorY;
-            const distance = Math.max(1, Math.hypot(dx, dy));
-            if (distance > position.maximumRadius) {
-              position.x = position.anchorX + dx / distance * position.maximumRadius;
-              position.y = position.anchorY + dy / distance * position.maximumRadius;
-            }
+            keepGraphNodeOffShelfLabel(position);
+            keepGraphNodeInRadialBand(position);
           });
           if (!collisions) break;
         }
@@ -2999,28 +3025,15 @@
         graphTouchPoints.set(event.pointerId, graphTouchPoint(event));
         const points = [...graphTouchPoints.values()];
         if (points.length >= 2 && graphGesture?.type !== 'pinch') beginGraphGesture();
-        if (points.length === 1 && (graphGesture?.type === 'pending' || graphGesture?.type === 'pan' || graphGesture?.type === 'page-scroll')) {
+        if (points.length === 1 && graphGesture?.type === 'pan') {
           const point = points[0];
           const dx = point.x - graphGesture.startX;
           const dy = point.y - graphGesture.startY;
           const distance = Math.hypot(dx, dy);
-          if (graphGesture.type === 'pending' && distance > 7) {
-            graphGesture.type = performance.now() - graphGesture.startedAt < 220 ? 'page-scroll' : 'pan';
-          } else if (graphGesture.type === 'pending' && performance.now() - graphGesture.startedAt >= 220) {
-            graphGesture.type = 'pan';
-          }
-          if (graphGesture.type === 'page-scroll') {
-            if (distance > 4) graphGesture.moved = true;
-            window.scrollTo({ top: graphGesture.startPageY - dy, behavior: 'auto' });
-            event.preventDefault();
-            return;
-          }
-          if (graphGesture.type === 'pan') {
-            if (distance > 4) graphGesture.moved = true;
-            graphViewport.scrollLeft = graphGesture.startLeft - dx;
-            graphViewport.scrollTop = graphGesture.startTop - dy;
-            if (graphGesture.moved) event.preventDefault();
-          }
+          if (distance > 4) graphGesture.moved = true;
+          graphViewport.scrollLeft = graphGesture.startLeft - dx;
+          graphViewport.scrollTop = graphGesture.startTop - dy;
+          if (graphGesture.moved) event.preventDefault();
           return;
         }
         if (points.length >= 2 && graphGesture?.type === 'pinch') {
@@ -3038,7 +3051,7 @@
       function finishGraphPointer(event) {
         if (event.pointerType !== 'touch' || !graphTouchPoints.has(event.pointerId)) return;
         const point = graphTouchPoints.get(event.pointerId);
-        const wasSingleTap = graphTouchPoints.size === 1 && (graphGesture?.type === 'pending' || graphGesture?.type === 'pan') && !graphGesture.moved;
+        const wasSingleTap = graphTouchPoints.size === 1 && graphGesture?.type === 'pan' && !graphGesture.moved;
         const moved = Boolean(graphGesture?.moved);
         graphTouchPoints.delete(event.pointerId);
         graphViewport.releasePointerCapture?.(event.pointerId);
