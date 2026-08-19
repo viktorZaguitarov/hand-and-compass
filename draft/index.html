@@ -1,0 +1,1023 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Hand &amp; Compass 2.0 — локальный черновик личного слепка из выбранных слов.">
+  <title>Hand &amp; Compass 2.0 — Слепок</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20332d;
+      --ink-soft: #536860;
+      --paper: #fbf8ef;
+      --paper-deep: #eee6d4;
+      --paper-warm: #f5efe1;
+      --forest: #315f52;
+      --forest-dark: #1f463c;
+      --forest-soft: #dce9df;
+      --gold: #bd8840;
+      --gold-soft: #ead7ae;
+      --rose: #985f63;
+      --line: rgba(87, 86, 68, 0.2);
+      --shadow: 0 20px 55px rgba(40, 52, 44, 0.14);
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --serif: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 2%, rgba(189, 136, 64, 0.2), transparent 23rem),
+        radial-gradient(circle at 95% 18%, rgba(49, 95, 82, 0.18), transparent 28rem),
+        linear-gradient(150deg, #ece5d5 0%, #f8f4e9 48%, #ebe3d1 100%);
+      font-family: var(--serif);
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      opacity: 0.22;
+      background-image:
+        repeating-linear-gradient(84deg, transparent 0 7px, rgba(67, 70, 57, 0.025) 7px 8px),
+        repeating-linear-gradient(3deg, transparent 0 11px, rgba(255, 255, 255, 0.14) 11px 12px);
+      pointer-events: none;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, summary:focus-visible {
+      outline: 3px solid rgba(189, 136, 64, 0.55);
+      outline-offset: 3px;
+    }
+
+    [hidden] { display: none !important; }
+
+    .app-shell {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: max(16px, env(safe-area-inset-top)) 14px max(34px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 0 2px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--forest-dark);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(83, 104, 96, 0.28);
+      border-radius: 50%;
+      background: rgba(251, 248, 239, 0.74);
+      box-shadow: 0 5px 16px rgba(38, 54, 46, 0.1);
+      font-size: 1rem;
+    }
+
+    .version-chip {
+      padding: 7px 10px;
+      border: 1px solid rgba(49, 95, 82, 0.16);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      background: rgba(251, 248, 239, 0.58);
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+    }
+
+    .page {
+      position: relative;
+      overflow: hidden;
+      min-height: calc(100vh - 78px);
+      border: 1px solid rgba(137, 118, 78, 0.28);
+      border-radius: 28px;
+      background: rgba(251, 248, 239, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .page::after {
+      position: absolute;
+      right: -125px;
+      top: -130px;
+      width: 310px;
+      height: 310px;
+      border: 1px solid rgba(189, 136, 64, 0.22);
+      border-radius: 50%;
+      box-shadow:
+        inset 0 0 0 38px rgba(189, 136, 64, 0.03),
+        inset 0 0 0 78px rgba(49, 95, 82, 0.025);
+      content: "";
+      pointer-events: none;
+    }
+
+    .screen {
+      position: relative;
+      z-index: 1;
+      padding: 24px 18px 18px;
+    }
+
+    .screen-head {
+      max-width: 760px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--rose);
+      font-family: var(--sans);
+      font-size: 0.7rem;
+      font-weight: 750;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    h1 {
+      margin-bottom: 12px;
+      color: var(--forest-dark);
+      font-size: clamp(2.15rem, 10vw, 4.5rem);
+      font-weight: 500;
+      line-height: 0.98;
+      letter-spacing: -0.035em;
+    }
+
+    .lead {
+      margin-bottom: 12px;
+      color: var(--ink-soft);
+      font-size: clamp(1rem, 3.8vw, 1.18rem);
+      line-height: 1.45;
+    }
+
+    details.help {
+      width: fit-content;
+      margin: 0 auto;
+      color: var(--ink-soft);
+      font-family: var(--sans);
+      font-size: 0.83rem;
+      line-height: 1.45;
+    }
+
+    details.help summary {
+      width: fit-content;
+      margin: 0 auto;
+      color: var(--forest);
+      cursor: pointer;
+      list-style: none;
+      text-decoration: underline;
+      text-decoration-color: rgba(49, 95, 82, 0.28);
+      text-underline-offset: 3px;
+    }
+
+    details.help summary::-webkit-details-marker { display: none; }
+    details.help p { max-width: 560px; margin: 9px 0 0; }
+
+    .notice {
+      max-width: 760px;
+      margin: 0 auto 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(152, 95, 99, 0.28);
+      border-radius: 14px;
+      color: #6d3f43;
+      background: rgba(255, 242, 238, 0.72);
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .selection-bar {
+      position: sticky;
+      top: 10px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: min(630px, 100%);
+      margin: 20px auto 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(49, 95, 82, 0.18);
+      border-radius: 18px;
+      background: rgba(251, 248, 239, 0.9);
+      box-shadow: 0 9px 24px rgba(43, 61, 52, 0.09);
+      backdrop-filter: blur(14px);
+      font-family: var(--sans);
+    }
+
+    .selection-count {
+      display: flex;
+      align-items: baseline;
+      gap: 7px;
+      color: var(--ink-soft);
+      font-size: 0.8rem;
+    }
+
+    .selection-count strong {
+      color: var(--forest-dark);
+      font-size: 1.25rem;
+    }
+
+    .selection-hint {
+      color: var(--ink-soft);
+      font-size: 0.72rem;
+      text-align: right;
+    }
+
+    .word-field {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      align-items: center;
+      justify-content: center;
+      gap: 8px 7px;
+      min-height: 440px;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 2px 30px;
+    }
+
+    .word-token {
+      --tilt: 0deg;
+      --lift: 0px;
+      --scale: 1;
+      min-height: 42px;
+      padding: 9px 13px;
+      border: 1px solid rgba(74, 83, 68, 0.2);
+      border-radius: 999px;
+      color: #2b4039;
+      background: rgba(255, 253, 246, 0.86);
+      box-shadow: 0 5px 13px rgba(42, 55, 47, 0.07);
+      transform: translateY(var(--lift)) rotate(var(--tilt)) scale(var(--scale));
+      transition: transform 160ms ease, color 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+      -webkit-tap-highlight-color: transparent;
+      font-family: var(--sans);
+      font-size: var(--token-size, 0.88rem);
+      line-height: 1.15;
+    }
+
+    .word-token:active { transform: translateY(var(--lift)) rotate(var(--tilt)) scale(0.96); }
+
+    .word-token[aria-pressed="true"] {
+      color: #fffdf6;
+      border-color: var(--forest-dark);
+      background: var(--forest);
+      box-shadow: 0 8px 18px rgba(31, 70, 60, 0.23), inset 0 0 0 2px rgba(234, 215, 174, 0.38);
+      --scale: 1.035;
+    }
+
+    .custom-card {
+      max-width: 690px;
+      margin: 0 auto 18px;
+      padding: 17px;
+      border: 1px solid rgba(189, 136, 64, 0.28);
+      border-radius: 20px;
+      background: linear-gradient(140deg, rgba(255, 253, 247, 0.8), rgba(234, 215, 174, 0.22));
+    }
+
+    .custom-label {
+      display: block;
+      margin-bottom: 9px;
+      color: var(--forest-dark);
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .custom-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+
+    .custom-input {
+      min-width: 0;
+      min-height: 46px;
+      padding: 11px 13px;
+      border: 1px solid rgba(49, 95, 82, 0.24);
+      border-radius: 13px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.78);
+      font-family: var(--sans);
+      font-size: 0.94rem;
+    }
+
+    .custom-input::placeholder { color: #87958f; }
+
+    .small-button, .primary-button, .secondary-button, .future-button {
+      min-height: 46px;
+      border-radius: 13px;
+      font-family: var(--sans);
+      font-weight: 700;
+      transition: transform 140ms ease, background 140ms ease, opacity 140ms ease;
+    }
+
+    .small-button {
+      padding: 10px 15px;
+      border: 1px solid rgba(49, 95, 82, 0.24);
+      color: var(--forest-dark);
+      background: var(--forest-soft);
+    }
+
+    .primary-button {
+      padding: 12px 20px;
+      border: 0;
+      color: #fffdf5;
+      background: var(--forest);
+      box-shadow: 0 9px 22px rgba(31, 70, 60, 0.2);
+    }
+
+    .secondary-button {
+      padding: 12px 18px;
+      border: 1px solid rgba(49, 95, 82, 0.24);
+      color: var(--forest-dark);
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .future-button {
+      position: relative;
+      padding: 12px 17px;
+      border: 1px dashed rgba(49, 95, 82, 0.24);
+      color: #788780;
+      background: rgba(241, 236, 223, 0.52);
+      cursor: not-allowed;
+    }
+
+    button:disabled { opacity: 0.44; cursor: not-allowed; transform: none; }
+    button:not(:disabled):active { transform: translateY(1px); }
+
+    .custom-selected {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 11px;
+    }
+
+    .custom-selected:empty { display: none; }
+
+    .custom-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 9px 8px 12px;
+      border: 1px solid rgba(189, 136, 64, 0.34);
+      border-radius: 999px;
+      color: var(--ink);
+      background: rgba(255, 253, 246, 0.86);
+      font-family: var(--sans);
+      font-size: 0.84rem;
+    }
+
+    .custom-pill button {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: var(--rose);
+      background: rgba(152, 95, 99, 0.09);
+      line-height: 1;
+    }
+
+    .screen-actions {
+      position: sticky;
+      bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: fit-content;
+      max-width: 100%;
+      margin: 8px auto 0;
+      padding: 9px;
+      border: 1px solid rgba(49, 95, 82, 0.15);
+      border-radius: 18px;
+      background: rgba(251, 248, 239, 0.91);
+      box-shadow: 0 10px 28px rgba(38, 54, 46, 0.13);
+      backdrop-filter: blur(14px);
+    }
+
+    .action-status {
+      min-height: 1.3em;
+      margin: 9px auto 0;
+      color: var(--ink-soft);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      text-align: center;
+    }
+
+    .snapshot-head { margin-bottom: 23px; }
+
+    .honesty-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      max-width: 690px;
+      margin: 17px auto 0;
+      padding: 12px 14px;
+      border: 1px solid rgba(189, 136, 64, 0.24);
+      border-radius: 15px;
+      color: var(--ink-soft);
+      background: rgba(234, 215, 174, 0.18);
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      line-height: 1.45;
+      text-align: left;
+    }
+
+    .honesty-note strong { color: var(--forest-dark); }
+
+    .shelf-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      max-width: 1040px;
+      margin: 0 auto 22px;
+    }
+
+    .shelf-card {
+      --shelf-accent: var(--forest);
+      position: relative;
+      overflow: hidden;
+      min-height: 176px;
+      padding: 17px;
+      border: 1px solid rgba(83, 104, 96, 0.18);
+      border-radius: 21px;
+      background: rgba(255, 253, 247, 0.72);
+      box-shadow: 0 10px 25px rgba(38, 54, 46, 0.075);
+    }
+
+    .shelf-card::before {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: var(--shelf-accent);
+      content: "";
+      opacity: 0.75;
+    }
+
+    .shelf-card.is-empty { opacity: 0.62; }
+    .shelf-values { --shelf-accent: #b9863f; }
+    .shelf-goals { --shelf-accent: #4f7b70; }
+    .shelf-action { --shelf-accent: #9a645b; }
+    .shelf-foresight { --shelf-accent: #66718c; }
+    .shelf-stones { --shelf-accent: #55574f; }
+    .shelf-supports { --shelf-accent: #78905c; }
+    .shelf-triggers { --shelf-accent: #b46a4f; }
+    .shelf-custom { --shelf-accent: #9b79a0; }
+
+    .shelf-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 13px;
+    }
+
+    .shelf-title {
+      margin: 0;
+      color: var(--forest-dark);
+      font-size: 1.16rem;
+      font-weight: 600;
+    }
+
+    .shelf-count {
+      min-width: 29px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: var(--forest-dark);
+      background: rgba(49, 95, 82, 0.08);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
+    .shelf-words {
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 7px;
+      min-height: 61px;
+    }
+
+    .shelf-word {
+      position: relative;
+      padding: 8px 11px;
+      border: 1px solid rgba(49, 95, 82, 0.2);
+      border: 1px solid color-mix(in srgb, var(--shelf-accent) 32%, transparent);
+      border-radius: 999px;
+      color: var(--ink);
+      background: rgba(246, 244, 234, 0.94);
+      background: color-mix(in srgb, var(--shelf-accent) 9%, #fffdf7);
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      line-height: 1.2;
+    }
+
+    .shelf-word.is-multi {
+      border-style: double;
+      border-width: 3px;
+      padding: 6px 9px;
+      box-shadow: 0 0 0 2px rgba(189, 136, 64, 0.11);
+    }
+
+    .shelf-word.is-multi::after {
+      margin-left: 6px;
+      color: var(--gold);
+      content: "◇";
+      font-size: 0.72rem;
+    }
+
+    .empty-shelf-copy {
+      align-self: center;
+      color: #8a958e;
+      font-family: var(--sans);
+      font-size: 0.82rem;
+    }
+
+    .shelf-summary {
+      margin: 14px 0 0;
+      padding-top: 12px;
+      border-top: 1px solid rgba(83, 104, 96, 0.12);
+      color: var(--ink-soft);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      line-height: 1.42;
+    }
+
+    .snapshot-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .future-note {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.66rem;
+      font-weight: 500;
+    }
+
+    @media (min-width: 640px) {
+      .app-shell { padding: 22px 22px 54px; }
+      .screen { padding: 38px 34px 25px; }
+      .word-field { gap: 11px 10px; padding-inline: 18px; }
+      .word-token { min-height: 44px; padding: 10px 15px; }
+      .shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .snapshot-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (min-width: 940px) {
+      .screen { padding: 50px 48px 30px; }
+      .shelf-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .shelf-card:first-child { grid-column: span 2; }
+    }
+
+    @media (hover: hover) {
+      .word-token:hover { border-color: rgba(49, 95, 82, 0.42); box-shadow: 0 8px 18px rgba(42, 55, 47, 0.11); }
+      .small-button:hover, .secondary-button:hover { background: #e5eee7; }
+      .primary-button:not(:disabled):hover { background: var(--forest-dark); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+      .word-token { --tilt: 0deg !important; --lift: 0px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Hand and Compass">
+        <span class="brand-mark" aria-hidden="true">⌁</span>
+        <span>Hand &amp; Compass</span>
+      </div>
+      <span class="version-chip">черновик 2.0</span>
+    </header>
+
+    <main class="page">
+      <div class="notice" id="storageNotice" role="status" hidden></div>
+
+      <section class="screen" id="scatterScreen" aria-labelledby="scatterTitle">
+        <header class="screen-head">
+          <p class="eyebrow">Слепок · шаг 1 из 2</p>
+          <h1 id="scatterTitle" tabindex="-1">Что отзывается сейчас?</h1>
+          <p class="lead">Выбери 8–15 слов, которые откликаются.</p>
+          <details class="help">
+            <summary>Подробнее</summary>
+            <p>Здесь нет правильного набора. Полки пока скрыты: сначала важен только собственный отклик.</p>
+          </details>
+        </header>
+
+        <div class="selection-bar" aria-live="polite">
+          <div class="selection-count"><strong id="selectedCount">0</strong><span id="selectedCountLabel">слов выбрано</span></div>
+          <span class="selection-hint" id="selectionHint">Минимум 5</span>
+        </div>
+
+        <div class="word-field" id="wordField" aria-label="Россыпь слов"></div>
+
+        <section class="custom-card" aria-labelledby="customWordLabel">
+          <label class="custom-label" id="customWordLabel" for="customWordInput">Не хватает слова?</label>
+          <form class="custom-form" id="customWordForm">
+            <input class="custom-input" id="customWordInput" type="text" maxlength="64" autocomplete="off" placeholder="Например, запах дерева">
+            <button class="small-button" type="submit">Добавить</button>
+          </form>
+          <div class="custom-selected" id="customSelected" aria-label="Свои слова"></div>
+        </section>
+
+        <div class="screen-actions">
+          <button class="primary-button" id="doneButton" type="button" disabled>Готово</button>
+        </div>
+        <p class="action-status" id="scatterStatus" aria-live="polite"></p>
+      </section>
+
+      <section class="screen" id="snapshotScreen" aria-labelledby="snapshotTitle" hidden>
+        <header class="screen-head snapshot-head">
+          <p class="eyebrow">Слепок · шаг 2 из 2</p>
+          <h1 id="snapshotTitle" tabindex="-1">Вот что откликнулось</h1>
+          <p class="lead">Одно слово может жить сразу в нескольких местах.</p>
+          <div class="honesty-note">
+            <span aria-hidden="true">◇</span>
+            <span><strong>Это не тип и не диагноз.</strong> Только текущий выбор; его можно изменить.</span>
+          </div>
+        </header>
+
+        <div class="shelf-grid" id="shelfGrid"></div>
+
+        <div class="snapshot-actions">
+          <button class="secondary-button" id="editButton" type="button">Править выбор</button>
+          <button class="future-button" type="button" disabled>Смотреть граф<span class="future-note">следующий этап</span></button>
+          <button class="future-button" type="button" disabled>С кем я пересекаюсь<span class="future-note">следующий этап</span></button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script id="wordsData" type="application/json">{"meta":{"name":"Hand & Compass 2.0 — words.json v2","shelves":{"values":"💎 Ценности — что для меня по-настоящему важно","goals":"🧭 Цели — куда я хочу прийти","action":"✋ Действие — как я двигаюсь","foresight":"🔭 Предвидение — как я просчитываю и мечтаю","stones":"🌑 Камни — что во мне мешает","supports":"🌿 Опоры — что меня питает","triggers":"⚡ Триггеры — что снаружи меня выбивает"},"note":"shelves у слова — веса, не папка. neighbors — смежные слова для цепочек. antonym — теневая пара. activates — какие камни будит триггер.","free_words":"Пользователь может добавить своё слово (аниме, красный цвет, запах дерева). Система относит его к полкам через словарь или ИИ, с подтверждения пользователя."},"words":[{"id":"spravedlivost","word":"справедливость","shelves":["values"],"neighbors":["chestnost","granicy","dobrota"],"antonym":"nespravedlivost"},{"id":"dobrota","word":"доброта","shelves":["values"],"neighbors":["zabota","prinyatie","schedrost"],"antonym":"zhestokost"},{"id":"lyubov","word":"любовь","shelves":["values"],"neighbors":["blizost","prinyatie","zabota"],"antonym":null},{"id":"otkrytost","word":"открытость","shelves":["values"],"neighbors":["chestnost","obshchenie","doverie"],"antonym":"zamknutost"},{"id":"obshchenie","word":"общение","shelves":["values"],"neighbors":["otkrytost","blizost","yumor"],"antonym":"zamknutost"},{"id":"energiya","word":"энергия","shelves":["values","action"],"neighbors":["dvizhenie","vdohnovenie","tonus"],"antonym":"apathy"},{"id":"dvizhenie","word":"движение","shelves":["values","action"],"neighbors":["energiya","preodolenie","novoe"],"antonym":"otkladyvanie"},{"id":"chestnost","word":"честность","shelves":["values"],"neighbors":["spravedlivost","otkrytost","yasnost"],"antonym":"lzhyvost"},{"id":"svoboda","word":"свобода","shelves":["values"],"neighbors":["novoe","granicy","tvorchestvo"],"antonym":null},{"id":"blizost","word":"близость","shelves":["values"],"neighbors":["lyubov","doverie","obshchenie"],"antonym":"kholodnoe_molchanie"},{"id":"yasnost","word":"ясность","shelves":["values","foresight"],"neighbors":["chestnost","plan","analiz"],"antonym":"khaos"},{"id":"prinyatie","word":"принятие","shelves":["values"],"neighbors":["dobrota","blizost","pokoy"],"antonym":"osuzhdenie"},{"id":"doverie","word":"доверие","shelves":["values"],"neighbors":["blizost","otkrytost","nadezhnost"],"antonym":"ugrozy"},{"id":"tvorchestvo","word":"творчество","shelves":["values","action"],"neighbors":["muzyka","idei","novoe"],"antonym":null},{"id":"fin_nezavisimost","word":"финансовая независимость","shelves":["goals","supports"],"neighbors":["effektivnost","strategiya","pokoy"],"antonym":null},{"id":"struktura","word":"структурированность","shelves":["goals","foresight"],"neighbors":["plan","effektivnost","distsiplina"],"antonym":"khaos"},{"id":"gotovo","word":"только подумать — уже готово","shelves":["goals","action"],"neighbors":["effektivnost","reshitelnost","realizatsiya"],"antonym":"otkladyvanie"},{"id":"zdorovie","word":"здоровье","shelves":["goals"],"neighbors":["tonus","pokoy","energiya"],"antonym":null},{"id":"tonus","word":"всегда в тонусе","shelves":["goals"],"neighbors":["zdorovie","energiya","distsiplina"],"antonym":"apathy"},{"id":"delo","word":"дело жизни","shelves":["goals"],"neighbors":["realizatsiya","priznanie","idei"],"antonym":null},{"id":"priznanie","word":"признание","shelves":["goals","supports"],"neighbors":["otsenka_usiliy","delo","samootsenka"],"antonym":"obestsenivanie"},{"id":"pokoy","word":"душевное спокойствие","shelves":["goals","supports"],"neighbors":["prinyatie","zdorovie","fin_nezavisimost"],"antonym":"khaos"},{"id":"realizatsiya","word":"реализовывать идеи","shelves":["action"],"neighbors":["idei","gotovo","preodolenie"],"antonym":"otkladyvanie"},{"id":"pomogat","word":"помогать","shelves":["action","values"],"neighbors":["zabota","dobrota","schedrost"],"antonym":null},{"id":"zabota","word":"забота","shelves":["action","values"],"neighbors":["pomogat","lyubov","dobrota"],"antonym":"zhestokost"},{"id":"preodolenie","word":"преодоление трудностей","shelves":["action"],"neighbors":["vyzovy","distsiplina","dvizhenie"],"antonym":"obrushenie_planov"},{"id":"vyzovy","word":"вызовы","shelves":["action"],"neighbors":["preodolenie","risk","novoe"],"antonym":null},{"id":"reshitelnost","word":"решительность","shelves":["action"],"neighbors":["gotovo","risk","dvizhenie"],"antonym":"strakh_konflikta"},{"id":"distsiplina","word":"дисциплина","shelves":["action","foresight"],"neighbors":["struktura","tonus","plan"],"antonym":"nesderzhannost"},{"id":"praktika","word":"пробовать руками","shelves":["action"],"neighbors":["realizatsiya","vyzovy","novoe"],"antonym":"razdumya"},{"id":"mechty","word":"мечты","shelves":["foresight","goals"],"neighbors":["fantazii","vdohnovenie","plan"],"antonym":null},{"id":"plan","word":"построение планов","shelves":["foresight"],"neighbors":["struktura","strategiya","raschet"],"antonym":"obrushenie_planov"},{"id":"idei","word":"идеи","shelves":["foresight","action"],"neighbors":["fantazii","realizatsiya","novye_idei"],"antonym":null},{"id":"fantazii","word":"фантазии о том, как должно быть","shelves":["foresight"],"neighbors":["mechty","idei","razdumya"],"antonym":null},{"id":"raschet","word":"расчёт","shelves":["foresight"],"neighbors":["analiz","plan","ostorozhnost"],"antonym":"naporistost"},{"id":"analiz","word":"аналитика","shelves":["foresight"],"neighbors":["raschet","razdumya","yasnost"],"antonym":null},{"id":"strategiya","word":"стратегия","shelves":["foresight","goals"],"neighbors":["plan","fin_nezavisimost","raschet"],"antonym":null},{"id":"ostorozhnost","word":"осторожность","shelves":["foresight"],"neighbors":["raschet","razdumya","granicy"],"antonym":"naporistost"},{"id":"razdumya","word":"раздумья","shelves":["foresight"],"neighbors":["analiz","fantazii","pokoy"],"antonym":"praktika"},{"id":"lzhyvost","word":"отмолчаться вместо правды","shelves":["stones"],"neighbors":["strakh_konflikta","zamknutost","nedovolstvo_soboy"],"antonym":"chestnost"},{"id":"nesderzhannost","word":"несдержанность","shelves":["stones"],"neighbors":["vspylchivost","razdrazhitelnost","nedovolstvo_soboy"],"antonym":"distsiplina"},{"id":"razdrazhitelnost","word":"раздражительность, когда мешают","shelves":["stones"],"neighbors":["vspylchivost","nesderzhannost","naporistost"],"antonym":null},{"id":"obrushenie_planov","word":"обрушение планов","shelves":["stones"],"neighbors":["plan","apathy","nedovolstvo_soboy"],"antonym":"preodolenie"},{"id":"ne_priznavat_oshibki","word":"нежелание признавать ошибки","shelves":["stones"],"neighbors":["samootsenka","osuzhdenie","zamknutost"],"antonym":"otkrytost"},{"id":"zamknutost","word":"замкнутость","shelves":["stones"],"neighbors":["lzhyvost","strakh_konflikta","odinochestvo"],"antonym":"obshchenie"},{"id":"samootsenka","word":"низкая самооценка","shelves":["stones"],"neighbors":["nedovolstvo_soboy","ne_priznavat_oshibki","zavisimost_ot_mneniya"],"antonym":"priznanie"},{"id":"otkladyvanie","word":"откладывание","shelves":["stones"],"neighbors":["razdumya","apathy","obrushenie_planov"],"antonym":"gotovo"},{"id":"zavisimost_ot_mneniya","word":"зависимость от чужого мнения","shelves":["stones"],"neighbors":["samootsenka","otsenka_usiliy","strakh_konflikta"],"antonym":"svoboda"},{"id":"strakh_konflikta","word":"страх конфликта","shelves":["stones"],"neighbors":["lzhyvost","kriki","zamknutost"],"antonym":"reshitelnost"},{"id":"vspylchivost","word":"вспыльчивость","shelves":["stones"],"neighbors":["nesderzhannost","razdrazhitelnost","kriki"],"antonym":"pokoy"},{"id":"zhestokost","word":"жестокость","shelves":["stones"],"neighbors":["vspylchivost","nasilie","nedovolstvo_soboy"],"antonym":"dobrota"},{"id":"nedovolstvo_soboy","word":"недовольство собой","shelves":["stones"],"neighbors":["samootsenka","obrushenie_planov","lzhyvost"],"antonym":"prinyatie"},{"id":"apathy","word":"падение мотивации","shelves":["stones"],"neighbors":["otkladyvanie","obrushenie_planov","energiya"],"antonym":"vdohnovenie"},{"id":"naporistost","word":"излишняя напористость","shelves":["stones","action"],"neighbors":["razdrazhitelnost","davlenie","reshitelnost"],"antonym":"ostorozhnost"},{"id":"odinochestvo","word":"одиночество","shelves":["stones"],"neighbors":["zamknutost","blizost","pokoy"],"antonym":"obshchenie"},{"id":"fin_blagopoluchie","word":"финансовое благополучие","shelves":["supports"],"neighbors":["fin_nezavisimost","pokoy","stabilnost"],"antonym":null},{"id":"podderzhka","word":"поддержка со стороны","shelves":["supports"],"neighbors":["otsenka_usiliy","prinyatie","blizost"],"antonym":"osuzhdenie"},{"id":"otsenka_usiliy","word":"оценка усилий","shelves":["supports"],"neighbors":["priznanie","podderzhka","zavisimost_ot_mneniya"],"antonym":"obestsenivanie"},{"id":"novye_idei","word":"новые идеи извне","shelves":["supports"],"neighbors":["vdohnovenie","idei","novoe"],"antonym":null},{"id":"fiz_udovletvorenie","word":"физическое удовлетворение","shelves":["supports"],"neighbors":["zdorovie","tonus","pokoy"],"antonym":null},{"id":"zhivotnye","word":"животные","shelves":["supports"],"neighbors":["zabota","pokoy","prinyatie"],"antonym":null},{"id":"rasteniya","word":"комнатные растения","shelves":["supports"],"neighbors":["pokoy","zhivotnye","dom"],"antonym":null},{"id":"muzyka","word":"музыка","shelves":["supports","values"],"neighbors":["tvorchestvo","vdohnovenie","yumor"],"antonym":null},{"id":"yumor","word":"сарказм и юмор","shelves":["supports"],"neighbors":["obshchenie","muzyka","legkost"],"antonym":null},{"id":"vdohnovenie","word":"вдохновение","shelves":["supports","action"],"neighbors":["mechty","novye_idei","energiya"],"antonym":"apathy"},{"id":"novoe","word":"новое","shelves":["supports","values"],"neighbors":["vyzovy","idei","dvizhenie"],"antonym":null},{"id":"stabilnost","word":"стабильность","shelves":["supports"],"neighbors":["fin_blagopoluchie","pokoy","struktura"],"antonym":"khaos"},{"id":"dom","word":"дом","shelves":["supports"],"neighbors":["rasteniya","pokoy","stabilnost"],"antonym":null},{"id":"legkost","word":"лёгкость","shelves":["supports"],"neighbors":["yumor","pokoy","svoboda"],"antonym":"davlenie"},{"id":"nespravedlivost","word":"несправедливость","shelves":["triggers"],"neighbors":["spravedlivost","kriki","osuzhdenie"],"activates":["vspylchivost","zhestokost"]},{"id":"nasilie","word":"насилие","shelves":["triggers"],"neighbors":["ugrozy","kriki","nespravedlivost"],"activates":["zhestokost","zamknutost"]},{"id":"ugrozy","word":"угрозы","shelves":["triggers"],"neighbors":["nasilie","davlenie","strakh_konflikta"],"activates":["zamknutost","lzhyvost"]},{"id":"kriki","word":"крики и повышенные тона","shelves":["triggers"],"neighbors":["osuzhdenie","nasilie","davlenie"],"activates":["vspylchivost","razdrazhitelnost"]},{"id":"osuzhdenie","word":"осуждение","shelves":["triggers"],"neighbors":["obestsenivanie","kriki","otsenka_usiliy"],"activates":["samootsenka","zamknutost","nedovolstvo_soboy"]},{"id":"davlenie","word":"давление и спешка","shelves":["triggers"],"neighbors":["ugrozy","kriki","plan"],"activates":["obrushenie_planov","nesderzhannost"]},{"id":"khaos","word":"хаос и непредсказуемость","shelves":["triggers"],"neighbors":["davlenie","struktura","stabilnost"],"activates":["otkladyvanie","apathy"]},{"id":"kholodnoe_molchanie","word":"холодное молчание","shelves":["triggers"],"neighbors":["odinochestvo","blizost","zamknutost"],"activates":["odinochestvo","samootsenka"]},{"id":"obestsenivanie","word":"обесценивание","shelves":["triggers"],"neighbors":["osuzhdenie","otsenka_usiliy","priznanie"],"activates":["apathy","samootsenka","razdrazhitelnost"]},{"id":"granicy","word":"границы","shelves":["values"],"neighbors":["svoboda","yasnost","strakh_konflikta"],"antonym":"davlenie"},{"id":"schedrost","word":"щедрость","shelves":["values","action"],"neighbors":["dobrota","pomogat","fin_blagopoluchie"],"antonym":null},{"id":"nadezhnost","word":"надёжность","shelves":["values"],"neighbors":["doverie","distsiplina","stabilnost"],"antonym":null},{"id":"effektivnost","word":"эффективность усилий","shelves":["goals","foresight"],"neighbors":["struktura","gotovo","raschet"],"antonym":"khaos"},{"id":"risk","word":"риск","shelves":["action"],"neighbors":["vyzovy","reshitelnost","ostorozhnost"],"antonym":null},{"id":"krasota","word":"красота","shelves":["goals","values"],"neighbors":["tvorchestvo","delo","pokoy"],"antonym":null},{"id":"uvazhenie_vseh","word":"всеобщее уважение","shelves":["goals","values"],"neighbors":["priznanie","spravedlivost","granicy"],"antonym":"obestsenivanie"},{"id":"stat_masterom","word":"стать мастером своего дела","shelves":["goals"],"neighbors":["delo","distsiplina","priznanie"],"antonym":null},{"id":"svoe_delo","word":"своё дело","shelves":["goals","action"],"neighbors":["fin_nezavisimost","realizatsiya","svoboda"],"antonym":null},{"id":"semiya","word":"семья","shelves":["goals","values"],"neighbors":["lyubov","zabota","dom"],"antonym":null},{"id":"puteshestviya","word":"путешествия","shelves":["goals","supports"],"neighbors":["novoe","svoboda","vdohnovenie"],"antonym":null},{"id":"scenarii","word":"прокручивать сценарии","shelves":["foresight"],"neighbors":["fantazii","analiz","ostorozhnost"],"antonym":null},{"id":"uroki","word":"извлекать уроки","shelves":["foresight","action"],"neighbors":["analiz","ne_priznavat_oshibki","uroki"],"antonym":"ne_priznavat_oshibki"},{"id":"podborka_lyudey","word":"чувствовать людей","shelves":["foresight"],"neighbors":["analiz","doverie","obshchenie"],"antonym":null},{"id":"predatelstvo","word":"предательство","shelves":["triggers"],"neighbors":["doverie","nespravedlivost","kholodnoe_molchanie"],"activates":["zamknutost","zhestokost"]},{"id":"neopredelennost","word":"долгая неопределённость","shelves":["triggers"],"neighbors":["khaos","razdumya","plan"],"activates":["apathy","otkladyvanie"]},{"id":"publichnost","word":"публичная критика","shelves":["triggers"],"neighbors":["osuzhdenie","obestsenivanie","priznanie"],"activates":["samootsenka","lzhyvost"]},{"id":"ravnodushie","word":"равнодушие близких","shelves":["triggers"],"neighbors":["kholodnoe_molchanie","odinochestvo","podderzhka"],"activates":["odinochestvo","apathy"]},{"id":"pereebivat","word":"перебивать других","shelves":["stones"],"neighbors":["naporistost","razdrazhitelnost","obshchenie"],"antonym":"prinyatie"},{"id":"izbeganie","word":"избегание неприятного","shelves":["stones"],"neighbors":["strakh_konflikta","otkladyvanie","lzhyvost"],"antonym":"reshitelnost"},{"id":"priroda","word":"природа","shelves":["supports"],"neighbors":["pokoy","zhivotnye","rasteniya"],"antonym":null},{"id":"knigi","word":"книги","shelves":["supports"],"neighbors":["razdumya","idei","yumor"],"antonym":null},{"id":"lyubopytstvo","word":"любопытство","shelves":["supports","values"],"neighbors":["novoe","idei","puteshestviya"],"antonym":null}]}</script>
+  <script>
+    (() => {
+      'use strict';
+
+      const STORAGE_KEY = 'hand_compass_snapshot_v2_draft';
+      const DATA = JSON.parse(document.getElementById('wordsData').textContent);
+      const WORDS = Array.isArray(DATA.words) ? DATA.words : [];
+      const WORD_BY_ID = new Map(WORDS.map((item) => [item.id, item]));
+      const SHELVES = [
+        { id: 'values', emoji: '💎', title: 'Ценности' },
+        { id: 'goals', emoji: '🧭', title: 'Цели' },
+        { id: 'action', emoji: '✋', title: 'Действие' },
+        { id: 'foresight', emoji: '🔭', title: 'Предвидение' },
+        { id: 'stones', emoji: '🌑', title: 'Камни' },
+        { id: 'supports', emoji: '🌿', title: 'Опоры' },
+        { id: 'triggers', emoji: '⚡', title: 'Триггеры' }
+      ];
+
+      const scatterScreen = document.getElementById('scatterScreen');
+      const snapshotScreen = document.getElementById('snapshotScreen');
+      const wordField = document.getElementById('wordField');
+      const selectedCount = document.getElementById('selectedCount');
+      const selectedCountLabel = document.getElementById('selectedCountLabel');
+      const selectionHint = document.getElementById('selectionHint');
+      const doneButton = document.getElementById('doneButton');
+      const customWordForm = document.getElementById('customWordForm');
+      const customWordInput = document.getElementById('customWordInput');
+      const customSelected = document.getElementById('customSelected');
+      const scatterStatus = document.getElementById('scatterStatus');
+      const shelfGrid = document.getElementById('shelfGrid');
+      const storageNotice = document.getElementById('storageNotice');
+
+      let storageWasBroken = false;
+      let state = restoreState();
+      const scatterOrder = shuffled(WORDS);
+
+      function emptyState() {
+        return { version: 2, selectedIds: [], customWords: [], view: 'scatter', updatedAt: null };
+      }
+
+      function restoreState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return emptyState();
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') throw new Error('invalid state');
+          const selectedIds = Array.isArray(parsed.selectedIds)
+            ? [...new Set(parsed.selectedIds.filter((id) => WORD_BY_ID.has(id)))]
+            : [];
+          const customWords = Array.isArray(parsed.customWords)
+            ? parsed.customWords.filter((item) => item && typeof item.id === 'string' && typeof item.word === 'string' && item.word.trim())
+                .map((item) => ({ id: item.id, word: item.word.trim().slice(0, 64) }))
+            : [];
+          return {
+            version: 2,
+            selectedIds,
+            customWords,
+            view: parsed.view === 'snapshot' && selectedIds.length + customWords.length >= 5 ? 'snapshot' : 'scatter',
+            updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
+          };
+        } catch {
+          storageWasBroken = true;
+          showStorageNotice('Сохранённый слепок не удалось прочитать. Исходная запись пока не изменена.');
+          return emptyState();
+        }
+      }
+
+      function persistState() {
+        try {
+          state.updatedAt = new Date().toISOString();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          if (storageWasBroken) {
+            storageWasBroken = false;
+            showStorageNotice('Повреждённая запись заменена новым выбором.', true);
+          }
+        } catch {
+          showStorageNotice('Браузер не дал сохранить выбор. Пока он останется только на этом экране.');
+        }
+      }
+
+      function showStorageNotice(message, temporary = false) {
+        storageNotice.textContent = message;
+        storageNotice.hidden = false;
+        if (temporary) window.setTimeout(() => { storageNotice.hidden = true; }, 4200);
+      }
+
+      function shuffled(items) {
+        const result = [...items];
+        for (let index = result.length - 1; index > 0; index -= 1) {
+          const random = new Uint32Array(1);
+          if (window.crypto?.getRandomValues) window.crypto.getRandomValues(random);
+          else random[0] = Math.floor(Math.random() * 0xffffffff);
+          const target = random[0] % (index + 1);
+          [result[index], result[target]] = [result[target], result[index]];
+        }
+        return result;
+      }
+
+      function hashValue(value) {
+        return [...value].reduce((hash, letter) => ((hash << 5) - hash + letter.charCodeAt(0)) | 0, 0);
+      }
+
+      function totalSelected() {
+        return state.selectedIds.length + state.customWords.length;
+      }
+
+      function wordCountLabel(count) {
+        const mod10 = count % 10;
+        const mod100 = count % 100;
+        if (mod10 === 1 && mod100 !== 11) return 'слово выбрано';
+        if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'слова выбрано';
+        return 'слов выбрано';
+      }
+
+      function shelfCountLabel(count) {
+        const mod10 = count % 10;
+        const mod100 = count % 100;
+        const noun = mod10 === 1 && mod100 !== 11
+          ? 'слово'
+          : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? 'слова' : 'слов';
+        return `${count} ${noun}`;
+      }
+
+      function renderScatter() {
+        wordField.replaceChildren();
+        scatterOrder.forEach((item) => {
+          const hash = Math.abs(hashValue(item.id));
+          const button = document.createElement('button');
+          button.className = 'word-token';
+          button.type = 'button';
+          button.dataset.wordId = item.id;
+          button.textContent = item.word;
+          button.setAttribute('aria-pressed', String(state.selectedIds.includes(item.id)));
+          button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
+          button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
+          button.style.setProperty('--token-size', `${0.8 + (hash % 5) * 0.035}rem`);
+          wordField.append(button);
+        });
+        renderCustomWords();
+        updateSelectionUI();
+      }
+
+      function renderCustomWords() {
+        customSelected.replaceChildren();
+        state.customWords.forEach((item) => {
+          const pill = document.createElement('span');
+          pill.className = 'custom-pill';
+          const label = document.createElement('span');
+          label.textContent = item.word;
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.dataset.customId = item.id;
+          remove.setAttribute('aria-label', `Убрать слово «${item.word}»`);
+          remove.textContent = '×';
+          pill.append(label, remove);
+          customSelected.append(pill);
+        });
+      }
+
+      function updateSelectionUI() {
+        const count = totalSelected();
+        selectedCount.textContent = String(count);
+        selectedCountLabel.textContent = wordCountLabel(count);
+        doneButton.disabled = count < 5;
+        selectionHint.textContent = count < 5
+          ? `Ещё ${5 - count} до слепка`
+          : count < 8 ? 'Уже можно продолжить' : count <= 15 ? 'Хороший объём' : 'Можно остановиться';
+      }
+
+      function toggleWord(id) {
+        if (!WORD_BY_ID.has(id)) return;
+        state.selectedIds = state.selectedIds.includes(id)
+          ? state.selectedIds.filter((item) => item !== id)
+          : [...state.selectedIds, id];
+        state.view = 'scatter';
+        persistState();
+        const button = wordField.querySelector(`[data-word-id="${CSS.escape(id)}"]`);
+        if (button) button.setAttribute('aria-pressed', String(state.selectedIds.includes(id)));
+        updateSelectionUI();
+        scatterStatus.textContent = '';
+      }
+
+      function normalizeWord(value) {
+        return value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('ru');
+      }
+
+      function addCustomWord(value) {
+        const clean = value.trim().replace(/\s+/g, ' ').slice(0, 64);
+        const normalized = normalizeWord(clean);
+        if (!normalized) return;
+
+        const dictionaryMatch = WORDS.find((item) => normalizeWord(item.word) === normalized);
+        if (dictionaryMatch) {
+          if (!state.selectedIds.includes(dictionaryMatch.id)) state.selectedIds.push(dictionaryMatch.id);
+          const token = wordField.querySelector(`[data-word-id="${CSS.escape(dictionaryMatch.id)}"]`);
+          if (token) token.setAttribute('aria-pressed', 'true');
+          scatterStatus.textContent = 'Это слово уже есть в россыпи — оно отмечено.';
+        } else if (state.customWords.some((item) => normalizeWord(item.word) === normalized)) {
+          scatterStatus.textContent = 'Это слово уже добавлено.';
+        } else {
+          const randomPart = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+          state.customWords.push({ id: `custom:${randomPart}`, word: clean });
+          scatterStatus.textContent = 'Своё слово добавлено. Полка определится позже.';
+        }
+
+        state.view = 'scatter';
+        customWordInput.value = '';
+        persistState();
+        renderCustomWords();
+        updateSelectionUI();
+      }
+
+      function removeCustomWord(id) {
+        state.customWords = state.customWords.filter((item) => item.id !== id);
+        state.view = 'scatter';
+        persistState();
+        renderCustomWords();
+        updateSelectionUI();
+        scatterStatus.textContent = '';
+      }
+
+      function summaryForShelf(shelf, words) {
+        if (!words.length) return `${shelf.emoji} ${shelf.title}: пока нет слов.`;
+        const names = words.map((item) => item.word).join(', ');
+        if (shelf.id === 'stones') return `${shelfCountLabel(words.length)}: ${names}. Это отмеченные трудности, не описание «поломки».`;
+        if (shelf.id === 'triggers') return `${shelfCountLabel(words.length)}: ${names}. Это внешние сигналы, не черта характера.`;
+        return `${shelfCountLabel(words.length)}: ${names}.`;
+      }
+
+      function renderSnapshot() {
+        shelfGrid.replaceChildren();
+        const selectedWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+
+        SHELVES.forEach((shelf) => {
+          const words = selectedWords.filter((item) => item.shelves.includes(shelf.id));
+          shelfGrid.append(createShelfCard(shelf, words));
+        });
+
+        if (state.customWords.length) {
+          const customShelf = { id: 'custom', emoji: '✨', title: 'Своё' };
+          const card = createShelfCard(customShelf, state.customWords.map((item) => ({ ...item, shelves: ['custom'] })));
+          const summary = card.querySelector('.shelf-summary');
+          summary.textContent = `${shelfCountLabel(state.customWords.length)} без полки. Место определится позже и только с подтверждением.`;
+          shelfGrid.append(card);
+        }
+      }
+
+      function createShelfCard(shelf, words) {
+        const article = document.createElement('article');
+        article.className = `shelf-card shelf-${shelf.id}`;
+        article.classList.toggle('is-empty', !words.length);
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'shelf-title-row';
+        const title = document.createElement('h2');
+        title.className = 'shelf-title';
+        title.textContent = `${shelf.emoji} ${shelf.title}`;
+        const count = document.createElement('span');
+        count.className = 'shelf-count';
+        count.textContent = String(words.length);
+        count.setAttribute('aria-label', shelfCountLabel(words.length));
+        titleRow.append(title, count);
+
+        const list = document.createElement('div');
+        list.className = 'shelf-words';
+        if (!words.length) {
+          const empty = document.createElement('span');
+          empty.className = 'empty-shelf-copy';
+          empty.textContent = 'Пока пусто';
+          list.append(empty);
+        } else {
+          words.forEach((item) => {
+            const word = document.createElement('span');
+            word.className = 'shelf-word';
+            if (item.shelves.length > 1) {
+              word.classList.add('is-multi');
+              word.title = 'Это слово живёт сразу в нескольких местах';
+            }
+            word.textContent = item.word;
+            list.append(word);
+          });
+        }
+
+        const summary = document.createElement('p');
+        summary.className = 'shelf-summary';
+        summary.textContent = summaryForShelf(shelf, words);
+        article.append(titleRow, list, summary);
+        return article;
+      }
+
+      function showView(view, focus = true, shouldPersist = true) {
+        const isSnapshot = view === 'snapshot';
+        scatterScreen.hidden = isSnapshot;
+        snapshotScreen.hidden = !isSnapshot;
+        state.view = isSnapshot ? 'snapshot' : 'scatter';
+        if (isSnapshot) renderSnapshot();
+        if (shouldPersist) persistState();
+        if (focus) {
+          window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+          window.requestAnimationFrame(() => document.getElementById(isSnapshot ? 'snapshotTitle' : 'scatterTitle').focus?.());
+        }
+      }
+
+      wordField.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-word-id]');
+        if (button) toggleWord(button.dataset.wordId);
+      });
+
+      customWordForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        addCustomWord(customWordInput.value);
+      });
+
+      customSelected.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-custom-id]');
+        if (button) removeCustomWord(button.dataset.customId);
+      });
+
+      doneButton.addEventListener('click', () => {
+        if (totalSelected() < 5) return;
+        showView('snapshot');
+      });
+
+      document.getElementById('editButton').addEventListener('click', () => showView('scatter'));
+
+      renderScatter();
+      if (state.view === 'snapshot' && totalSelected() >= 5) showView('snapshot', false, false);
+      else showView('scatter', false, false);
+    })();
+  </script>
+</body>
+</html>

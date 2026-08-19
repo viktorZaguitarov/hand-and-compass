@@ -1,0 +1,1400 @@
+{
+  "meta": {
+    "name": "Hand & Compass 2.0 — words.json v2",
+    "shelves": {
+      "values": "💎 Ценности — что для меня по-настоящему важно",
+      "goals": "🧭 Цели — куда я хочу прийти",
+      "action": "✋ Действие — как я двигаюсь",
+      "foresight": "🔭 Предвидение — как я просчитываю и мечтаю",
+      "stones": "🌑 Камни — что во мне мешает",
+      "supports": "🌿 Опоры — что меня питает",
+      "triggers": "⚡ Триггеры — что снаружи меня выбивает"
+    },
+    "note": "shelves у слова — веса, не папка. neighbors — смежные слова для цепочек. antonym — теневая пара. activates — какие камни будит триггер.",
+    "free_words": "Пользователь может добавить своё слово (аниме, красный цвет, запах дерева). Система относит его к полкам через словарь или ИИ, с подтверждения пользователя."
+  },
+  "words": [
+    {
+      "id": "spravedlivost",
+      "word": "справедливость",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "chestnost",
+        "granicy",
+        "dobrota"
+      ],
+      "antonym": "nespravedlivost"
+    },
+    {
+      "id": "dobrota",
+      "word": "доброта",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "zabota",
+        "prinyatie",
+        "schedrost"
+      ],
+      "antonym": "zhestokost"
+    },
+    {
+      "id": "lyubov",
+      "word": "любовь",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "blizost",
+        "prinyatie",
+        "zabota"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "otkrytost",
+      "word": "открытость",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "chestnost",
+        "obshchenie",
+        "doverie"
+      ],
+      "antonym": "zamknutost"
+    },
+    {
+      "id": "obshchenie",
+      "word": "общение",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "otkrytost",
+        "blizost",
+        "yumor"
+      ],
+      "antonym": "zamknutost"
+    },
+    {
+      "id": "energiya",
+      "word": "энергия",
+      "shelves": [
+        "values",
+        "action"
+      ],
+      "neighbors": [
+        "dvizhenie",
+        "vdohnovenie",
+        "tonus"
+      ],
+      "antonym": "apathy"
+    },
+    {
+      "id": "dvizhenie",
+      "word": "движение",
+      "shelves": [
+        "values",
+        "action"
+      ],
+      "neighbors": [
+        "energiya",
+        "preodolenie",
+        "novoe"
+      ],
+      "antonym": "otkladyvanie"
+    },
+    {
+      "id": "chestnost",
+      "word": "честность",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "spravedlivost",
+        "otkrytost",
+        "yasnost"
+      ],
+      "antonym": "lzhyvost"
+    },
+    {
+      "id": "svoboda",
+      "word": "свобода",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "novoe",
+        "granicy",
+        "tvorchestvo"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "blizost",
+      "word": "близость",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "lyubov",
+        "doverie",
+        "obshchenie"
+      ],
+      "antonym": "kholodnoe_molchanie"
+    },
+    {
+      "id": "yasnost",
+      "word": "ясность",
+      "shelves": [
+        "values",
+        "foresight"
+      ],
+      "neighbors": [
+        "chestnost",
+        "plan",
+        "analiz"
+      ],
+      "antonym": "khaos"
+    },
+    {
+      "id": "prinyatie",
+      "word": "принятие",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "dobrota",
+        "blizost",
+        "pokoy"
+      ],
+      "antonym": "osuzhdenie"
+    },
+    {
+      "id": "doverie",
+      "word": "доверие",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "blizost",
+        "otkrytost",
+        "nadezhnost"
+      ],
+      "antonym": "ugrozy"
+    },
+    {
+      "id": "tvorchestvo",
+      "word": "творчество",
+      "shelves": [
+        "values",
+        "action"
+      ],
+      "neighbors": [
+        "muzyka",
+        "idei",
+        "novoe"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "fin_nezavisimost",
+      "word": "финансовая независимость",
+      "shelves": [
+        "goals",
+        "supports"
+      ],
+      "neighbors": [
+        "effektivnost",
+        "strategiya",
+        "pokoy"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "struktura",
+      "word": "структурированность",
+      "shelves": [
+        "goals",
+        "foresight"
+      ],
+      "neighbors": [
+        "plan",
+        "effektivnost",
+        "distsiplina"
+      ],
+      "antonym": "khaos"
+    },
+    {
+      "id": "gotovo",
+      "word": "только подумать — уже готово",
+      "shelves": [
+        "goals",
+        "action"
+      ],
+      "neighbors": [
+        "effektivnost",
+        "reshitelnost",
+        "realizatsiya"
+      ],
+      "antonym": "otkladyvanie"
+    },
+    {
+      "id": "zdorovie",
+      "word": "здоровье",
+      "shelves": [
+        "goals"
+      ],
+      "neighbors": [
+        "tonus",
+        "pokoy",
+        "energiya"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "tonus",
+      "word": "всегда в тонусе",
+      "shelves": [
+        "goals"
+      ],
+      "neighbors": [
+        "zdorovie",
+        "energiya",
+        "distsiplina"
+      ],
+      "antonym": "apathy"
+    },
+    {
+      "id": "delo",
+      "word": "дело жизни",
+      "shelves": [
+        "goals"
+      ],
+      "neighbors": [
+        "realizatsiya",
+        "priznanie",
+        "idei"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "priznanie",
+      "word": "признание",
+      "shelves": [
+        "goals",
+        "supports"
+      ],
+      "neighbors": [
+        "otsenka_usiliy",
+        "delo",
+        "samootsenka"
+      ],
+      "antonym": "obestsenivanie"
+    },
+    {
+      "id": "pokoy",
+      "word": "душевное спокойствие",
+      "shelves": [
+        "goals",
+        "supports"
+      ],
+      "neighbors": [
+        "prinyatie",
+        "zdorovie",
+        "fin_nezavisimost"
+      ],
+      "antonym": "khaos"
+    },
+    {
+      "id": "realizatsiya",
+      "word": "реализовывать идеи",
+      "shelves": [
+        "action"
+      ],
+      "neighbors": [
+        "idei",
+        "gotovo",
+        "preodolenie"
+      ],
+      "antonym": "otkladyvanie"
+    },
+    {
+      "id": "pomogat",
+      "word": "помогать",
+      "shelves": [
+        "action",
+        "values"
+      ],
+      "neighbors": [
+        "zabota",
+        "dobrota",
+        "schedrost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "zabota",
+      "word": "забота",
+      "shelves": [
+        "action",
+        "values"
+      ],
+      "neighbors": [
+        "pomogat",
+        "lyubov",
+        "dobrota"
+      ],
+      "antonym": "zhestokost"
+    },
+    {
+      "id": "preodolenie",
+      "word": "преодоление трудностей",
+      "shelves": [
+        "action"
+      ],
+      "neighbors": [
+        "vyzovy",
+        "distsiplina",
+        "dvizhenie"
+      ],
+      "antonym": "obrushenie_planov"
+    },
+    {
+      "id": "vyzovy",
+      "word": "вызовы",
+      "shelves": [
+        "action"
+      ],
+      "neighbors": [
+        "preodolenie",
+        "risk",
+        "novoe"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "reshitelnost",
+      "word": "решительность",
+      "shelves": [
+        "action"
+      ],
+      "neighbors": [
+        "gotovo",
+        "risk",
+        "dvizhenie"
+      ],
+      "antonym": "strakh_konflikta"
+    },
+    {
+      "id": "distsiplina",
+      "word": "дисциплина",
+      "shelves": [
+        "action",
+        "foresight"
+      ],
+      "neighbors": [
+        "struktura",
+        "tonus",
+        "plan"
+      ],
+      "antonym": "nesderzhannost"
+    },
+    {
+      "id": "praktika",
+      "word": "пробовать руками",
+      "shelves": [
+        "action"
+      ],
+      "neighbors": [
+        "realizatsiya",
+        "vyzovy",
+        "novoe"
+      ],
+      "antonym": "razdumya"
+    },
+    {
+      "id": "mechty",
+      "word": "мечты",
+      "shelves": [
+        "foresight",
+        "goals"
+      ],
+      "neighbors": [
+        "fantazii",
+        "vdohnovenie",
+        "plan"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "plan",
+      "word": "построение планов",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "struktura",
+        "strategiya",
+        "raschet"
+      ],
+      "antonym": "obrushenie_planov"
+    },
+    {
+      "id": "idei",
+      "word": "идеи",
+      "shelves": [
+        "foresight",
+        "action"
+      ],
+      "neighbors": [
+        "fantazii",
+        "realizatsiya",
+        "novye_idei"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "fantazii",
+      "word": "фантазии о том, как должно быть",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "mechty",
+        "idei",
+        "razdumya"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "raschet",
+      "word": "расчёт",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "analiz",
+        "plan",
+        "ostorozhnost"
+      ],
+      "antonym": "naporistost"
+    },
+    {
+      "id": "analiz",
+      "word": "аналитика",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "raschet",
+        "razdumya",
+        "yasnost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "strategiya",
+      "word": "стратегия",
+      "shelves": [
+        "foresight",
+        "goals"
+      ],
+      "neighbors": [
+        "plan",
+        "fin_nezavisimost",
+        "raschet"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "ostorozhnost",
+      "word": "осторожность",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "raschet",
+        "razdumya",
+        "granicy"
+      ],
+      "antonym": "naporistost"
+    },
+    {
+      "id": "razdumya",
+      "word": "раздумья",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "analiz",
+        "fantazii",
+        "pokoy"
+      ],
+      "antonym": "praktika"
+    },
+    {
+      "id": "lzhyvost",
+      "word": "отмолчаться вместо правды",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "strakh_konflikta",
+        "zamknutost",
+        "nedovolstvo_soboy"
+      ],
+      "antonym": "chestnost"
+    },
+    {
+      "id": "nesderzhannost",
+      "word": "несдержанность",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "vspylchivost",
+        "razdrazhitelnost",
+        "nedovolstvo_soboy"
+      ],
+      "antonym": "distsiplina"
+    },
+    {
+      "id": "razdrazhitelnost",
+      "word": "раздражительность, когда мешают",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "vspylchivost",
+        "nesderzhannost",
+        "naporistost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "obrushenie_planov",
+      "word": "обрушение планов",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "plan",
+        "apathy",
+        "nedovolstvo_soboy"
+      ],
+      "antonym": "preodolenie"
+    },
+    {
+      "id": "ne_priznavat_oshibki",
+      "word": "нежелание признавать ошибки",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "samootsenka",
+        "osuzhdenie",
+        "zamknutost"
+      ],
+      "antonym": "otkrytost"
+    },
+    {
+      "id": "zamknutost",
+      "word": "замкнутость",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "lzhyvost",
+        "strakh_konflikta",
+        "odinochestvo"
+      ],
+      "antonym": "obshchenie"
+    },
+    {
+      "id": "samootsenka",
+      "word": "низкая самооценка",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "nedovolstvo_soboy",
+        "ne_priznavat_oshibki",
+        "zavisimost_ot_mneniya"
+      ],
+      "antonym": "priznanie"
+    },
+    {
+      "id": "otkladyvanie",
+      "word": "откладывание",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "razdumya",
+        "apathy",
+        "obrushenie_planov"
+      ],
+      "antonym": "gotovo"
+    },
+    {
+      "id": "zavisimost_ot_mneniya",
+      "word": "зависимость от чужого мнения",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "samootsenka",
+        "otsenka_usiliy",
+        "strakh_konflikta"
+      ],
+      "antonym": "svoboda"
+    },
+    {
+      "id": "strakh_konflikta",
+      "word": "страх конфликта",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "lzhyvost",
+        "kriki",
+        "zamknutost"
+      ],
+      "antonym": "reshitelnost"
+    },
+    {
+      "id": "vspylchivost",
+      "word": "вспыльчивость",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "nesderzhannost",
+        "razdrazhitelnost",
+        "kriki"
+      ],
+      "antonym": "pokoy"
+    },
+    {
+      "id": "zhestokost",
+      "word": "жестокость",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "vspylchivost",
+        "nasilie",
+        "nedovolstvo_soboy"
+      ],
+      "antonym": "dobrota"
+    },
+    {
+      "id": "nedovolstvo_soboy",
+      "word": "недовольство собой",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "samootsenka",
+        "obrushenie_planov",
+        "lzhyvost"
+      ],
+      "antonym": "prinyatie"
+    },
+    {
+      "id": "apathy",
+      "word": "падение мотивации",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "otkladyvanie",
+        "obrushenie_planov",
+        "energiya"
+      ],
+      "antonym": "vdohnovenie"
+    },
+    {
+      "id": "naporistost",
+      "word": "излишняя напористость",
+      "shelves": [
+        "stones",
+        "action"
+      ],
+      "neighbors": [
+        "razdrazhitelnost",
+        "davlenie",
+        "reshitelnost"
+      ],
+      "antonym": "ostorozhnost"
+    },
+    {
+      "id": "odinochestvo",
+      "word": "одиночество",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "zamknutost",
+        "blizost",
+        "pokoy"
+      ],
+      "antonym": "obshchenie"
+    },
+    {
+      "id": "fin_blagopoluchie",
+      "word": "финансовое благополучие",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "fin_nezavisimost",
+        "pokoy",
+        "stabilnost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "podderzhka",
+      "word": "поддержка со стороны",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "otsenka_usiliy",
+        "prinyatie",
+        "blizost"
+      ],
+      "antonym": "osuzhdenie"
+    },
+    {
+      "id": "otsenka_usiliy",
+      "word": "оценка усилий",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "priznanie",
+        "podderzhka",
+        "zavisimost_ot_mneniya"
+      ],
+      "antonym": "obestsenivanie"
+    },
+    {
+      "id": "novye_idei",
+      "word": "новые идеи извне",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "vdohnovenie",
+        "idei",
+        "novoe"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "fiz_udovletvorenie",
+      "word": "физическое удовлетворение",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "zdorovie",
+        "tonus",
+        "pokoy"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "zhivotnye",
+      "word": "животные",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "zabota",
+        "pokoy",
+        "prinyatie"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "rasteniya",
+      "word": "комнатные растения",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "pokoy",
+        "zhivotnye",
+        "dom"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "muzyka",
+      "word": "музыка",
+      "shelves": [
+        "supports",
+        "values"
+      ],
+      "neighbors": [
+        "tvorchestvo",
+        "vdohnovenie",
+        "yumor"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "yumor",
+      "word": "сарказм и юмор",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "obshchenie",
+        "muzyka",
+        "legkost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "vdohnovenie",
+      "word": "вдохновение",
+      "shelves": [
+        "supports",
+        "action"
+      ],
+      "neighbors": [
+        "mechty",
+        "novye_idei",
+        "energiya"
+      ],
+      "antonym": "apathy"
+    },
+    {
+      "id": "novoe",
+      "word": "новое",
+      "shelves": [
+        "supports",
+        "values"
+      ],
+      "neighbors": [
+        "vyzovy",
+        "idei",
+        "dvizhenie"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "stabilnost",
+      "word": "стабильность",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "fin_blagopoluchie",
+        "pokoy",
+        "struktura"
+      ],
+      "antonym": "khaos"
+    },
+    {
+      "id": "dom",
+      "word": "дом",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "rasteniya",
+        "pokoy",
+        "stabilnost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "legkost",
+      "word": "лёгкость",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "yumor",
+        "pokoy",
+        "svoboda"
+      ],
+      "antonym": "davlenie"
+    },
+    {
+      "id": "nespravedlivost",
+      "word": "несправедливость",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "spravedlivost",
+        "kriki",
+        "osuzhdenie"
+      ],
+      "activates": [
+        "vspylchivost",
+        "zhestokost"
+      ]
+    },
+    {
+      "id": "nasilie",
+      "word": "насилие",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "ugrozy",
+        "kriki",
+        "nespravedlivost"
+      ],
+      "activates": [
+        "zhestokost",
+        "zamknutost"
+      ]
+    },
+    {
+      "id": "ugrozy",
+      "word": "угрозы",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "nasilie",
+        "davlenie",
+        "strakh_konflikta"
+      ],
+      "activates": [
+        "zamknutost",
+        "lzhyvost"
+      ]
+    },
+    {
+      "id": "kriki",
+      "word": "крики и повышенные тона",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "osuzhdenie",
+        "nasilie",
+        "davlenie"
+      ],
+      "activates": [
+        "vspylchivost",
+        "razdrazhitelnost"
+      ]
+    },
+    {
+      "id": "osuzhdenie",
+      "word": "осуждение",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "obestsenivanie",
+        "kriki",
+        "otsenka_usiliy"
+      ],
+      "activates": [
+        "samootsenka",
+        "zamknutost",
+        "nedovolstvo_soboy"
+      ]
+    },
+    {
+      "id": "davlenie",
+      "word": "давление и спешка",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "ugrozy",
+        "kriki",
+        "plan"
+      ],
+      "activates": [
+        "obrushenie_planov",
+        "nesderzhannost"
+      ]
+    },
+    {
+      "id": "khaos",
+      "word": "хаос и непредсказуемость",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "davlenie",
+        "struktura",
+        "stabilnost"
+      ],
+      "activates": [
+        "otkladyvanie",
+        "apathy"
+      ]
+    },
+    {
+      "id": "kholodnoe_molchanie",
+      "word": "холодное молчание",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "odinochestvo",
+        "blizost",
+        "zamknutost"
+      ],
+      "activates": [
+        "odinochestvo",
+        "samootsenka"
+      ]
+    },
+    {
+      "id": "obestsenivanie",
+      "word": "обесценивание",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "osuzhdenie",
+        "otsenka_usiliy",
+        "priznanie"
+      ],
+      "activates": [
+        "apathy",
+        "samootsenka",
+        "razdrazhitelnost"
+      ]
+    },
+    {
+      "id": "granicy",
+      "word": "границы",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "svoboda",
+        "yasnost",
+        "strakh_konflikta"
+      ],
+      "antonym": "davlenie"
+    },
+    {
+      "id": "schedrost",
+      "word": "щедрость",
+      "shelves": [
+        "values",
+        "action"
+      ],
+      "neighbors": [
+        "dobrota",
+        "pomogat",
+        "fin_blagopoluchie"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "nadezhnost",
+      "word": "надёжность",
+      "shelves": [
+        "values"
+      ],
+      "neighbors": [
+        "doverie",
+        "distsiplina",
+        "stabilnost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "effektivnost",
+      "word": "эффективность усилий",
+      "shelves": [
+        "goals",
+        "foresight"
+      ],
+      "neighbors": [
+        "struktura",
+        "gotovo",
+        "raschet"
+      ],
+      "antonym": "khaos"
+    },
+    {
+      "id": "risk",
+      "word": "риск",
+      "shelves": [
+        "action"
+      ],
+      "neighbors": [
+        "vyzovy",
+        "reshitelnost",
+        "ostorozhnost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "krasota",
+      "word": "красота",
+      "shelves": [
+        "goals",
+        "values"
+      ],
+      "neighbors": [
+        "tvorchestvo",
+        "delo",
+        "pokoy"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "uvazhenie_vseh",
+      "word": "всеобщее уважение",
+      "shelves": [
+        "goals",
+        "values"
+      ],
+      "neighbors": [
+        "priznanie",
+        "spravedlivost",
+        "granicy"
+      ],
+      "antonym": "obestsenivanie"
+    },
+    {
+      "id": "stat_masterom",
+      "word": "стать мастером своего дела",
+      "shelves": [
+        "goals"
+      ],
+      "neighbors": [
+        "delo",
+        "distsiplina",
+        "priznanie"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "svoe_delo",
+      "word": "своё дело",
+      "shelves": [
+        "goals",
+        "action"
+      ],
+      "neighbors": [
+        "fin_nezavisimost",
+        "realizatsiya",
+        "svoboda"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "semiya",
+      "word": "семья",
+      "shelves": [
+        "goals",
+        "values"
+      ],
+      "neighbors": [
+        "lyubov",
+        "zabota",
+        "dom"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "puteshestviya",
+      "word": "путешествия",
+      "shelves": [
+        "goals",
+        "supports"
+      ],
+      "neighbors": [
+        "novoe",
+        "svoboda",
+        "vdohnovenie"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "scenarii",
+      "word": "прокручивать сценарии",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "fantazii",
+        "analiz",
+        "ostorozhnost"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "uroki",
+      "word": "извлекать уроки",
+      "shelves": [
+        "foresight",
+        "action"
+      ],
+      "neighbors": [
+        "analiz",
+        "ne_priznavat_oshibki",
+        "uroki"
+      ],
+      "antonym": "ne_priznavat_oshibki"
+    },
+    {
+      "id": "podborka_lyudey",
+      "word": "чувствовать людей",
+      "shelves": [
+        "foresight"
+      ],
+      "neighbors": [
+        "analiz",
+        "doverie",
+        "obshchenie"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "predatelstvo",
+      "word": "предательство",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "doverie",
+        "nespravedlivost",
+        "kholodnoe_molchanie"
+      ],
+      "activates": [
+        "zamknutost",
+        "zhestokost"
+      ]
+    },
+    {
+      "id": "neopredelennost",
+      "word": "долгая неопределённость",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "khaos",
+        "razdumya",
+        "plan"
+      ],
+      "activates": [
+        "apathy",
+        "otkladyvanie"
+      ]
+    },
+    {
+      "id": "publichnost",
+      "word": "публичная критика",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "osuzhdenie",
+        "obestsenivanie",
+        "priznanie"
+      ],
+      "activates": [
+        "samootsenka",
+        "lzhyvost"
+      ]
+    },
+    {
+      "id": "ravnodushie",
+      "word": "равнодушие близких",
+      "shelves": [
+        "triggers"
+      ],
+      "neighbors": [
+        "kholodnoe_molchanie",
+        "odinochestvo",
+        "podderzhka"
+      ],
+      "activates": [
+        "odinochestvo",
+        "apathy"
+      ]
+    },
+    {
+      "id": "pereebivat",
+      "word": "перебивать других",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "naporistost",
+        "razdrazhitelnost",
+        "obshchenie"
+      ],
+      "antonym": "prinyatie"
+    },
+    {
+      "id": "izbeganie",
+      "word": "избегание неприятного",
+      "shelves": [
+        "stones"
+      ],
+      "neighbors": [
+        "strakh_konflikta",
+        "otkladyvanie",
+        "lzhyvost"
+      ],
+      "antonym": "reshitelnost"
+    },
+    {
+      "id": "priroda",
+      "word": "природа",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "pokoy",
+        "zhivotnye",
+        "rasteniya"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "knigi",
+      "word": "книги",
+      "shelves": [
+        "supports"
+      ],
+      "neighbors": [
+        "razdumya",
+        "idei",
+        "yumor"
+      ],
+      "antonym": null
+    },
+    {
+      "id": "lyubopytstvo",
+      "word": "любопытство",
+      "shelves": [
+        "supports",
+        "values"
+      ],
+      "neighbors": [
+        "novoe",
+        "idei",
+        "puteshestviya"
+      ],
+      "antonym": null
+    }
+  ]
+}
