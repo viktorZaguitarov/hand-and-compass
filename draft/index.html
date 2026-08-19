@@ -1058,12 +1058,28 @@
     .match-value { color: var(--rose); font-size: 1.25rem; font-weight: 800; }
 
     .match-range {
+      appearance: none;
       width: 100%;
       height: 44px;
       margin: 0;
       accent-color: var(--forest);
+      background: transparent;
       cursor: pointer;
     }
+
+    .match-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #b9a58d, #6e8e82); }
+    .match-range::-webkit-slider-thumb {
+      width: 28px;
+      height: 28px;
+      margin-top: -10px;
+      appearance: none;
+      border: 3px solid #fffdf7;
+      border-radius: 50%;
+      background: var(--forest);
+      box-shadow: 0 3px 10px rgba(31, 70, 60, 0.28);
+    }
+    .match-range::-moz-range-track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #b9a58d, #6e8e82); }
+    .match-range::-moz-range-thumb { width: 28px; height: 28px; border: 3px solid #fffdf7; border-radius: 50%; background: var(--forest); }
 
     .match-range-scale {
       display: flex;
@@ -1104,6 +1120,9 @@
       max-width: 940px;
       margin: 0 auto 14px;
     }
+
+    .profile-more-row { display: flex; justify-content: center; max-width: 940px; margin: 0 auto; }
+    .profile-more-row .secondary-button { min-width: 150px; }
 
     .profile-card {
       width: 100%;
@@ -1313,6 +1332,31 @@
       .graph-chip { min-height: 34px; padding: 6px 9px; font-size: 0.69rem; }
       .graph-card-actions .primary-button,
       .graph-card-actions .secondary-button { min-height: 40px; padding: 8px 12px; font-size: 0.76rem; }
+      .intersections-screen { padding-inline: 11px; }
+      .intersections-screen .screen-head { margin-bottom: 15px; }
+      .match-panel { margin-bottom: 13px; padding: 13px; border-radius: 17px; }
+      .match-label { font-size: 0.74rem; }
+      .match-value { font-size: 1.08rem; }
+      .match-range { height: 48px; }
+      .match-range-scale { font-size: 0.59rem; }
+      .match-quick-actions { gap: 5px; margin-top: 9px; }
+      .match-quick { min-width: 0; min-height: 44px; padding: 7px 5px; font-size: 0.65rem; }
+      .profile-list { gap: 8px; margin-bottom: 10px; }
+      .profile-card { min-height: 118px; gap: 9px; padding: 12px; border-radius: 16px; }
+      .profile-name { font-size: 1.08rem; overflow-wrap: anywhere; }
+      .profile-score { font-size: 0.92rem; }
+      .profile-common { font-size: 0.7rem; }
+      .profile-more-row .secondary-button { min-height: 44px; }
+      .intersection-map { margin-top: 14px; padding: 13px; border-radius: 18px; }
+      .intersection-map-title { font-size: 1.32rem; }
+      .intersection-map-score { font-size: 1.1rem; }
+      .intersection-section { padding: 12px 0; }
+      .intersection-section h2 { margin-bottom: 8px; font-size: 1rem; }
+      .intersection-shelf { padding: 8px; }
+      .intersection-word { padding: 5px 8px; font-size: 0.66rem; overflow-wrap: anywhere; }
+      .complement-column { padding: 9px; }
+      .friction-item, .intersection-empty, .intersection-honesty { font-size: 0.7rem; }
+      .intersections-actions .secondary-button { min-height: 44px; }
     }
 
     @media (min-width: 640px) {
@@ -1472,6 +1516,9 @@
         </section>
 
         <div class="profile-list" id="profileList" aria-live="polite"></div>
+        <div class="profile-more-row">
+          <button class="secondary-button" id="moreProfilesButton" type="button">Ещё три</button>
+        </div>
         <article class="intersection-map" id="intersectionMap" aria-live="polite" hidden></article>
 
         <div class="intersections-actions">
@@ -1554,6 +1601,7 @@
       const matchValue = document.getElementById('matchValue');
       const matchQuickActions = document.querySelector('.match-quick-actions');
       const profileList = document.getElementById('profileList');
+      const moreProfilesButton = document.getElementById('moreProfilesButton');
       const intersectionMap = document.getElementById('intersectionMap');
       const storageNotice = document.getElementById('storageNotice');
 
@@ -1578,7 +1626,7 @@
       function emptyState() {
         return {
           version: 2, selectedIds: [], customWords: [], waveOneIds: [], waveOneCustomIds: [],
-          wave: 1, view: 'scatter', matchTarget: 50, activeProfileId: null, updatedAt: null
+          wave: 1, view: 'scatter', matchTarget: 50, matchOffset: 0, activeProfileId: null, updatedAt: null
         };
       }
 
@@ -1619,6 +1667,9 @@
             matchTarget: Number.isFinite(Number(parsed.matchTarget))
               ? Math.max(0, Math.min(100, Math.round(Number(parsed.matchTarget))))
               : 50,
+            matchOffset: Number.isFinite(Number(parsed.matchOffset))
+              ? Math.max(0, Math.floor(Number(parsed.matchOffset) / 3) * 3)
+              : 0,
             activeProfileId: FAKE_PROFILES.some((profile) => profile.id === parsed.activeProfileId)
               ? parsed.activeProfileId
               : null,
@@ -1786,11 +1837,15 @@
         });
 
         const direction = state.matchTarget < 50 ? 1 : -1;
-        const closest = scored.sort((left, right) => {
+        const ranked = scored.sort((left, right) => {
           const distance = Math.abs(left.score - state.matchTarget) - Math.abs(right.score - state.matchTarget);
           return distance || (left.score - right.score) * direction || left.profile.id.localeCompare(right.profile.id);
-        }).slice(0, 3);
+        });
+        const start = ranked.length ? state.matchOffset % ranked.length : 0;
+        state.matchOffset = start;
+        const closest = ranked.slice(start, start + 3);
         profileList.replaceChildren(...closest.map(({ profile, score }) => createProfileCard(profile, score)));
+        moreProfilesButton.hidden = ranked.length <= 3;
         const active = closest.find(({ profile }) => profile.id === state.activeProfileId);
         if (active) renderIntersectionMap(active.profile, active.score);
         else intersectionMap.hidden = true;
@@ -1798,6 +1853,7 @@
 
       function setMatchTarget(value, shouldPersist = true) {
         state.matchTarget = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+        state.matchOffset = 0;
         state.activeProfileId = null;
         renderProfileMatches();
         if (shouldPersist) persistState();
@@ -2948,6 +3004,16 @@
         renderProfileMatches();
         persistState();
         window.requestAnimationFrame(() => intersectionMap.scrollIntoView({
+          block: 'start',
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+        }));
+      });
+      moreProfilesButton.addEventListener('click', () => {
+        state.matchOffset = FAKE_PROFILES.length ? (state.matchOffset + 3) % FAKE_PROFILES.length : 0;
+        state.activeProfileId = null;
+        renderProfileMatches();
+        persistState();
+        window.requestAnimationFrame(() => profileList.scrollIntoView({
           block: 'start',
           behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
         }));
