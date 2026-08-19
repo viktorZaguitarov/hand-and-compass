@@ -243,6 +243,17 @@
       font-size: 0.8rem;
     }
 
+    .selection-copy {
+      display: grid;
+      gap: 2px;
+    }
+
+    .selection-more {
+      color: #7b8b84;
+      font-family: var(--sans);
+      font-size: 0.68rem;
+    }
+
     .selection-count strong {
       color: var(--forest-dark);
       font-size: 1.25rem;
@@ -296,6 +307,8 @@
       box-shadow: 0 8px 18px rgba(31, 70, 60, 0.23), inset 0 0 0 2px rgba(234, 215, 174, 0.38);
       --scale: 1.035;
     }
+
+    .word-token.is-custom { border-style: dashed; }
 
     .custom-card {
       max-width: 690px;
@@ -376,41 +389,6 @@
 
     button:disabled { opacity: 0.44; cursor: not-allowed; transform: none; }
     button:not(:disabled):active { transform: translateY(1px); }
-
-    .custom-selected {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 11px;
-    }
-
-    .custom-selected:empty { display: none; }
-
-    .custom-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 9px 8px 12px;
-      border: 1px solid rgba(189, 136, 64, 0.34);
-      border-radius: 999px;
-      color: var(--ink);
-      background: rgba(255, 253, 246, 0.86);
-      font-family: var(--sans);
-      font-size: 0.84rem;
-    }
-
-    .custom-pill button {
-      width: 24px;
-      height: 24px;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      color: var(--rose);
-      background: rgba(152, 95, 99, 0.09);
-      line-height: 1;
-    }
 
     .screen-actions {
       position: fixed;
@@ -573,13 +551,6 @@
       font-size: 0.72rem;
     }
 
-    .empty-shelf-copy {
-      align-self: center;
-      color: #8a958e;
-      font-family: var(--sans);
-      font-size: 0.82rem;
-    }
-
     .shelf-summary {
       margin: 14px 0 0;
       padding-top: 12px;
@@ -650,7 +621,7 @@
         <header class="screen-head">
           <p class="eyebrow" id="scatterEyebrow">Слепок · волна 1 из 2</p>
           <h1 id="scatterTitle" tabindex="-1">Что отзывается сейчас?</h1>
-          <p class="lead" id="scatterLead">Выбери хотя бы 3 слова, которые откликаются.</p>
+          <p class="lead" id="scatterLead">Выбери хотя бы 3 слова, которые откликаются. 8–15 — ориентир, не предел.</p>
           <details class="help">
             <summary>Подробнее</summary>
             <p>Здесь нет правильного набора. Полки пока скрыты: сначала важен только собственный отклик.</p>
@@ -658,7 +629,10 @@
         </header>
 
         <div class="selection-bar" aria-live="polite">
-          <div class="selection-count"><strong id="selectedCount">0</strong><span id="selectedCountLabel">слов выбрано</span></div>
+          <div class="selection-copy">
+            <div class="selection-count"><strong id="selectedCount">0</strong><span id="selectedCountLabel">слов выбрано</span></div>
+            <span class="selection-more">можно и больше, если откликается</span>
+          </div>
           <span class="selection-hint" id="selectionHint">Минимум 3</span>
         </div>
 
@@ -670,7 +644,6 @@
             <input class="custom-input" id="customWordInput" type="text" maxlength="64" autocomplete="off" placeholder="Например, запах дерева">
             <button class="small-button" type="submit">Добавить</button>
           </form>
-          <div class="custom-selected" id="customSelected" aria-label="Свои слова"></div>
         </section>
 
         <div class="screen-actions">
@@ -735,7 +708,6 @@
       const skipButton = document.getElementById('skipButton');
       const customWordForm = document.getElementById('customWordForm');
       const customWordInput = document.getElementById('customWordInput');
-      const customSelected = document.getElementById('customSelected');
       const scatterStatus = document.getElementById('scatterStatus');
       const shelfGrid = document.getElementById('shelfGrid');
       const snapshotSmallNote = document.getElementById('snapshotSmallNote');
@@ -743,7 +715,8 @@
 
       let storageWasBroken = false;
       let state = restoreState();
-      const scatterOrder = shuffled(WORDS);
+      const scatterSeed = createScatterSeed();
+      const scatterOrder = shuffled(WORDS, scatterSeed);
 
       function emptyState() {
         return { version: 2, selectedIds: [], customWords: [], wave: 1, view: 'scatter', updatedAt: null };
@@ -797,13 +770,31 @@
         if (temporary) window.setTimeout(() => { storageNotice.hidden = true; }, 4200);
       }
 
-      function shuffled(items) {
-        const result = [...items];
-        for (let index = result.length - 1; index > 0; index -= 1) {
+      function createScatterSeed() {
+        if (window.crypto?.getRandomValues) {
           const random = new Uint32Array(1);
-          if (window.crypto?.getRandomValues) window.crypto.getRandomValues(random);
-          else random[0] = Math.floor(Math.random() * 0xffffffff);
-          const target = random[0] % (index + 1);
+          window.crypto.getRandomValues(random);
+          return random[0];
+        }
+        return (Date.now() ^ Math.floor(Math.random() * 0xffffffff)) >>> 0;
+      }
+
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => {
+          value += 0x6d2b79f5;
+          let result = value;
+          result = Math.imul(result ^ result >>> 15, result | 1);
+          result ^= result + Math.imul(result ^ result >>> 7, result | 61);
+          return ((result ^ result >>> 14) >>> 0) / 4294967296;
+        };
+      }
+
+      function shuffled(items, seed) {
+        const result = [...items];
+        const random = seededRandom(seed);
+        for (let index = result.length - 1; index > 0; index -= 1) {
+          const target = Math.floor(random() * (index + 1));
           [result[index], result[target]] = [result[target], result[index]];
         }
         return result;
@@ -849,7 +840,20 @@
           button.style.setProperty('--token-size', `${0.8 + (hash % 5) * 0.035}rem`);
           wordField.append(button);
         });
-        renderCustomWords();
+        state.customWords.forEach((item) => {
+          const hash = Math.abs(hashValue(item.id));
+          const button = document.createElement('button');
+          button.className = 'word-token is-custom';
+          button.type = 'button';
+          button.dataset.customId = item.id;
+          button.textContent = item.word;
+          button.setAttribute('aria-pressed', 'true');
+          button.setAttribute('aria-label', `${item.word}. Своё слово, нажми, чтобы убрать`);
+          button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
+          button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
+          button.style.setProperty('--token-size', `${0.8 + (hash % 5) * 0.035}rem`);
+          wordField.append(button);
+        });
         renderWaveUI();
         updateSelectionUI();
       }
@@ -862,26 +866,9 @@
           : 'Что отзывается сейчас?';
         scatterLead.textContent = isSecondWave
           ? 'Камни и триггеры тоже часть карты — без них она нечестная.'
-          : 'Выбери хотя бы 3 слова, которые откликаются.';
+          : 'Выбери хотя бы 3 слова, которые откликаются. 8–15 — ориентир, не предел.';
         skipButton.hidden = !isSecondWave;
         doneButton.textContent = isSecondWave ? 'Готово' : 'Дальше';
-      }
-
-      function renderCustomWords() {
-        customSelected.replaceChildren();
-        state.customWords.forEach((item) => {
-          const pill = document.createElement('span');
-          pill.className = 'custom-pill';
-          const label = document.createElement('span');
-          label.textContent = item.word;
-          const remove = document.createElement('button');
-          remove.type = 'button';
-          remove.dataset.customId = item.id;
-          remove.setAttribute('aria-label', `Убрать слово «${item.word}»`);
-          remove.textContent = '×';
-          pill.append(label, remove);
-          customSelected.append(pill);
-        });
       }
 
       function updateSelectionUI() {
@@ -892,7 +879,7 @@
         selectionHint.textContent = state.wave === 2
           ? 'Можно закончить или выбрать ещё'
           : count < 3 ? `Ещё ${3 - count} до следующей волны`
-            : count < 8 ? 'Уже можно продолжить' : count <= 15 ? 'Хороший объём' : 'Можно остановиться';
+            : count < 8 ? 'Уже можно продолжить' : count <= 15 ? 'Хороший объём' : 'Выбирай столько, сколько нужно';
       }
 
       function toggleWord(id) {
@@ -934,25 +921,21 @@
         state.view = 'scatter';
         customWordInput.value = '';
         persistState();
-        renderCustomWords();
-        updateSelectionUI();
+        renderScatter();
       }
 
       function removeCustomWord(id) {
         state.customWords = state.customWords.filter((item) => item.id !== id);
         state.view = 'scatter';
         persistState();
-        renderCustomWords();
-        updateSelectionUI();
+        renderScatter();
         scatterStatus.textContent = '';
       }
 
       function summaryForShelf(shelf, words) {
         if (!words.length) return 'Пока пусто. Возможно, сюда стоит заглянуть позже.';
-        const names = words.map((item) => item.word).join(', ');
-        if (shelf.id === 'stones') return `${shelfCountLabel(words.length)}: ${names}. Это отмеченные трудности, не описание «поломки».`;
-        if (shelf.id === 'triggers') return `${shelfCountLabel(words.length)}: ${names}. Это внешние сигналы, не черта характера.`;
-        return `${shelfCountLabel(words.length)}: ${names}.`;
+        if (shelf.id === 'stones') return 'Это отмеченные трудности, не описание «поломки».';
+        return '';
       }
 
       function renderSnapshot() {
@@ -968,8 +951,6 @@
         if (state.customWords.length) {
           const customShelf = { id: 'custom', emoji: '✨', title: 'Своё' };
           const card = createShelfCard(customShelf, state.customWords.map((item) => ({ ...item, shelves: ['custom'] })));
-          const summary = card.querySelector('.shelf-summary');
-          summary.textContent = `${shelfCountLabel(state.customWords.length)} без полки. Место определится позже и только с подтверждением.`;
           shelfGrid.append(card);
         }
       }
@@ -992,12 +973,7 @@
 
         const list = document.createElement('div');
         list.className = 'shelf-words';
-        if (!words.length) {
-          const empty = document.createElement('span');
-          empty.className = 'empty-shelf-copy';
-          empty.textContent = 'Пока пусто';
-          list.append(empty);
-        } else {
+        if (words.length) {
           words.forEach((item) => {
             const word = document.createElement('span');
             word.className = 'shelf-word';
@@ -1010,10 +986,15 @@
           });
         }
 
-        const summary = document.createElement('p');
-        summary.className = 'shelf-summary';
-        summary.textContent = summaryForShelf(shelf, words);
-        article.append(titleRow, list, summary);
+        article.append(titleRow);
+        if (words.length) article.append(list);
+        const summaryText = summaryForShelf(shelf, words);
+        if (summaryText) {
+          const summary = document.createElement('p');
+          summary.className = 'shelf-summary';
+          summary.textContent = summaryText;
+          article.append(summary);
+        }
         return article;
       }
 
@@ -1032,17 +1013,17 @@
 
       wordField.addEventListener('click', (event) => {
         const button = event.target.closest('[data-word-id]');
-        if (button) toggleWord(button.dataset.wordId);
+        if (button) {
+          toggleWord(button.dataset.wordId);
+          return;
+        }
+        const customButton = event.target.closest('[data-custom-id]');
+        if (customButton) removeCustomWord(customButton.dataset.customId);
       });
 
       customWordForm.addEventListener('submit', (event) => {
         event.preventDefault();
         addCustomWord(customWordInput.value);
-      });
-
-      customSelected.addEventListener('click', (event) => {
-        const button = event.target.closest('[data-custom-id]');
-        if (button) removeCustomWord(button.dataset.customId);
       });
 
       doneButton.addEventListener('click', () => {
