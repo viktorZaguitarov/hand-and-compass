@@ -214,11 +214,17 @@
       background: rgba(239, 242, 246, 0.94);
       box-shadow: 0 7px 18px rgba(3, 8, 16, 0.22);
     }
-    body.wave-two .word-token[aria-pressed="true"] {
-      color: #171f2c;
-      border-color: #d8bc86;
-      background: #d8bc86;
-      box-shadow: 0 8px 20px rgba(4, 9, 17, 0.3), inset 0 0 0 2px rgba(255, 248, 224, 0.34);
+    body.wave-two .word-token[aria-pressed="true"].is-wave-one-choice {
+      color: #fffdf6;
+      border-color: #294f45;
+      background: #315f52;
+      box-shadow: 0 8px 20px rgba(4, 9, 17, 0.3), inset 0 0 0 2px rgba(222, 236, 226, 0.28);
+    }
+    body.wave-two .word-token[aria-pressed="true"].is-wave-two-choice {
+      color: #fff8fc;
+      border-color: #d1a9bd;
+      background: linear-gradient(145deg, #8b607b, #624c6e);
+      box-shadow: 0 9px 22px rgba(4, 9, 17, 0.34), inset 0 0 0 2px rgba(244, 215, 230, 0.2);
     }
     body.wave-two .custom-card {
       border-color: rgba(203, 181, 142, 0.24);
@@ -729,11 +735,52 @@
       margin: 0 auto 10px;
     }
 
+    .graph-toolbar-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
+    .graph-zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid rgba(49, 95, 82, 0.16);
+      border-radius: 999px;
+      background: rgba(251, 248, 239, 0.78);
+    }
+
+    .graph-zoom-button {
+      display: inline-grid;
+      place-items: center;
+      width: 36px;
+      min-height: 36px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: var(--forest-dark);
+      background: rgba(220, 233, 223, 0.6);
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .graph-scale {
+      min-width: 42px;
+      color: var(--ink-soft);
+      font-family: var(--sans);
+      font-size: 0.66rem;
+      text-align: center;
+    }
+
     .graph-legend {
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
       gap: 7px 12px;
+      max-width: 1040px;
+      margin: 0 auto 8px;
       color: var(--ink-soft);
       font-family: var(--sans);
       font-size: 0.7rem;
@@ -766,7 +813,7 @@
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42), 0 14px 35px rgba(38, 54, 46, 0.1);
       overscroll-behavior: contain;
       scrollbar-color: rgba(49, 95, 82, 0.32) transparent;
-      touch-action: pan-x pan-y;
+      touch-action: none;
     }
 
     .graph-canvas {
@@ -774,14 +821,61 @@
       width: 1200px;
       height: 820px;
       max-width: none;
+      transform-origin: 0 0;
     }
 
-    .graph-zone { fill: rgba(49, 95, 82, 0.035); stroke: rgba(49, 95, 82, 0.09); stroke-width: 1; }
+    body.graph-fullscreen { overflow: hidden; }
+
+    .graph-screen.is-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      width: 100%;
+      height: 100dvh;
+      padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+      background: #f5f1e7;
+    }
+
+    .graph-screen.is-fullscreen .graph-head {
+      margin-bottom: 7px;
+      padding: 0 6px;
+    }
+
+    .graph-screen.is-fullscreen .graph-head .lead { display: none; }
+    .graph-screen.is-fullscreen .graph-head h1 { margin-bottom: 0; font-size: clamp(1.35rem, 5vw, 2rem); }
+    .graph-screen.is-fullscreen .graph-toolbar { width: 100%; max-width: none; margin-bottom: 7px; }
+    .graph-screen.is-fullscreen .graph-legend { width: 100%; max-width: none; margin-bottom: 6px; }
+    .graph-screen.is-fullscreen .graph-viewport {
+      width: 100%;
+      max-width: none;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      border-radius: 16px;
+    }
+    .graph-screen.is-fullscreen .graph-status { width: 100%; max-width: none; margin-top: 5px; }
+    .graph-screen.is-fullscreen .graph-card {
+      position: absolute;
+      right: max(10px, env(safe-area-inset-right));
+      bottom: max(10px, env(safe-area-inset-bottom));
+      left: max(10px, env(safe-area-inset-left));
+      z-index: 4;
+      max-height: min(44vh, 390px);
+      margin: 0 auto;
+      overflow: auto;
+    }
+
+    .graph-zone { fill: rgba(49, 95, 82, 0.05); stroke: rgba(49, 95, 82, 0.16); stroke-width: 1.5; }
     .graph-zone-label {
-      fill: rgba(49, 70, 62, 0.42);
+      fill: rgba(38, 64, 55, 0.82);
+      stroke: rgba(246, 243, 233, 0.94);
+      stroke-width: 5px;
+      paint-order: stroke fill;
       font-family: var(--sans);
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -791,7 +885,22 @@
       stroke: rgba(49, 95, 82, 0.42);
       stroke-linecap: round;
       stroke-width: 2;
+      pointer-events: none;
       transition: opacity 220ms ease, stroke 220ms ease, stroke-width 220ms ease;
+    }
+
+    .graph-edge-hit {
+      fill: none;
+      stroke: transparent;
+      stroke-width: 28px;
+      pointer-events: stroke;
+      cursor: pointer;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .graph-edge-hit:focus-visible {
+      stroke: rgba(177, 126, 57, 0.18);
+      outline: none;
     }
 
     .graph-edge.is-chain { stroke: #b17e39; stroke-width: 3.5; }
@@ -886,6 +995,36 @@
     .graph-chip.is-unselected { border-style: dashed; background: rgba(238, 230, 212, 0.5); }
     .graph-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
 
+    .graph-neighbor-note {
+      margin: 13px 0 0;
+      padding: 9px 11px;
+      border-left: 3px solid rgba(49, 95, 82, 0.34);
+      color: var(--ink-soft);
+      background: rgba(220, 233, 223, 0.38);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .graph-toast {
+      position: fixed;
+      right: 12px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      left: 12px;
+      z-index: 140;
+      width: min(620px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 13px 15px;
+      border: 1px solid rgba(211, 193, 155, 0.34);
+      border-radius: 16px;
+      color: #f5f1e9;
+      background: rgba(26, 38, 43, 0.96);
+      box-shadow: 0 14px 34px rgba(11, 18, 22, 0.28);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      line-height: 1.42;
+      text-align: center;
+    }
+
     @keyframes graph-node-arrive {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -956,6 +1095,9 @@
       .graph-head { padding-inline: 6px; }
       .graph-toolbar { align-items: flex-start; margin-bottom: 8px; padding-inline: 3px; }
       .graph-toolbar .secondary-button { min-height: 38px; padding: 7px 10px; font-size: 0.74rem; }
+      .graph-toolbar-actions { flex-wrap: wrap; gap: 5px; }
+      .graph-zoom-button { width: 38px; min-height: 38px; }
+      .graph-scale { min-width: 37px; font-size: 0.6rem; }
       .graph-legend { max-width: 180px; gap: 4px 8px; font-size: 0.6rem; }
       .graph-viewport { height: 58vh; min-height: 390px; border-radius: 18px; }
       .graph-canvas { width: 1200px; height: 820px; }
@@ -1076,10 +1218,19 @@
 
         <div class="graph-toolbar">
           <button class="secondary-button" id="graphBackButton" type="button">К слепку</button>
-          <div class="graph-legend" aria-label="Обозначения графа">
-            <span>выбранная связь</span>
-            <span class="is-whisker">слово рядом</span>
+          <div class="graph-toolbar-actions">
+            <div class="graph-zoom-controls" aria-label="Масштаб графа">
+              <button class="graph-zoom-button" id="graphZoomOutButton" type="button" aria-label="Уменьшить граф">−</button>
+              <span class="graph-scale" id="graphScaleLabel" aria-live="polite">100%</span>
+              <button class="graph-zoom-button" id="graphZoomInButton" type="button" aria-label="Увеличить граф">+</button>
+            </div>
+            <button class="secondary-button" id="graphExpandButton" type="button" aria-pressed="false">Развернуть</button>
           </div>
+        </div>
+
+        <div class="graph-legend" aria-label="Обозначения графа">
+          <span>выбранная связь</span>
+          <span class="is-whisker">слово рядом</span>
         </div>
 
         <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
@@ -1087,6 +1238,7 @@
         </div>
         <p class="graph-status" id="graphStatus" aria-live="polite"></p>
         <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
+        <div class="graph-toast" id="graphToast" role="status" aria-live="polite" hidden></div>
       </section>
     </main>
   </div>
@@ -1113,6 +1265,7 @@
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const GRAPH_WIDTH = 1200;
       const GRAPH_HEIGHT = 820;
+      const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
         stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#8c6b91'
@@ -1145,6 +1298,11 @@
       const graphSvg = document.getElementById('graphSvg');
       const graphStatus = document.getElementById('graphStatus');
       const graphCard = document.getElementById('graphCard');
+      const graphZoomOutButton = document.getElementById('graphZoomOutButton');
+      const graphZoomInButton = document.getElementById('graphZoomInButton');
+      const graphScaleLabel = document.getElementById('graphScaleLabel');
+      const graphExpandButton = document.getElementById('graphExpandButton');
+      const graphToast = document.getElementById('graphToast');
       const storageNotice = document.getElementById('storageNotice');
 
       let storageWasBroken = false;
@@ -1153,11 +1311,22 @@
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
       let graphAdjacency = new Map();
+      let graphScale = 1;
+      let graphScaleInitialized = false;
+      let graphFullscreenRestore = null;
+      let graphGesture = null;
+      let graphSuppressClickUntil = 0;
+      let graphLastTap = null;
+      let graphToastTimer = null;
+      const graphTouchPoints = new Map();
       const scatterSeed = createScatterSeed();
       const scatterOrder = shuffled(WORDS, scatterSeed);
 
       function emptyState() {
-        return { version: 2, selectedIds: [], customWords: [], wave: 1, view: 'scatter', updatedAt: null };
+        return {
+          version: 2, selectedIds: [], customWords: [], waveOneIds: [], waveOneCustomIds: [],
+          wave: 1, view: 'scatter', updatedAt: null
+        };
       }
 
       function restoreState() {
@@ -1174,6 +1343,13 @@
                 .map((item) => ({ id: item.id, word: item.word.trim().slice(0, 64) }))
             : [];
           const selectionCount = selectedIds.length + customWords.length;
+          const customIds = new Set(customWords.map((item) => item.id));
+          const waveOneIds = Array.isArray(parsed.waveOneIds)
+            ? [...new Set(parsed.waveOneIds.filter((id) => selectedIds.includes(id)))]
+            : [...selectedIds];
+          const waveOneCustomIds = Array.isArray(parsed.waveOneCustomIds)
+            ? [...new Set(parsed.waveOneCustomIds.filter((id) => customIds.has(id)))]
+            : [...customIds];
           const restoredView = parsed.view === 'graph' && selectionCount
             ? 'graph'
             : parsed.view === 'snapshot' && selectionCount >= 3 ? 'snapshot' : 'scatter';
@@ -1181,6 +1357,8 @@
             version: 2,
             selectedIds,
             customWords,
+            waveOneIds,
+            waveOneCustomIds,
             wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
             view: restoredView,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
@@ -1277,7 +1455,10 @@
           button.type = 'button';
           button.dataset.wordId = item.id;
           button.textContent = item.word;
-          button.setAttribute('aria-pressed', String(state.selectedIds.includes(item.id)));
+          const isSelected = state.selectedIds.includes(item.id);
+          button.setAttribute('aria-pressed', String(isSelected));
+          button.classList.toggle('is-wave-one-choice', isSelected && state.waveOneIds.includes(item.id));
+          button.classList.toggle('is-wave-two-choice', isSelected && !state.waveOneIds.includes(item.id));
           button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
           button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
           button.style.setProperty('--token-size', `${0.8 + (hash % 5) * 0.035}rem`);
@@ -1291,6 +1472,8 @@
           button.dataset.customId = item.id;
           button.textContent = item.word;
           button.setAttribute('aria-pressed', 'true');
+          button.classList.toggle('is-wave-one-choice', state.waveOneCustomIds.includes(item.id));
+          button.classList.toggle('is-wave-two-choice', !state.waveOneCustomIds.includes(item.id));
           button.setAttribute('aria-label', `${item.word}. Своё слово, нажми, чтобы убрать`);
           button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
           button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
@@ -1329,13 +1512,23 @@
 
       function toggleWord(id) {
         if (!WORD_BY_ID.has(id)) return;
-        state.selectedIds = state.selectedIds.includes(id)
-          ? state.selectedIds.filter((item) => item !== id)
-          : [...state.selectedIds, id];
+        const wasSelected = state.selectedIds.includes(id);
+        if (wasSelected) {
+          state.selectedIds = state.selectedIds.filter((item) => item !== id);
+          state.waveOneIds = state.waveOneIds.filter((item) => item !== id);
+        } else {
+          state.selectedIds.push(id);
+          if (state.wave === 1 && !state.waveOneIds.includes(id)) state.waveOneIds.push(id);
+        }
         state.view = 'scatter';
         persistState();
         const button = wordField.querySelector(`[data-word-id="${CSS.escape(id)}"]`);
-        if (button) button.setAttribute('aria-pressed', String(state.selectedIds.includes(id)));
+        if (button) {
+          const isSelected = state.selectedIds.includes(id);
+          button.setAttribute('aria-pressed', String(isSelected));
+          button.classList.toggle('is-wave-one-choice', isSelected && state.waveOneIds.includes(id));
+          button.classList.toggle('is-wave-two-choice', isSelected && !state.waveOneIds.includes(id));
+        }
         updateSelectionUI();
         scatterStatus.textContent = '';
       }
@@ -1351,7 +1544,10 @@
 
         const dictionaryMatch = WORDS.find((item) => normalizeWord(item.word) === normalized);
         if (dictionaryMatch) {
-          if (!state.selectedIds.includes(dictionaryMatch.id)) state.selectedIds.push(dictionaryMatch.id);
+          if (!state.selectedIds.includes(dictionaryMatch.id)) {
+            state.selectedIds.push(dictionaryMatch.id);
+            if (state.wave === 1 && !state.waveOneIds.includes(dictionaryMatch.id)) state.waveOneIds.push(dictionaryMatch.id);
+          }
           const token = wordField.querySelector(`[data-word-id="${CSS.escape(dictionaryMatch.id)}"]`);
           if (token) token.setAttribute('aria-pressed', 'true');
           scatterStatus.textContent = 'Это слово уже есть в россыпи — оно отмечено.';
@@ -1359,7 +1555,9 @@
           scatterStatus.textContent = 'Это слово уже добавлено.';
         } else {
           const randomPart = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-          state.customWords.push({ id: `custom:${randomPart}`, word: clean });
+          const customId = `custom:${randomPart}`;
+          state.customWords.push({ id: customId, word: clean });
+          if (state.wave === 1) state.waveOneCustomIds.push(customId);
           scatterStatus.textContent = 'Своё слово добавлено. Полка определится позже.';
         }
 
@@ -1371,6 +1569,7 @@
 
       function removeCustomWord(id) {
         state.customWords = state.customWords.filter((item) => item.id !== id);
+        state.waveOneCustomIds = state.waveOneCustomIds.filter((item) => item !== id);
         state.view = 'scatter';
         persistState();
         renderScatter();
@@ -1479,6 +1678,99 @@
 
       function graphNodeWidth(item) {
         return Math.min(184, Math.max(92, 34 + item.word.length * 7));
+      }
+
+      function graphMinimumScale() {
+        const viewportWidth = Math.max(280, graphViewport.clientWidth || window.innerWidth);
+        return Math.min(1, Math.max(0.2, (viewportWidth - 4) / GRAPH_WIDTH));
+      }
+
+      function setGraphScaleValue(value) {
+        const minimum = graphMinimumScale();
+        graphScale = Math.min(2.4, Math.max(minimum, value));
+        graphSvg.style.width = `${GRAPH_WIDTH * graphScale}px`;
+        graphSvg.style.height = `${GRAPH_HEIGHT * graphScale}px`;
+        graphScaleLabel.textContent = `${Math.round(graphScale * 100)}%`;
+        graphZoomOutButton.disabled = graphScale <= minimum + 0.005;
+        graphZoomInButton.disabled = graphScale >= 2.395;
+      }
+
+      function zoomGraphTo(value, anchorX = graphViewport.clientWidth / 2, anchorY = graphViewport.clientHeight / 2) {
+        const previousScale = graphScale || 1;
+        const contentX = (graphViewport.scrollLeft + anchorX) / previousScale;
+        const contentY = (graphViewport.scrollTop + anchorY) / previousScale;
+        setGraphScaleValue(value);
+        graphViewport.scrollLeft = contentX * graphScale - anchorX;
+        graphViewport.scrollTop = contentY * graphScale - anchorY;
+      }
+
+      function fitGraphToViewport() {
+        setGraphScaleValue(graphMinimumScale());
+        graphScaleInitialized = true;
+        graphViewport.scrollLeft = 0;
+        graphViewport.scrollTop = 0;
+      }
+
+      function setGraphFullscreen(expanded, restorePrevious = true) {
+        const isExpanded = graphScreen.classList.contains('is-fullscreen');
+        if (expanded === isExpanded) return;
+        if (expanded) {
+          graphFullscreenRestore = {
+            scale: graphScale,
+            left: graphViewport.scrollLeft,
+            top: graphViewport.scrollTop
+          };
+          graphScreen.classList.add('is-fullscreen');
+          document.body.classList.add('graph-fullscreen');
+          graphExpandButton.textContent = 'Свернуть';
+          graphExpandButton.setAttribute('aria-pressed', 'true');
+          window.requestAnimationFrame(fitGraphToViewport);
+          return;
+        }
+
+        graphScreen.classList.remove('is-fullscreen');
+        document.body.classList.remove('graph-fullscreen');
+        graphExpandButton.textContent = 'Развернуть';
+        graphExpandButton.setAttribute('aria-pressed', 'false');
+        const previous = graphFullscreenRestore;
+        graphFullscreenRestore = null;
+        window.requestAnimationFrame(() => {
+          if (restorePrevious && previous) {
+            setGraphScaleValue(previous.scale);
+            graphViewport.scrollLeft = previous.left;
+            graphViewport.scrollTop = previous.top;
+          } else if (!graphScreen.hidden) {
+            fitGraphToViewport();
+          }
+        });
+      }
+
+      function graphTouchPoint(event) {
+        const rect = graphViewport.getBoundingClientRect();
+        return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+      }
+
+      function beginGraphGesture() {
+        const points = [...graphTouchPoints.values()];
+        if (points.length === 1) {
+          graphGesture = {
+            type: 'pan', startX: points[0].x, startY: points[0].y,
+            startLeft: graphViewport.scrollLeft, startTop: graphViewport.scrollTop, moved: false
+          };
+          return;
+        }
+        if (points.length >= 2) {
+          const [first, second] = points;
+          const midpoint = { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 };
+          graphGesture = {
+            type: 'pinch',
+            startDistance: Math.max(1, Math.hypot(second.x - first.x, second.y - first.y)),
+            startScale: graphScale,
+            contentX: (graphViewport.scrollLeft + midpoint.x) / graphScale,
+            contentY: (graphViewport.scrollTop + midpoint.y) / graphScale,
+            moved: false
+          };
+        }
       }
 
       function buildGraphAdjacency(items) {
@@ -1608,7 +1900,19 @@
               'data-source': id,
               'data-target': neighborId
             });
-            graphSvg.append(edge);
+            const sourceItem = itemMap.get(id);
+            const targetItem = itemMap.get(neighborId);
+            const edgeHit = svgElement('path', {
+              class: 'graph-edge-hit',
+              d: graphCurve(source, target, `${id}:${neighborId}`),
+              tabindex: 0,
+              role: 'button',
+              'aria-label': `Объяснить связь «${sourceItem.word}» и «${targetItem.word}»`,
+              'data-graph-edge': 'true',
+              'data-source': id,
+              'data-target': neighborId
+            });
+            graphSvg.append(edge, edgeHit);
             edgeCount += 1;
           });
         });
@@ -1679,6 +1983,7 @@
           graphCard.hidden = true;
           updateGraphHighlight();
         }
+        if (!graphScaleInitialized) window.requestAnimationFrame(fitGraphToViewport);
       }
 
       function graphChainFrom(id) {
@@ -1765,11 +2070,14 @@
 
         const neighbors = (item.neighbors || []).map((neighborId) => WORD_BY_ID.get(neighborId)).filter(Boolean);
         if (neighbors.length) {
+          const explanation = document.createElement('p');
+          explanation.className = 'graph-neighbor-note';
+          explanation.textContent = NEIGHBOR_EXPLANATION;
           const neighborsSection = cardSection('Соседи');
           neighbors.forEach((neighbor) => neighborsSection.chips.append(cardChip(neighbor.word, {
             button: true, wordId: neighbor.id, unselected: !isGraphItemSelected(neighbor.id)
           })));
-          graphCard.append(neighborsSection.section);
+          graphCard.append(explanation, neighborsSection.section);
         }
 
         const shadow = item.antonym ? WORD_BY_ID.get(item.antonym) : null;
@@ -1849,6 +2157,11 @@
         const isScatter = view === 'scatter';
         const isSnapshot = view === 'snapshot';
         const isGraph = view === 'graph';
+        if (!isGraph && graphScreen.classList.contains('is-fullscreen')) setGraphFullscreen(false, false);
+        if (!isGraph) {
+          graphToast.hidden = true;
+          if (graphToastTimer) window.clearTimeout(graphToastTimer);
+        }
         scatterScreen.hidden = !isScatter;
         snapshotScreen.hidden = !isSnapshot;
         graphScreen.hidden = !isGraph;
@@ -1888,6 +2201,8 @@
       doneButton.addEventListener('click', () => {
         if (state.wave === 1) {
           if (totalSelected() < 3) return;
+          state.waveOneIds = [...state.selectedIds];
+          state.waveOneCustomIds = state.customWords.map((item) => item.id);
           state.wave = 2;
           state.view = 'scatter';
           persistState();
@@ -1914,6 +2229,14 @@
       });
 
       function activateGraphTarget(target) {
+        const edge = target.closest('[data-graph-edge]');
+        if (edge) {
+          graphToast.textContent = NEIGHBOR_EXPLANATION;
+          graphToast.hidden = false;
+          if (graphToastTimer) window.clearTimeout(graphToastTimer);
+          graphToastTimer = window.setTimeout(() => { graphToast.hidden = true; }, 5200);
+          return;
+        }
         const node = target.closest('[data-graph-node-id]');
         if (node) {
           selectGraphNode(node.dataset.graphNodeId);
@@ -1923,10 +2246,73 @@
         if (ghost) showGraphAddProposal(ghost.dataset.ghostId);
       }
 
-      graphSvg.addEventListener('click', (event) => activateGraphTarget(event.target));
+      graphViewport.addEventListener('pointerdown', (event) => {
+        if (event.pointerType !== 'touch') return;
+        const point = graphTouchPoint(event);
+        graphTouchPoints.set(event.pointerId, point);
+        graphViewport.setPointerCapture?.(event.pointerId);
+        beginGraphGesture();
+      });
+
+      graphViewport.addEventListener('pointermove', (event) => {
+        if (event.pointerType !== 'touch' || !graphTouchPoints.has(event.pointerId)) return;
+        graphTouchPoints.set(event.pointerId, graphTouchPoint(event));
+        const points = [...graphTouchPoints.values()];
+        if (points.length >= 2 && graphGesture?.type !== 'pinch') beginGraphGesture();
+        if (points.length === 1 && graphGesture?.type === 'pan') {
+          const point = points[0];
+          const dx = point.x - graphGesture.startX;
+          const dy = point.y - graphGesture.startY;
+          if (Math.hypot(dx, dy) > 4) graphGesture.moved = true;
+          graphViewport.scrollLeft = graphGesture.startLeft - dx;
+          graphViewport.scrollTop = graphGesture.startTop - dy;
+          if (graphGesture.moved) event.preventDefault();
+          return;
+        }
+        if (points.length >= 2 && graphGesture?.type === 'pinch') {
+          const [first, second] = points;
+          const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+          const midpoint = { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 };
+          if (Math.abs(distance - graphGesture.startDistance) > 3) graphGesture.moved = true;
+          setGraphScaleValue(graphGesture.startScale * distance / graphGesture.startDistance);
+          graphViewport.scrollLeft = graphGesture.contentX * graphScale - midpoint.x;
+          graphViewport.scrollTop = graphGesture.contentY * graphScale - midpoint.y;
+          event.preventDefault();
+        }
+      });
+
+      function finishGraphPointer(event) {
+        if (event.pointerType !== 'touch' || !graphTouchPoints.has(event.pointerId)) return;
+        const point = graphTouchPoints.get(event.pointerId);
+        const wasSingleTap = graphTouchPoints.size === 1 && graphGesture?.type === 'pan' && !graphGesture.moved;
+        const moved = Boolean(graphGesture?.moved);
+        graphTouchPoints.delete(event.pointerId);
+        graphViewport.releasePointerCapture?.(event.pointerId);
+        if (moved) graphSuppressClickUntil = Date.now() + 360;
+        if (wasSingleTap) {
+          const now = Date.now();
+          if (graphLastTap && now - graphLastTap.time < 330 && Math.hypot(point.x - graphLastTap.x, point.y - graphLastTap.y) < 34) {
+            zoomGraphTo(graphScale * 1.55, point.x, point.y);
+            graphLastTap = null;
+            graphSuppressClickUntil = now + 360;
+          } else {
+            graphLastTap = { time: now, x: point.x, y: point.y };
+          }
+        }
+        if (graphTouchPoints.size) beginGraphGesture();
+        else graphGesture = null;
+      }
+
+      graphViewport.addEventListener('pointerup', finishGraphPointer);
+      graphViewport.addEventListener('pointercancel', finishGraphPointer);
+
+      graphSvg.addEventListener('click', (event) => {
+        if (Date.now() < graphSuppressClickUntil) return;
+        activateGraphTarget(event.target);
+      });
       graphSvg.addEventListener('keydown', (event) => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
-        const target = event.target.closest('[data-graph-node-id], [data-ghost-id]');
+        const target = event.target.closest('[data-graph-node-id], [data-ghost-id], [data-graph-edge]');
         if (!target) return;
         event.preventDefault();
         activateGraphTarget(target);
@@ -1969,6 +2355,15 @@
 
       document.getElementById('graphButton').addEventListener('click', () => showView('graph'));
       document.getElementById('graphBackButton').addEventListener('click', () => showView('snapshot'));
+      graphZoomOutButton.addEventListener('click', () => zoomGraphTo(graphScale / 1.3));
+      graphZoomInButton.addEventListener('click', () => zoomGraphTo(graphScale * 1.3));
+      graphExpandButton.addEventListener('click', () => setGraphFullscreen(!graphScreen.classList.contains('is-fullscreen')));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && graphScreen.classList.contains('is-fullscreen')) setGraphFullscreen(false);
+      });
+      window.addEventListener('resize', () => {
+        if (!graphScreen.hidden) window.requestAnimationFrame(fitGraphToViewport);
+      });
 
       renderScatter();
       if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
