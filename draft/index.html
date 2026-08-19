@@ -144,6 +144,8 @@
       padding: 24px 18px 18px;
     }
 
+    #scatterScreen { padding-bottom: 112px; }
+
     .screen-head {
       max-width: 760px;
       margin: 0 auto;
@@ -411,22 +413,24 @@
     }
 
     .screen-actions {
-      position: sticky;
+      position: fixed;
+      left: 50%;
       bottom: max(8px, env(safe-area-inset-bottom));
-      z-index: 6;
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
       width: fit-content;
-      max-width: 100%;
-      margin: 8px auto 0;
+      max-width: calc(100vw - 24px);
+      margin: 0;
       padding: 9px;
       border: 1px solid rgba(49, 95, 82, 0.15);
       border-radius: 18px;
       background: rgba(251, 248, 239, 0.91);
       box-shadow: 0 10px 28px rgba(38, 54, 46, 0.13);
       backdrop-filter: blur(14px);
+      transform: translateX(-50%);
     }
 
     .action-status {
@@ -439,6 +443,15 @@
     }
 
     .snapshot-head { margin-bottom: 23px; }
+
+    .snapshot-small-note {
+      max-width: 650px;
+      margin: 13px auto 0;
+      color: var(--ink-soft);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
 
     .honesty-note {
       display: flex;
@@ -635,9 +648,9 @@
 
       <section class="screen" id="scatterScreen" aria-labelledby="scatterTitle">
         <header class="screen-head">
-          <p class="eyebrow">Слепок · шаг 1 из 2</p>
+          <p class="eyebrow" id="scatterEyebrow">Слепок · волна 1 из 2</p>
           <h1 id="scatterTitle" tabindex="-1">Что отзывается сейчас?</h1>
-          <p class="lead">Выбери 8–15 слов, которые откликаются.</p>
+          <p class="lead" id="scatterLead">Выбери хотя бы 3 слова, которые откликаются.</p>
           <details class="help">
             <summary>Подробнее</summary>
             <p>Здесь нет правильного набора. Полки пока скрыты: сначала важен только собственный отклик.</p>
@@ -646,7 +659,7 @@
 
         <div class="selection-bar" aria-live="polite">
           <div class="selection-count"><strong id="selectedCount">0</strong><span id="selectedCountLabel">слов выбрано</span></div>
-          <span class="selection-hint" id="selectionHint">Минимум 5</span>
+          <span class="selection-hint" id="selectionHint">Минимум 3</span>
         </div>
 
         <div class="word-field" id="wordField" aria-label="Россыпь слов"></div>
@@ -661,7 +674,8 @@
         </section>
 
         <div class="screen-actions">
-          <button class="primary-button" id="doneButton" type="button" disabled>Готово</button>
+          <button class="secondary-button" id="skipButton" type="button" hidden>Пропустить</button>
+          <button class="primary-button" id="doneButton" type="button" disabled>Дальше</button>
         </div>
         <p class="action-status" id="scatterStatus" aria-live="polite"></p>
       </section>
@@ -675,6 +689,7 @@
             <span aria-hidden="true">◇</span>
             <span><strong>Это не тип и не диагноз.</strong> Только текущий выбор; его можно изменить.</span>
           </div>
+          <p class="snapshot-small-note" id="snapshotSmallNote" hidden>Слепок получился маленьким — можно вернуться и добавить слова в любой момент.</p>
         </header>
 
         <div class="shelf-grid" id="shelfGrid"></div>
@@ -709,16 +724,21 @@
 
       const scatterScreen = document.getElementById('scatterScreen');
       const snapshotScreen = document.getElementById('snapshotScreen');
+      const scatterEyebrow = document.getElementById('scatterEyebrow');
+      const scatterTitle = document.getElementById('scatterTitle');
+      const scatterLead = document.getElementById('scatterLead');
       const wordField = document.getElementById('wordField');
       const selectedCount = document.getElementById('selectedCount');
       const selectedCountLabel = document.getElementById('selectedCountLabel');
       const selectionHint = document.getElementById('selectionHint');
       const doneButton = document.getElementById('doneButton');
+      const skipButton = document.getElementById('skipButton');
       const customWordForm = document.getElementById('customWordForm');
       const customWordInput = document.getElementById('customWordInput');
       const customSelected = document.getElementById('customSelected');
       const scatterStatus = document.getElementById('scatterStatus');
       const shelfGrid = document.getElementById('shelfGrid');
+      const snapshotSmallNote = document.getElementById('snapshotSmallNote');
       const storageNotice = document.getElementById('storageNotice');
 
       let storageWasBroken = false;
@@ -726,7 +746,7 @@
       const scatterOrder = shuffled(WORDS);
 
       function emptyState() {
-        return { version: 2, selectedIds: [], customWords: [], view: 'scatter', updatedAt: null };
+        return { version: 2, selectedIds: [], customWords: [], wave: 1, view: 'scatter', updatedAt: null };
       }
 
       function restoreState() {
@@ -742,11 +762,13 @@
             ? parsed.customWords.filter((item) => item && typeof item.id === 'string' && typeof item.word === 'string' && item.word.trim())
                 .map((item) => ({ id: item.id, word: item.word.trim().slice(0, 64) }))
             : [];
+          const selectionCount = selectedIds.length + customWords.length;
           return {
             version: 2,
             selectedIds,
             customWords,
-            view: parsed.view === 'snapshot' && selectedIds.length + customWords.length >= 5 ? 'snapshot' : 'scatter',
+            wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
+            view: parsed.view === 'snapshot' && selectionCount >= 3 ? 'snapshot' : 'scatter',
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -828,7 +850,21 @@
           wordField.append(button);
         });
         renderCustomWords();
+        renderWaveUI();
         updateSelectionUI();
+      }
+
+      function renderWaveUI() {
+        const isSecondWave = state.wave === 2;
+        scatterEyebrow.textContent = `Слепок · волна ${isSecondWave ? 2 : 1} из 2`;
+        scatterTitle.textContent = isSecondWave
+          ? 'А теперь честнее: что раздражает, мешает, выбивает?'
+          : 'Что отзывается сейчас?';
+        scatterLead.textContent = isSecondWave
+          ? 'Камни и триггеры тоже часть карты — без них она нечестная.'
+          : 'Выбери хотя бы 3 слова, которые откликаются.';
+        skipButton.hidden = !isSecondWave;
+        doneButton.textContent = isSecondWave ? 'Готово' : 'Дальше';
       }
 
       function renderCustomWords() {
@@ -852,10 +888,11 @@
         const count = totalSelected();
         selectedCount.textContent = String(count);
         selectedCountLabel.textContent = wordCountLabel(count);
-        doneButton.disabled = count < 5;
-        selectionHint.textContent = count < 5
-          ? `Ещё ${5 - count} до слепка`
-          : count < 8 ? 'Уже можно продолжить' : count <= 15 ? 'Хороший объём' : 'Можно остановиться';
+        doneButton.disabled = state.wave === 1 && count < 3;
+        selectionHint.textContent = state.wave === 2
+          ? 'Можно закончить или выбрать ещё'
+          : count < 3 ? `Ещё ${3 - count} до следующей волны`
+            : count < 8 ? 'Уже можно продолжить' : count <= 15 ? 'Хороший объём' : 'Можно остановиться';
       }
 
       function toggleWord(id) {
@@ -920,6 +957,7 @@
 
       function renderSnapshot() {
         shelfGrid.replaceChildren();
+        snapshotSmallNote.hidden = totalSelected() >= 5;
         const selectedWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
 
         SHELVES.forEach((shelf) => {
@@ -1008,14 +1046,28 @@
       });
 
       doneButton.addEventListener('click', () => {
-        if (totalSelected() < 5) return;
+        if (state.wave === 1) {
+          if (totalSelected() < 3) return;
+          state.wave = 2;
+          state.view = 'scatter';
+          persistState();
+          renderWaveUI();
+          updateSelectionUI();
+          window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+          window.requestAnimationFrame(() => scatterTitle.focus?.());
+          return;
+        }
         showView('snapshot');
+      });
+
+      skipButton.addEventListener('click', () => {
+        if (state.wave === 2) showView('snapshot');
       });
 
       document.getElementById('editButton').addEventListener('click', () => showView('scatter'));
 
       renderScatter();
-      if (state.view === 'snapshot' && totalSelected() >= 5) showView('snapshot', false, false);
+      if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
       else showView('scatter', false, false);
     })();
   </script>
