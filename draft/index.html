@@ -214,11 +214,17 @@
       background: rgba(239, 242, 246, 0.94);
       box-shadow: 0 7px 18px rgba(3, 8, 16, 0.22);
     }
-    body.wave-two .word-token[aria-pressed="true"] {
-      color: #171f2c;
-      border-color: #d8bc86;
-      background: #d8bc86;
-      box-shadow: 0 8px 20px rgba(4, 9, 17, 0.3), inset 0 0 0 2px rgba(255, 248, 224, 0.34);
+    body.wave-two .word-token[aria-pressed="true"].is-wave-one-choice {
+      color: #fffdf6;
+      border-color: #294f45;
+      background: #315f52;
+      box-shadow: 0 8px 20px rgba(4, 9, 17, 0.3), inset 0 0 0 2px rgba(222, 236, 226, 0.28);
+    }
+    body.wave-two .word-token[aria-pressed="true"].is-wave-two-choice {
+      color: #fff8fc;
+      border-color: #d1a9bd;
+      background: linear-gradient(145deg, #8b607b, #624c6e);
+      box-shadow: 0 9px 22px rgba(4, 9, 17, 0.34), inset 0 0 0 2px rgba(244, 215, 230, 0.2);
     }
     body.wave-two .custom-card {
       border-color: rgba(203, 181, 142, 0.24);
@@ -1157,7 +1163,10 @@
       const scatterOrder = shuffled(WORDS, scatterSeed);
 
       function emptyState() {
-        return { version: 2, selectedIds: [], customWords: [], wave: 1, view: 'scatter', updatedAt: null };
+        return {
+          version: 2, selectedIds: [], customWords: [], waveOneIds: [], waveOneCustomIds: [],
+          wave: 1, view: 'scatter', updatedAt: null
+        };
       }
 
       function restoreState() {
@@ -1174,6 +1183,13 @@
                 .map((item) => ({ id: item.id, word: item.word.trim().slice(0, 64) }))
             : [];
           const selectionCount = selectedIds.length + customWords.length;
+          const customIds = new Set(customWords.map((item) => item.id));
+          const waveOneIds = Array.isArray(parsed.waveOneIds)
+            ? [...new Set(parsed.waveOneIds.filter((id) => selectedIds.includes(id)))]
+            : [...selectedIds];
+          const waveOneCustomIds = Array.isArray(parsed.waveOneCustomIds)
+            ? [...new Set(parsed.waveOneCustomIds.filter((id) => customIds.has(id)))]
+            : [...customIds];
           const restoredView = parsed.view === 'graph' && selectionCount
             ? 'graph'
             : parsed.view === 'snapshot' && selectionCount >= 3 ? 'snapshot' : 'scatter';
@@ -1181,6 +1197,8 @@
             version: 2,
             selectedIds,
             customWords,
+            waveOneIds,
+            waveOneCustomIds,
             wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
             view: restoredView,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
@@ -1277,7 +1295,10 @@
           button.type = 'button';
           button.dataset.wordId = item.id;
           button.textContent = item.word;
-          button.setAttribute('aria-pressed', String(state.selectedIds.includes(item.id)));
+          const isSelected = state.selectedIds.includes(item.id);
+          button.setAttribute('aria-pressed', String(isSelected));
+          button.classList.toggle('is-wave-one-choice', isSelected && state.waveOneIds.includes(item.id));
+          button.classList.toggle('is-wave-two-choice', isSelected && !state.waveOneIds.includes(item.id));
           button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
           button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
           button.style.setProperty('--token-size', `${0.8 + (hash % 5) * 0.035}rem`);
@@ -1291,6 +1312,8 @@
           button.dataset.customId = item.id;
           button.textContent = item.word;
           button.setAttribute('aria-pressed', 'true');
+          button.classList.toggle('is-wave-one-choice', state.waveOneCustomIds.includes(item.id));
+          button.classList.toggle('is-wave-two-choice', !state.waveOneCustomIds.includes(item.id));
           button.setAttribute('aria-label', `${item.word}. Своё слово, нажми, чтобы убрать`);
           button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
           button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
@@ -1329,13 +1352,23 @@
 
       function toggleWord(id) {
         if (!WORD_BY_ID.has(id)) return;
-        state.selectedIds = state.selectedIds.includes(id)
-          ? state.selectedIds.filter((item) => item !== id)
-          : [...state.selectedIds, id];
+        const wasSelected = state.selectedIds.includes(id);
+        if (wasSelected) {
+          state.selectedIds = state.selectedIds.filter((item) => item !== id);
+          state.waveOneIds = state.waveOneIds.filter((item) => item !== id);
+        } else {
+          state.selectedIds.push(id);
+          if (state.wave === 1 && !state.waveOneIds.includes(id)) state.waveOneIds.push(id);
+        }
         state.view = 'scatter';
         persistState();
         const button = wordField.querySelector(`[data-word-id="${CSS.escape(id)}"]`);
-        if (button) button.setAttribute('aria-pressed', String(state.selectedIds.includes(id)));
+        if (button) {
+          const isSelected = state.selectedIds.includes(id);
+          button.setAttribute('aria-pressed', String(isSelected));
+          button.classList.toggle('is-wave-one-choice', isSelected && state.waveOneIds.includes(id));
+          button.classList.toggle('is-wave-two-choice', isSelected && !state.waveOneIds.includes(id));
+        }
         updateSelectionUI();
         scatterStatus.textContent = '';
       }
@@ -1351,7 +1384,10 @@
 
         const dictionaryMatch = WORDS.find((item) => normalizeWord(item.word) === normalized);
         if (dictionaryMatch) {
-          if (!state.selectedIds.includes(dictionaryMatch.id)) state.selectedIds.push(dictionaryMatch.id);
+          if (!state.selectedIds.includes(dictionaryMatch.id)) {
+            state.selectedIds.push(dictionaryMatch.id);
+            if (state.wave === 1 && !state.waveOneIds.includes(dictionaryMatch.id)) state.waveOneIds.push(dictionaryMatch.id);
+          }
           const token = wordField.querySelector(`[data-word-id="${CSS.escape(dictionaryMatch.id)}"]`);
           if (token) token.setAttribute('aria-pressed', 'true');
           scatterStatus.textContent = 'Это слово уже есть в россыпи — оно отмечено.';
@@ -1359,7 +1395,9 @@
           scatterStatus.textContent = 'Это слово уже добавлено.';
         } else {
           const randomPart = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-          state.customWords.push({ id: `custom:${randomPart}`, word: clean });
+          const customId = `custom:${randomPart}`;
+          state.customWords.push({ id: customId, word: clean });
+          if (state.wave === 1) state.waveOneCustomIds.push(customId);
           scatterStatus.textContent = 'Своё слово добавлено. Полка определится позже.';
         }
 
@@ -1371,6 +1409,7 @@
 
       function removeCustomWord(id) {
         state.customWords = state.customWords.filter((item) => item.id !== id);
+        state.waveOneCustomIds = state.waveOneCustomIds.filter((item) => item !== id);
         state.view = 'scatter';
         persistState();
         renderScatter();
@@ -1888,6 +1927,8 @@
       doneButton.addEventListener('click', () => {
         if (state.wave === 1) {
           if (totalSelected() < 3) return;
+          state.waveOneIds = [...state.selectedIds];
+          state.waveOneCustomIds = state.customWords.map((item) => item.id);
           state.wave = 2;
           state.view = 'scatter';
           persistState();
