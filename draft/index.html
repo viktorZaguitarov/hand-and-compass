@@ -735,6 +735,14 @@
       margin: 0 auto 10px;
     }
 
+    .graph-toolbar-nav {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .graph-toolbar-nav .secondary-button { white-space: nowrap; }
+
     .graph-toolbar-actions {
       display: flex;
       align-items: center;
@@ -818,8 +826,8 @@
 
     .graph-canvas {
       display: block;
-      width: 1200px;
-      height: 820px;
+      width: 2376px;
+      height: 2376px;
       max-width: none;
       transform-origin: 0 0;
     }
@@ -867,14 +875,11 @@
       overflow: auto;
     }
 
-    .graph-zone { fill: rgba(49, 95, 82, 0.045); stroke: rgba(49, 95, 82, 0.14); stroke-width: 1.5; }
+    .graph-zone { fill: rgba(49, 95, 82, 0.055); stroke: rgba(49, 95, 82, 0.13); stroke-width: 1.2; }
     .graph-zone-label {
-      fill: rgba(38, 64, 55, 0.62);
-      stroke: rgba(246, 243, 233, 0.9);
-      stroke-width: 7px;
-      paint-order: stroke fill;
+      fill: rgba(38, 64, 55, 0.24);
       font-family: var(--sans);
-      font-size: 38px;
+      font-size: 48px;
       font-weight: 850;
       letter-spacing: 0.07em;
       pointer-events: none;
@@ -928,16 +933,16 @@
     .graph-node {
       cursor: pointer;
       opacity: 1;
-      transform: translate(var(--node-x), var(--node-y));
+      transform: translate(var(--node-x), var(--node-y)) rotate(var(--node-tilt, 0deg));
       animation: graph-node-arrive 420ms ease both;
       transition: opacity 220ms ease, filter 220ms ease;
     }
 
     .graph-node-plate {
-      fill: var(--node-color, #66877b);
-      stroke: rgba(255, 255, 255, 0.74);
-      stroke-width: 2;
-      filter: drop-shadow(0 7px 9px rgba(32, 51, 45, 0.16));
+      fill: color-mix(in srgb, var(--node-color, #66877b) 90%, #fffdf7);
+      stroke: rgba(255, 255, 255, 0.66);
+      stroke-width: 1.15;
+      filter: drop-shadow(0 4px 7px rgba(32, 51, 45, 0.2));
     }
 
     .graph-node-label {
@@ -949,8 +954,8 @@
     }
 
     .graph-node.is-heavy .graph-node-plate {
-      stroke-width: 3;
-      filter: drop-shadow(0 9px 11px rgba(18, 25, 29, 0.3));
+      stroke-width: 1.8;
+      filter: drop-shadow(0 6px 9px rgba(18, 25, 29, 0.3));
     }
 
     .graph-node.is-pressured .graph-node-plate {
@@ -1202,10 +1207,11 @@
     .intersection-words { display: flex; flex-wrap: wrap; gap: 6px; }
     .intersection-word {
       padding: 6px 9px;
-      border: 1px solid rgba(49, 95, 82, 0.15);
+      border: 1px solid color-mix(in srgb, var(--shelf-accent) 44%, transparent);
       border-radius: 999px;
-      color: var(--forest-dark);
-      background: rgba(255, 253, 247, 0.78);
+      color: color-mix(in srgb, var(--shelf-accent) 76%, #1f332d);
+      background: color-mix(in srgb, var(--shelf-accent) 17%, #fffdf7);
+      box-shadow: 0 3px 8px color-mix(in srgb, var(--shelf-accent) 12%, transparent);
       font-size: 0.71rem;
       line-height: 1.25;
     }
@@ -1232,6 +1238,16 @@
       line-height: 1.42;
     }
 
+    .friction-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .friction-label { color: var(--ink-soft); }
+    .friction-arrow { color: var(--rose); font-weight: 800; }
+
     .intersection-honesty {
       margin: 3px 0 0;
       padding: 12px 13px;
@@ -1251,8 +1267,8 @@
     }
 
     @keyframes graph-node-arrive {
-      from { opacity: 0; transform: translate(var(--anchor-x), var(--anchor-y)); }
-      to { opacity: 1; transform: translate(var(--node-x), var(--node-y)); }
+      from { opacity: 0; transform: translate(var(--anchor-x), var(--anchor-y)) rotate(var(--node-tilt, 0deg)); }
+      to { opacity: 1; transform: translate(var(--node-x), var(--node-y)) rotate(var(--node-tilt, 0deg)); }
     }
 
     @media (max-width: 639px) {
@@ -1319,13 +1335,14 @@
       .graph-screen { padding-inline: 9px; }
       .graph-head { padding-inline: 6px; }
       .graph-toolbar { align-items: flex-start; margin-bottom: 8px; padding-inline: 3px; }
+      .graph-toolbar-nav { flex-direction: column; align-items: stretch; gap: 5px; }
       .graph-toolbar .secondary-button { min-height: 38px; padding: 7px 10px; font-size: 0.74rem; }
       .graph-toolbar-actions { flex-wrap: wrap; gap: 5px; }
       .graph-zoom-button { width: 38px; min-height: 38px; }
       .graph-scale { min-width: 37px; font-size: 0.6rem; }
       .graph-legend { max-width: 180px; gap: 4px 8px; font-size: 0.6rem; }
       .graph-viewport { height: 58vh; min-height: 390px; border-radius: 18px; }
-      .graph-canvas { width: 1200px; height: 820px; }
+      .graph-canvas { width: 2376px; height: 2376px; }
       .graph-card { margin-top: 9px; padding: 13px; border-radius: 17px; }
       .graph-card h2 { font-size: 1.22rem; }
       .graph-card-copy { font-size: 0.72rem; }
@@ -1465,12 +1482,14 @@
       <section class="screen graph-screen" id="graphScreen" aria-labelledby="graphTitle" hidden>
         <header class="screen-head graph-head">
           <p class="eyebrow">Слепок · экран 3</p>
-          <h1 id="graphTitle" tabindex="-1">Граф откликов</h1>
-          <p class="lead">Только выбранные слова и связи словаря. Линия показывает соседство, а не причину.</p>
+          <h1 id="graphTitle" tabindex="-1">Связи откликов</h1>
         </header>
 
         <div class="graph-toolbar">
-          <button class="secondary-button" id="graphBackButton" type="button">К слепку</button>
+          <div class="graph-toolbar-nav">
+            <button class="secondary-button" id="graphBackButton" type="button">К слепку</button>
+            <button class="secondary-button" id="graphIntersectionsButton" type="button">К пересечениям</button>
+          </div>
           <div class="graph-toolbar-actions">
             <div class="graph-zoom-controls" aria-label="Масштаб графа">
               <button class="graph-zoom-button" id="graphZoomOutButton" type="button" aria-label="Уменьшить граф">−</button>
@@ -1487,7 +1506,7 @@
         </div>
 
         <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
-          <svg class="graph-canvas" id="graphSvg" viewBox="0 0 1200 820" role="img" aria-label="Связи между выбранными словами"></svg>
+          <svg class="graph-canvas" id="graphSvg" viewBox="0 0 2376 2376" role="img" aria-label="Связи между выбранными словами"></svg>
         </div>
         <p class="graph-status" id="graphStatus" aria-live="polite"></p>
         <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
@@ -1509,9 +1528,9 @@
           <input class="match-range" id="matchRange" type="range" min="0" max="100" step="1" value="50">
           <div class="match-range-scale" aria-hidden="true"><span>меньше общего</span><span>больше общего</span></div>
           <div class="match-quick-actions" aria-label="Быстрый выбор похожести">
-            <button class="match-quick" type="button" data-match-preset="mirror">Зеркало</button>
-            <button class="match-quick" type="button" data-match-preset="middle">Середина</button>
             <button class="match-quick" type="button" data-match-preset="opposite">Противоположность</button>
+            <button class="match-quick" type="button" data-match-preset="middle">Середина</button>
+            <button class="match-quick" type="button" data-match-preset="mirror">Зеркало</button>
           </div>
         </section>
 
@@ -1555,18 +1574,21 @@
         action: 1.5, triggers: 1, supports: 0.5
       };
       const SVG_NS = 'http://www.w3.org/2000/svg';
-      const GRAPH_WIDTH = 1200;
-      const GRAPH_HEIGHT = 820;
-      const GRAPH_CLOUD_RADIUS = 116;
+      const GRAPH_CONTENT_WIDTH = 1320;
+      const GRAPH_CONTENT_HEIGHT = 1320;
+      const GRAPH_PADDING = Math.round(GRAPH_CONTENT_WIDTH * 0.4);
+      const GRAPH_WIDTH = GRAPH_CONTENT_WIDTH + GRAPH_PADDING * 2;
+      const GRAPH_HEIGHT = GRAPH_CONTENT_HEIGHT + GRAPH_PADDING * 2;
+      const GRAPH_CLOUD_RADIUS = 190;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
         stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#8c6b91'
       };
       const GRAPH_ZONES = {
-        values: { x: 200, y: 145 }, goals: { x: 600, y: 145 }, action: { x: 1000, y: 145 },
-        foresight: { x: 350, y: 410 }, stones: { x: 850, y: 410 }, supports: { x: 300, y: 675 },
-        triggers: { x: 900, y: 675 }, custom: { x: 600, y: 675 }
+        values: { x: 738, y: 738 }, goals: { x: 1188, y: 738 }, action: { x: 1638, y: 738 },
+        foresight: { x: 850, y: 1188 }, stones: { x: 1526, y: 1188 }, supports: { x: 850, y: 1638 },
+        triggers: { x: 1526, y: 1638 }, custom: { x: 1188, y: 1638 }
       };
 
       const scatterScreen = document.getElementById('scatterScreen');
@@ -1621,12 +1643,13 @@
       let graphToastTimer = null;
       const graphTouchPoints = new Map();
       const scatterSeed = createScatterSeed();
+      const graphTiltSeed = createScatterSeed();
       const scatterOrder = shuffled(WORDS, scatterSeed);
 
       function emptyState() {
         return {
           version: 2, selectedIds: [], customWords: [], waveOneIds: [], waveOneCustomIds: [],
-          wave: 1, view: 'scatter', matchTarget: 50, matchOffset: 0, activeProfileId: null, updatedAt: null
+          wave: 1, view: 'scatter', matchTarget: 50, matchVisibleCount: 3, activeProfileId: null, updatedAt: null
         };
       }
 
@@ -1667,9 +1690,9 @@
             matchTarget: Number.isFinite(Number(parsed.matchTarget))
               ? Math.max(0, Math.min(100, Math.round(Number(parsed.matchTarget))))
               : 50,
-            matchOffset: Number.isFinite(Number(parsed.matchOffset))
-              ? Math.max(0, Math.floor(Number(parsed.matchOffset) / 3) * 3)
-              : 0,
+            matchVisibleCount: Number.isFinite(Number(parsed.matchVisibleCount))
+              ? Math.max(3, Math.floor(Number(parsed.matchVisibleCount) / 3) * 3)
+              : 3,
             activeProfileId: FAKE_PROFILES.some((profile) => profile.id === parsed.activeProfileId)
               ? parsed.activeProfileId
               : null,
@@ -1825,35 +1848,32 @@
 
       function renderProfileMatches() {
         const scored = scoredProfiles();
-        const maximum = scored.length ? Math.max(...scored.map((item) => item.score)) : 100;
-        const minimum = scored.length ? Math.min(...scored.map((item) => item.score)) : 0;
         matchRange.value = String(state.matchTarget);
         matchValue.textContent = `${state.matchTarget}%`;
         matchQuickActions.querySelectorAll('[data-match-preset]').forEach((button) => {
           const preset = button.dataset.matchPreset;
-          const target = preset === 'mirror' ? maximum : preset === 'opposite' ? minimum : 50;
+          const target = preset === 'mirror' ? 100 : preset === 'opposite' ? 0 : 50;
           button.dataset.matchValue = String(target);
           button.setAttribute('aria-pressed', String(state.matchTarget === target));
         });
 
-        const direction = state.matchTarget < 50 ? 1 : -1;
         const ranked = scored.sort((left, right) => {
           const distance = Math.abs(left.score - state.matchTarget) - Math.abs(right.score - state.matchTarget);
-          return distance || (left.score - right.score) * direction || left.profile.id.localeCompare(right.profile.id);
+          return distance || left.score - right.score || left.profile.id.localeCompare(right.profile.id);
         });
-        const start = ranked.length ? state.matchOffset % ranked.length : 0;
-        state.matchOffset = start;
-        const closest = ranked.slice(start, start + 3);
-        profileList.replaceChildren(...closest.map(({ profile, score }) => createProfileCard(profile, score)));
-        moreProfilesButton.hidden = ranked.length <= 3;
-        const active = closest.find(({ profile }) => profile.id === state.activeProfileId);
+        state.matchVisibleCount = Math.max(3, Math.min(ranked.length, state.matchVisibleCount || 3));
+        const visible = ranked.slice(0, state.matchVisibleCount)
+          .sort((left, right) => left.score - right.score || left.profile.id.localeCompare(right.profile.id));
+        profileList.replaceChildren(...visible.map(({ profile, score }) => createProfileCard(profile, score)));
+        moreProfilesButton.hidden = state.matchVisibleCount >= ranked.length;
+        const active = visible.find(({ profile }) => profile.id === state.activeProfileId);
         if (active) renderIntersectionMap(active.profile, active.score);
         else intersectionMap.hidden = true;
       }
 
       function setMatchTarget(value, shouldPersist = true) {
         state.matchTarget = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
-        state.matchOffset = 0;
+        state.matchVisibleCount = 3;
         state.activeProfileId = null;
         renderProfileMatches();
         if (shouldPersist) persistState();
@@ -1880,7 +1900,7 @@
         shelves.className = 'intersection-shelves';
         groups.forEach(({ shelf, items }) => {
           const group = document.createElement('div');
-          group.className = 'intersection-shelf';
+          group.className = `intersection-shelf shelf-${shelf.id}`;
           const label = document.createElement('span');
           label.className = 'intersection-shelf-title';
           label.textContent = `${shelf.emoji} ${shelf.title}`;
@@ -1910,12 +1930,24 @@
             const stone = WORD_BY_ID.get(stoneId);
             if (!stone) return;
             if (mine.has(trigger.id) && theirs.has(stoneId)) {
-              const text = `его ${stone.word} ↔ твой триггер «${trigger.word}»`;
-              if (!seen.has(text)) { seen.add(text); points.push(text); }
+              const key = `theirs:${stone.id}:mine:${trigger.id}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                points.push({
+                  leftLabel: 'его', leftWord: stone.word, leftShelf: 'stones',
+                  rightLabel: 'твой триггер', rightWord: trigger.word, rightShelf: 'triggers'
+                });
+              }
             }
             if (theirs.has(trigger.id) && mine.has(stoneId)) {
-              const text = `его триггер «${trigger.word}» ↔ твой камень «${stone.word}»`;
-              if (!seen.has(text)) { seen.add(text); points.push(text); }
+              const key = `theirs:${trigger.id}:mine:${stone.id}`;
+              if (!seen.has(key)) {
+                seen.add(key);
+                points.push({
+                  leftLabel: 'его триггер', leftWord: trigger.word, leftShelf: 'triggers',
+                  rightLabel: 'твой камень', rightWord: stone.word, rightShelf: 'stones'
+                });
+              }
             }
           });
         });
@@ -1981,10 +2013,28 @@
         if (frictionPoints.length) {
           const list = document.createElement('div');
           list.className = 'friction-list';
-          frictionPoints.forEach((text) => {
-            const item = document.createElement('p');
+          frictionPoints.forEach((point) => {
+            const item = document.createElement('div');
             item.className = 'friction-item';
-            item.textContent = text;
+            const line = document.createElement('div');
+            line.className = 'friction-line';
+            const leftLabel = document.createElement('span');
+            leftLabel.className = 'friction-label';
+            leftLabel.textContent = point.leftLabel;
+            const leftWord = document.createElement('span');
+            leftWord.className = `intersection-word shelf-${point.leftShelf}`;
+            leftWord.textContent = point.leftWord;
+            const arrow = document.createElement('span');
+            arrow.className = 'friction-arrow';
+            arrow.textContent = '↔';
+            const rightLabel = document.createElement('span');
+            rightLabel.className = 'friction-label';
+            rightLabel.textContent = point.rightLabel;
+            const rightWord = document.createElement('span');
+            rightWord.className = `intersection-word shelf-${point.rightShelf}`;
+            rightWord.textContent = point.rightWord;
+            line.append(leftLabel, leftWord, arrow, rightLabel, rightWord);
+            item.append(line);
             list.append(item);
           });
           friction.append(list);
@@ -2242,6 +2292,16 @@
         return Math.min(1, Math.max(0.2, (viewportWidth - 4) / GRAPH_WIDTH));
       }
 
+      function graphInitialScale() {
+        const viewportWidth = Math.max(280, graphViewport.clientWidth || window.innerWidth);
+        return Math.min(1, Math.max(graphMinimumScale(), (viewportWidth - 12) / GRAPH_CONTENT_WIDTH));
+      }
+
+      function centerGraphViewport() {
+        graphViewport.scrollLeft = Math.max(0, (GRAPH_WIDTH * graphScale - graphViewport.clientWidth) / 2);
+        graphViewport.scrollTop = Math.max(0, (GRAPH_HEIGHT * graphScale - graphViewport.clientHeight) / 2);
+      }
+
       function setGraphScaleValue(value) {
         const minimum = graphMinimumScale();
         graphScale = Math.min(2.4, Math.max(minimum, value));
@@ -2262,10 +2322,9 @@
       }
 
       function fitGraphToViewport() {
-        setGraphScaleValue(graphMinimumScale());
+        setGraphScaleValue(graphInitialScale());
         graphScaleInitialized = true;
-        graphViewport.scrollLeft = 0;
-        graphViewport.scrollTop = 0;
+        centerGraphViewport();
       }
 
       function setGraphFullscreen(expanded, restorePrevious = true) {
@@ -2311,8 +2370,10 @@
         const points = [...graphTouchPoints.values()];
         if (points.length === 1) {
           graphGesture = {
-            type: 'pan', startX: points[0].x, startY: points[0].y,
-            startLeft: graphViewport.scrollLeft, startTop: graphViewport.scrollTop, moved: false
+            type: graphScreen.classList.contains('is-fullscreen') ? 'pan' : 'pending',
+            startX: points[0].x, startY: points[0].y, startedAt: performance.now(),
+            startLeft: graphViewport.scrollLeft, startTop: graphViewport.scrollTop,
+            startPageY: window.scrollY, moved: false
           };
           return;
         }
@@ -2448,7 +2509,53 @@
             position.y = Math.max(position.height / 2 + 34, Math.min(GRAPH_HEIGHT - position.height / 2 - 34, position.y));
           });
         }
+
+        for (let iteration = 0; iteration < 140; iteration += 1) {
+          let collisions = 0;
+          for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
+            const [, left] = entries[leftIndex];
+            for (let rightIndex = leftIndex + 1; rightIndex < entries.length; rightIndex += 1) {
+              const [, right] = entries[rightIndex];
+              if (left.shelf !== right.shelf) continue;
+              let dx = right.x - left.x;
+              let dy = right.y - left.y;
+              if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+                dx = (leftIndex % 2 ? -1 : 1) * 0.1;
+                dy = (rightIndex % 2 ? -1 : 1) * 0.1;
+              }
+              const overlapX = (left.width + right.width) / 2 + 14 - Math.abs(dx);
+              const overlapY = (left.height + right.height) / 2 + 14 - Math.abs(dy);
+              if (overlapX <= 0 || overlapY <= 0) continue;
+              collisions += 1;
+              if (overlapX < overlapY) {
+                const push = overlapX * 0.52;
+                const direction = dx < 0 ? -1 : 1;
+                left.x -= direction * push;
+                right.x += direction * push;
+              } else {
+                const push = overlapY * 0.52;
+                const direction = dy < 0 ? -1 : 1;
+                left.y -= direction * push;
+                right.y += direction * push;
+              }
+            }
+          }
+          entries.forEach(([, position]) => {
+            const dx = position.x - position.anchorX;
+            const dy = position.y - position.anchorY;
+            const distance = Math.max(1, Math.hypot(dx, dy));
+            if (distance > position.maximumRadius) {
+              position.x = position.anchorX + dx / distance * position.maximumRadius;
+              position.y = position.anchorY + dy / distance * position.maximumRadius;
+            }
+          });
+          if (!collisions) break;
+        }
         return positions;
+      }
+
+      function graphNodeTilt(id) {
+        return (Math.abs(hashValue(`${graphTiltSeed}:${id}`)) % 13) - 6;
       }
 
       function graphCurve(source, target, key) {
@@ -2472,6 +2579,17 @@
         graphSvg.replaceChildren();
         const definitions = svgElement('defs');
         graphSvg.append(definitions);
+
+        const zoneLabels = svgElement('g', { 'aria-hidden': 'true' });
+        SHELVES.forEach((shelf) => {
+          const zone = GRAPH_ZONES[shelf.id];
+          const label = svgElement('text', {
+            class: 'graph-zone-label', x: zone.x, y: zone.y + 16, 'text-anchor': 'middle'
+          });
+          label.textContent = shelf.title.toLocaleUpperCase('ru-RU');
+          zoneLabels.append(label);
+        });
+        graphSvg.append(zoneLabels);
 
         SHELVES.forEach((shelf) => {
           const zone = GRAPH_ZONES[shelf.id];
@@ -2566,7 +2684,7 @@
             'aria-label': `Открыть слово «${item.word}»`,
             'data-graph-node-id': item.id,
             'data-pressure-index': position.pressureCount,
-            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;animation-delay:${Math.min(index * 22, 260)}ms`
+            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
           });
           const plate = svgElement('rect', {
             class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
@@ -2579,17 +2697,6 @@
           group.append(plate, label, title);
           graphSvg.append(group);
         });
-
-        const zoneLabels = svgElement('g', { 'aria-hidden': 'true' });
-        SHELVES.forEach((shelf) => {
-          const zone = GRAPH_ZONES[shelf.id];
-          const label = svgElement('text', {
-            class: 'graph-zone-label', x: zone.x, y: zone.y - GRAPH_CLOUD_RADIUS + 18, 'text-anchor': 'middle'
-          });
-          label.textContent = shelf.title.toLocaleUpperCase('ru-RU');
-          zoneLabels.append(label);
-        });
-        graphSvg.append(zoneLabels);
 
         graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
         if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
@@ -2892,14 +2999,28 @@
         graphTouchPoints.set(event.pointerId, graphTouchPoint(event));
         const points = [...graphTouchPoints.values()];
         if (points.length >= 2 && graphGesture?.type !== 'pinch') beginGraphGesture();
-        if (points.length === 1 && graphGesture?.type === 'pan') {
+        if (points.length === 1 && (graphGesture?.type === 'pending' || graphGesture?.type === 'pan' || graphGesture?.type === 'page-scroll')) {
           const point = points[0];
           const dx = point.x - graphGesture.startX;
           const dy = point.y - graphGesture.startY;
-          if (Math.hypot(dx, dy) > 4) graphGesture.moved = true;
-          graphViewport.scrollLeft = graphGesture.startLeft - dx;
-          graphViewport.scrollTop = graphGesture.startTop - dy;
-          if (graphGesture.moved) event.preventDefault();
+          const distance = Math.hypot(dx, dy);
+          if (graphGesture.type === 'pending' && distance > 7) {
+            graphGesture.type = performance.now() - graphGesture.startedAt < 220 ? 'page-scroll' : 'pan';
+          } else if (graphGesture.type === 'pending' && performance.now() - graphGesture.startedAt >= 220) {
+            graphGesture.type = 'pan';
+          }
+          if (graphGesture.type === 'page-scroll') {
+            if (distance > 4) graphGesture.moved = true;
+            window.scrollTo({ top: graphGesture.startPageY - dy, behavior: 'auto' });
+            event.preventDefault();
+            return;
+          }
+          if (graphGesture.type === 'pan') {
+            if (distance > 4) graphGesture.moved = true;
+            graphViewport.scrollLeft = graphGesture.startLeft - dx;
+            graphViewport.scrollTop = graphGesture.startTop - dy;
+            if (graphGesture.moved) event.preventDefault();
+          }
           return;
         }
         if (points.length >= 2 && graphGesture?.type === 'pinch') {
@@ -2917,7 +3038,7 @@
       function finishGraphPointer(event) {
         if (event.pointerType !== 'touch' || !graphTouchPoints.has(event.pointerId)) return;
         const point = graphTouchPoints.get(event.pointerId);
-        const wasSingleTap = graphTouchPoints.size === 1 && graphGesture?.type === 'pan' && !graphGesture.moved;
+        const wasSingleTap = graphTouchPoints.size === 1 && (graphGesture?.type === 'pending' || graphGesture?.type === 'pan') && !graphGesture.moved;
         const moved = Boolean(graphGesture?.moved);
         graphTouchPoints.delete(event.pointerId);
         graphViewport.releasePointerCapture?.(event.pointerId);
@@ -2989,6 +3110,7 @@
       document.getElementById('graphButton').addEventListener('click', () => showView('graph'));
       document.getElementById('intersectionsButton').addEventListener('click', () => showView('intersections'));
       document.getElementById('graphBackButton').addEventListener('click', () => showView('snapshot'));
+      document.getElementById('graphIntersectionsButton').addEventListener('click', () => showView('intersections'));
       document.getElementById('intersectionsBackButton').addEventListener('click', () => showView('snapshot'));
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
@@ -3009,13 +3131,12 @@
         }));
       });
       moreProfilesButton.addEventListener('click', () => {
-        state.matchOffset = FAKE_PROFILES.length ? (state.matchOffset + 3) % FAKE_PROFILES.length : 0;
-        state.activeProfileId = null;
+        const previousCount = state.matchVisibleCount || 3;
+        state.matchVisibleCount = Math.min(FAKE_PROFILES.length, previousCount + 3);
         renderProfileMatches();
         persistState();
-        window.requestAnimationFrame(() => profileList.scrollIntoView({
-          block: 'start',
-          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+        window.requestAnimationFrame(() => profileList.children[previousCount]?.scrollIntoView({
+          block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
         }));
       });
       graphZoomOutButton.addEventListener('click', () => zoomGraphTo(graphScale / 1.3));
