@@ -31,6 +31,7 @@
 
     body {
       margin: 0;
+      overflow-x: hidden;
       min-width: 320px;
       min-height: 100vh;
       color: var(--ink);
@@ -716,6 +717,181 @@
       font-weight: 500;
     }
 
+    .graph-screen { padding-bottom: 30px; }
+
+    .graph-head { margin-bottom: 18px; }
+
+    .graph-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 1040px;
+      margin: 0 auto 10px;
+    }
+
+    .graph-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px 12px;
+      color: var(--ink-soft);
+      font-family: var(--sans);
+      font-size: 0.7rem;
+    }
+
+    .graph-legend span::before {
+      display: inline-block;
+      width: 18px;
+      margin-right: 6px;
+      border-top: 2px solid rgba(49, 95, 82, 0.55);
+      content: "";
+      vertical-align: middle;
+    }
+
+    .graph-legend .is-whisker::before { border-top-style: dashed; opacity: 0.62; }
+
+    .graph-viewport {
+      width: 100%;
+      max-width: 1040px;
+      height: min(66vh, 700px);
+      min-height: 430px;
+      margin: 0 auto;
+      overflow: auto;
+      border: 1px solid rgba(83, 104, 96, 0.2);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 25% 22%, rgba(189, 136, 64, 0.11), transparent 24rem),
+        radial-gradient(circle at 76% 72%, rgba(49, 95, 82, 0.1), transparent 29rem),
+        rgba(246, 243, 233, 0.82);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42), 0 14px 35px rgba(38, 54, 46, 0.1);
+      overscroll-behavior: contain;
+      scrollbar-color: rgba(49, 95, 82, 0.32) transparent;
+      touch-action: pan-x pan-y;
+    }
+
+    .graph-canvas {
+      display: block;
+      width: 1200px;
+      height: 820px;
+      max-width: none;
+    }
+
+    .graph-zone { fill: rgba(49, 95, 82, 0.035); stroke: rgba(49, 95, 82, 0.09); stroke-width: 1; }
+    .graph-zone-label {
+      fill: rgba(49, 70, 62, 0.42);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .graph-edge {
+      fill: none;
+      stroke: rgba(49, 95, 82, 0.42);
+      stroke-linecap: round;
+      stroke-width: 2;
+      transition: opacity 220ms ease, stroke 220ms ease, stroke-width 220ms ease;
+    }
+
+    .graph-edge.is-chain { stroke: #b17e39; stroke-width: 3.5; }
+    .graph-edge.is-dimmed { opacity: 0.1; }
+
+    .graph-whisker {
+      fill: none;
+      stroke: rgba(83, 104, 96, 0.34);
+      stroke-dasharray: 5 7;
+      stroke-linecap: round;
+      stroke-width: 1.5;
+      transition: opacity 220ms ease;
+    }
+
+    .graph-whisker.is-dimmed,
+    .graph-ghost.is-dimmed { opacity: 0.13; }
+
+    .graph-ghost { cursor: pointer; transition: opacity 220ms ease, transform 180ms ease; }
+    .graph-ghost-hit { fill: transparent; }
+    .graph-ghost-dot { fill: rgba(251, 248, 239, 0.92); stroke: rgba(83, 104, 96, 0.38); stroke-width: 1.5; }
+    .graph-ghost-plus { fill: var(--forest); font-family: var(--sans); font-size: 18px; font-weight: 600; pointer-events: none; }
+
+    .graph-node {
+      cursor: pointer;
+      opacity: 1;
+      animation: graph-node-arrive 420ms ease both;
+      transition: opacity 220ms ease, filter 220ms ease;
+    }
+
+    .graph-node-plate {
+      fill: var(--node-color, #66877b);
+      stroke: rgba(255, 255, 255, 0.74);
+      stroke-width: 2;
+      filter: drop-shadow(0 7px 9px rgba(32, 51, 45, 0.16));
+    }
+
+    .graph-node-label {
+      fill: #fffdf7;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .graph-node.is-heavy .graph-node-plate {
+      stroke-width: 3;
+      filter: drop-shadow(0 9px 11px rgba(18, 25, 29, 0.3));
+    }
+
+    .graph-node.is-active .graph-node-plate { stroke: #f1cd82; stroke-width: 4; }
+    .graph-node.is-chain .graph-node-plate { filter: drop-shadow(0 0 9px rgba(189, 136, 64, 0.5)); }
+    .graph-node.is-dimmed { opacity: 0.16; filter: grayscale(0.55); }
+
+    .graph-status {
+      min-height: 1.3em;
+      max-width: 1040px;
+      margin: 8px auto 0;
+      color: var(--ink-soft);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      text-align: right;
+    }
+
+    .graph-card {
+      max-width: 760px;
+      margin: 13px auto 0;
+      padding: 17px;
+      border: 1px solid rgba(83, 104, 96, 0.2);
+      border-radius: 21px;
+      background: rgba(255, 253, 247, 0.94);
+      box-shadow: 0 13px 32px rgba(38, 54, 46, 0.12);
+      font-family: var(--sans);
+    }
+
+    .graph-card-kicker { margin: 0 0 5px; color: var(--rose); font-size: 0.67rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+    .graph-card h2 { margin: 0 0 10px; color: var(--forest-dark); font-family: var(--serif); font-size: 1.45rem; font-weight: 500; }
+    .graph-card-copy { margin: 0 0 12px; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.45; }
+
+    .graph-card-section { margin-top: 13px; }
+    .graph-card-label { display: block; margin-bottom: 7px; color: var(--ink-soft); font-size: 0.68rem; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
+    .graph-card-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .graph-chip {
+      min-height: 36px;
+      padding: 7px 10px;
+      border: 1px solid rgba(49, 95, 82, 0.17);
+      border-radius: 999px;
+      color: var(--forest-dark);
+      background: rgba(220, 233, 223, 0.6);
+      font-size: 0.76rem;
+    }
+    button.graph-chip { cursor: pointer; }
+    .graph-chip.is-unselected { border-style: dashed; background: rgba(238, 230, 212, 0.5); }
+    .graph-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+
+    @keyframes graph-node-arrive {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     @media (max-width: 639px) {
       .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(20px, env(safe-area-inset-bottom)); }
       .topbar { margin-bottom: 9px; padding-inline: 4px; }
@@ -777,6 +953,19 @@
       .shelf-summary { margin-top: 10px; padding-top: 9px; font-size: 0.69rem; }
       .snapshot-actions { gap: 7px; }
       .snapshot-actions button { min-height: 40px; font-size: 0.8rem; }
+      .graph-screen { padding-inline: 9px; }
+      .graph-head { padding-inline: 6px; }
+      .graph-toolbar { align-items: flex-start; margin-bottom: 8px; padding-inline: 3px; }
+      .graph-toolbar .secondary-button { min-height: 38px; padding: 7px 10px; font-size: 0.74rem; }
+      .graph-legend { max-width: 180px; gap: 4px 8px; font-size: 0.6rem; }
+      .graph-viewport { height: 58vh; min-height: 390px; border-radius: 18px; }
+      .graph-canvas { width: 1200px; height: 820px; }
+      .graph-card { margin-top: 9px; padding: 13px; border-radius: 17px; }
+      .graph-card h2 { font-size: 1.22rem; }
+      .graph-card-copy { font-size: 0.72rem; }
+      .graph-chip { min-height: 34px; padding: 6px 9px; font-size: 0.69rem; }
+      .graph-card-actions .primary-button,
+      .graph-card-actions .secondary-button { min-height: 40px; padding: 8px 12px; font-size: 0.76rem; }
     }
 
     @media (min-width: 640px) {
@@ -874,9 +1063,31 @@
 
         <div class="snapshot-actions">
           <button class="secondary-button" id="editButton" type="button">Дополнить</button>
-          <button class="future-button" type="button" disabled>Смотреть граф<span class="future-note">следующий этап</span></button>
+          <button class="secondary-button" id="graphButton" type="button">Смотреть граф</button>
           <button class="future-button" type="button" disabled>С кем я пересекаюсь<span class="future-note">следующий этап</span></button>
         </div>
+      </section>
+
+      <section class="screen graph-screen" id="graphScreen" aria-labelledby="graphTitle" hidden>
+        <header class="screen-head graph-head">
+          <p class="eyebrow">Слепок · экран 3</p>
+          <h1 id="graphTitle" tabindex="-1">Граф откликов</h1>
+          <p class="lead">Только выбранные слова и связи словаря. Линия показывает соседство, а не причину.</p>
+        </header>
+
+        <div class="graph-toolbar">
+          <button class="secondary-button" id="graphBackButton" type="button">К слепку</button>
+          <div class="graph-legend" aria-label="Обозначения графа">
+            <span>выбранная связь</span>
+            <span class="is-whisker">слово рядом</span>
+          </div>
+        </div>
+
+        <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
+          <svg class="graph-canvas" id="graphSvg" viewBox="0 0 1200 820" role="img" aria-label="Связи между выбранными словами"></svg>
+        </div>
+        <p class="graph-status" id="graphStatus" aria-live="polite"></p>
+        <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
       </section>
     </main>
   </div>
@@ -899,9 +1110,23 @@
         { id: 'supports', emoji: '🌿', title: 'Опоры' },
         { id: 'triggers', emoji: '⚡', title: 'Триггеры' }
       ];
+      const SHELF_BY_ID = new Map(SHELVES.map((item) => [item.id, item]));
+      const SVG_NS = 'http://www.w3.org/2000/svg';
+      const GRAPH_WIDTH = 1200;
+      const GRAPH_HEIGHT = 820;
+      const GRAPH_COLORS = {
+        values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
+        stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#8c6b91'
+      };
+      const GRAPH_ZONES = {
+        values: { x: 280, y: 185 }, goals: { x: 600, y: 145 }, action: { x: 920, y: 215 },
+        foresight: { x: 970, y: 540 }, stones: { x: 650, y: 670 }, supports: { x: 285, y: 635 },
+        triggers: { x: 145, y: 420 }, custom: { x: 590, y: 410 }
+      };
 
       const scatterScreen = document.getElementById('scatterScreen');
       const snapshotScreen = document.getElementById('snapshotScreen');
+      const graphScreen = document.getElementById('graphScreen');
       const scatterEyebrow = document.getElementById('scatterEyebrow');
       const scatterTitle = document.getElementById('scatterTitle');
       const scatterLead = document.getElementById('scatterLead');
@@ -917,11 +1142,18 @@
       const scatterStatus = document.getElementById('scatterStatus');
       const shelfGrid = document.getElementById('shelfGrid');
       const snapshotSmallNote = document.getElementById('snapshotSmallNote');
+      const graphViewport = document.getElementById('graphViewport');
+      const graphSvg = document.getElementById('graphSvg');
+      const graphStatus = document.getElementById('graphStatus');
+      const graphCard = document.getElementById('graphCard');
       const storageNotice = document.getElementById('storageNotice');
 
       let storageWasBroken = false;
       let state = restoreState();
       let focusedShelfId = null;
+      let activeGraphNodeId = null;
+      let graphChainIds = new Set();
+      let graphAdjacency = new Map();
       const scatterSeed = createScatterSeed();
       const scatterOrder = shuffled(WORDS, scatterSeed);
 
@@ -943,12 +1175,15 @@
                 .map((item) => ({ id: item.id, word: item.word.trim().slice(0, 64) }))
             : [];
           const selectionCount = selectedIds.length + customWords.length;
+          const restoredView = parsed.view === 'graph' && selectionCount
+            ? 'graph'
+            : parsed.view === 'snapshot' && selectionCount >= 3 ? 'snapshot' : 'scatter';
           return {
             version: 2,
             selectedIds,
             customWords,
             wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
-            view: parsed.view === 'snapshot' && selectionCount >= 3 ? 'snapshot' : 'scatter',
+            view: restoredView,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -1219,17 +1454,420 @@
         return article;
       }
 
+      function svgElement(name, attributes = {}) {
+        const element = document.createElementNS(SVG_NS, name);
+        Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, String(value)));
+        return element;
+      }
+
+      function graphItems() {
+        const dictionaryWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const customWords = state.customWords.map((item) => ({ ...item, shelves: ['custom'], neighbors: [], antonym: null }));
+        return [...dictionaryWords, ...customWords];
+      }
+
+      function graphItemById(id) {
+        return WORD_BY_ID.get(id) || state.customWords.find((item) => item.id === id) || null;
+      }
+
+      function isGraphItemSelected(id) {
+        return state.selectedIds.includes(id) || state.customWords.some((item) => item.id === id);
+      }
+
+      function primaryShelf(item) {
+        return Array.isArray(item.shelves) && item.shelves.length ? item.shelves[0] : 'custom';
+      }
+
+      function graphNodeWidth(item) {
+        return Math.min(184, Math.max(92, 34 + item.word.length * 7));
+      }
+
+      function buildGraphAdjacency(items) {
+        const ids = new Set(items.map((item) => item.id));
+        const adjacency = new Map(items.map((item) => [item.id, new Set()]));
+        items.forEach((item) => {
+          (item.neighbors || []).forEach((neighborId) => {
+            if (neighborId === item.id || !ids.has(neighborId)) return;
+            adjacency.get(item.id).add(neighborId);
+            adjacency.get(neighborId).add(item.id);
+          });
+        });
+        return adjacency;
+      }
+
+      function computeGraphLayout(items, adjacency) {
+        const positions = new Map();
+        const shelfIndexes = new Map();
+        items.forEach((item) => {
+          const shelf = primaryShelf(item);
+          const index = shelfIndexes.get(shelf) || 0;
+          shelfIndexes.set(shelf, index + 1);
+          const zone = GRAPH_ZONES[shelf] || GRAPH_ZONES.custom;
+          const angle = ((Math.abs(hashValue(item.id)) % 628) / 100) + index * 1.7;
+          const ring = Math.floor(index / 5);
+          const radius = 34 + (index % 5) * 22 + ring * 38;
+          positions.set(item.id, {
+            x: zone.x + Math.cos(angle) * radius,
+            y: zone.y + Math.sin(angle) * radius,
+            width: graphNodeWidth(item),
+            height: shelf === 'stones' || shelf === 'triggers' ? 56 : 48,
+            shelf
+          });
+        });
+
+        const entries = [...positions.entries()];
+        for (let iteration = 0; iteration < 85; iteration += 1) {
+          const alpha = 1 - iteration / 100;
+          entries.forEach(([, position]) => {
+            const zone = GRAPH_ZONES[position.shelf] || GRAPH_ZONES.custom;
+            position.x += (zone.x - position.x) * 0.018 * alpha;
+            position.y += (zone.y - position.y) * 0.018 * alpha;
+          });
+
+          for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
+            const [, left] = entries[leftIndex];
+            for (let rightIndex = leftIndex + 1; rightIndex < entries.length; rightIndex += 1) {
+              const [, right] = entries[rightIndex];
+              let dx = right.x - left.x;
+              let dy = right.y - left.y;
+              let distance = Math.hypot(dx, dy);
+              if (distance < 0.1) { dx = 1; dy = 0; distance = 1; }
+              const minimum = (left.width + right.width) / 2 + 18;
+              if (distance >= minimum) continue;
+              const push = (minimum - distance) * 0.18 * alpha;
+              const ux = dx / distance;
+              const uy = dy / distance;
+              left.x -= ux * push;
+              left.y -= uy * push;
+              right.x += ux * push;
+              right.y += uy * push;
+            }
+          }
+
+          adjacency.forEach((neighbors, id) => {
+            const source = positions.get(id);
+            neighbors.forEach((neighborId) => {
+              if (id >= neighborId) return;
+              const target = positions.get(neighborId);
+              const dx = target.x - source.x;
+              const dy = target.y - source.y;
+              const distance = Math.max(1, Math.hypot(dx, dy));
+              const pull = (distance - 155) * 0.007 * alpha;
+              source.x += dx / distance * pull;
+              source.y += dy / distance * pull;
+              target.x -= dx / distance * pull;
+              target.y -= dy / distance * pull;
+            });
+          });
+
+          entries.forEach(([, position]) => {
+            position.x = Math.max(position.width / 2 + 34, Math.min(GRAPH_WIDTH - position.width / 2 - 34, position.x));
+            position.y = Math.max(position.height / 2 + 34, Math.min(GRAPH_HEIGHT - position.height / 2 - 34, position.y));
+          });
+        }
+        return positions;
+      }
+
+      function graphCurve(source, target, key) {
+        const middleX = (source.x + target.x) / 2;
+        const middleY = (source.y + target.y) / 2;
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const distance = Math.max(1, Math.hypot(dx, dy));
+        const bend = (Math.abs(hashValue(key)) % 25) - 12;
+        const controlX = middleX - dy / distance * bend;
+        const controlY = middleY + dx / distance * bend;
+        return `M ${source.x.toFixed(1)} ${source.y.toFixed(1)} Q ${controlX.toFixed(1)} ${controlY.toFixed(1)} ${target.x.toFixed(1)} ${target.y.toFixed(1)}`;
+      }
+
+      function renderGraph() {
+        const items = graphItems();
+        const itemMap = new Map(items.map((item) => [item.id, item]));
+        graphAdjacency = buildGraphAdjacency(items);
+        const positions = computeGraphLayout(items, graphAdjacency);
+        graphSvg.replaceChildren();
+
+        const usedShelves = new Set(items.map(primaryShelf));
+        usedShelves.forEach((shelfId) => {
+          const zone = GRAPH_ZONES[shelfId] || GRAPH_ZONES.custom;
+          const shelf = SHELF_BY_ID.get(shelfId) || { emoji: '✨', title: 'Своё' };
+          const circle = svgElement('circle', { class: 'graph-zone', cx: zone.x, cy: zone.y, r: 135 });
+          const label = svgElement('text', { class: 'graph-zone-label', x: zone.x, y: zone.y - 146, 'text-anchor': 'middle' });
+          label.textContent = `${shelf.emoji} ${shelf.title}`;
+          graphSvg.append(circle, label);
+        });
+
+        let edgeCount = 0;
+        graphAdjacency.forEach((neighbors, id) => {
+          neighbors.forEach((neighborId) => {
+            if (id >= neighborId) return;
+            const source = positions.get(id);
+            const target = positions.get(neighborId);
+            const edge = svgElement('path', {
+              class: 'graph-edge',
+              d: graphCurve(source, target, `${id}:${neighborId}`),
+              'data-source': id,
+              'data-target': neighborId
+            });
+            graphSvg.append(edge);
+            edgeCount += 1;
+          });
+        });
+
+        const selectedIds = new Set(items.map((item) => item.id));
+        items.forEach((item) => {
+          const source = positions.get(item.id);
+          const candidates = (item.neighbors || []).filter((id) => WORD_BY_ID.has(id) && !selectedIds.has(id)).slice(0, 2);
+          candidates.forEach((neighborId, index) => {
+            const angle = ((Math.abs(hashValue(`${item.id}:${neighborId}`)) % 628) / 100) + index * 1.35;
+            const length = 66 + index * 10;
+            const target = {
+              x: Math.max(28, Math.min(GRAPH_WIDTH - 28, source.x + Math.cos(angle) * length)),
+              y: Math.max(28, Math.min(GRAPH_HEIGHT - 28, source.y + Math.sin(angle) * length))
+            };
+            const whisker = svgElement('path', {
+              class: 'graph-whisker',
+              d: `M ${source.x.toFixed(1)} ${source.y.toFixed(1)} L ${target.x.toFixed(1)} ${target.y.toFixed(1)}`,
+              'data-source': item.id,
+              'data-target': neighborId
+            });
+            const ghost = svgElement('g', {
+              class: 'graph-ghost',
+              transform: `translate(${target.x.toFixed(1)} ${target.y.toFixed(1)})`,
+              tabindex: 0,
+              role: 'button',
+              'aria-label': `Добавить соседнее слово «${WORD_BY_ID.get(neighborId).word}»`,
+              'data-ghost-id': neighborId,
+              'data-source': item.id
+            });
+            const hit = svgElement('circle', { class: 'graph-ghost-hit', cx: 0, cy: 0, r: 22 });
+            const dot = svgElement('circle', { class: 'graph-ghost-dot', cx: 0, cy: 0, r: 12 });
+            const plus = svgElement('text', { class: 'graph-ghost-plus', x: 0, y: 6, 'text-anchor': 'middle' });
+            plus.textContent = '+';
+            ghost.append(hit, dot, plus);
+            graphSvg.append(whisker, ghost);
+          });
+        });
+
+        items.forEach((item, index) => {
+          const position = positions.get(item.id);
+          const group = svgElement('g', {
+            class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}`,
+            transform: `translate(${position.x.toFixed(1)} ${position.y.toFixed(1)})`,
+            tabindex: 0,
+            role: 'button',
+            'aria-label': `Открыть слово «${item.word}»`,
+            'data-graph-node-id': item.id,
+            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};animation-delay:${Math.min(index * 22, 260)}ms`
+          });
+          const plate = svgElement('rect', {
+            class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
+            width: position.width, height: position.height, rx: position.height / 2
+          });
+          const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 5, 'text-anchor': 'middle' });
+          label.textContent = item.word.length > 22 ? `${item.word.slice(0, 21)}…` : item.word;
+          const title = svgElement('title');
+          title.textContent = item.word;
+          group.append(plate, label, title);
+          graphSvg.append(group);
+        });
+
+        graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
+        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false);
+        else {
+          activeGraphNodeId = null;
+          graphChainIds = new Set();
+          graphCard.hidden = true;
+          updateGraphHighlight();
+        }
+      }
+
+      function graphChainFrom(id) {
+        const visited = new Set([id]);
+        let frontier = [id];
+        for (let depth = 0; depth < 2; depth += 1) {
+          const next = [];
+          frontier.forEach((currentId) => {
+            (graphAdjacency.get(currentId) || new Set()).forEach((neighborId) => {
+              if (visited.has(neighborId)) return;
+              visited.add(neighborId);
+              next.push(neighborId);
+            });
+          });
+          frontier = next;
+        }
+        return visited;
+      }
+
+      function updateGraphHighlight() {
+        const hasActive = Boolean(activeGraphNodeId);
+        graphSvg.querySelectorAll('[data-graph-node-id]').forEach((node) => {
+          const id = node.dataset.graphNodeId;
+          node.classList.toggle('is-active', id === activeGraphNodeId);
+          node.classList.toggle('is-chain', hasActive && graphChainIds.has(id));
+          node.classList.toggle('is-dimmed', hasActive && !graphChainIds.has(id));
+        });
+        graphSvg.querySelectorAll('.graph-edge').forEach((edge) => {
+          const inChain = graphChainIds.has(edge.dataset.source) && graphChainIds.has(edge.dataset.target);
+          edge.classList.toggle('is-chain', hasActive && inChain);
+          edge.classList.toggle('is-dimmed', hasActive && !inChain);
+        });
+        graphSvg.querySelectorAll('.graph-whisker, .graph-ghost').forEach((element) => {
+          element.classList.toggle('is-dimmed', hasActive && !graphChainIds.has(element.dataset.source));
+        });
+      }
+
+      function selectGraphNode(id, scrollCard = true) {
+        if (!isGraphItemSelected(id)) return;
+        activeGraphNodeId = id;
+        graphChainIds = graphChainFrom(id);
+        updateGraphHighlight();
+        renderGraphCard(id);
+        if (scrollCard) window.requestAnimationFrame(() => graphCard.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+      }
+
+      function cardChip(text, options = {}) {
+        const element = options.button ? document.createElement('button') : document.createElement('span');
+        element.className = `graph-chip${options.unselected ? ' is-unselected' : ''}`;
+        if (options.button) element.type = 'button';
+        if (options.wordId) element.dataset.cardWord = options.wordId;
+        element.textContent = text;
+        return element;
+      }
+
+      function cardSection(labelText) {
+        const section = document.createElement('div');
+        section.className = 'graph-card-section';
+        const label = document.createElement('span');
+        label.className = 'graph-card-label';
+        label.textContent = labelText;
+        const chips = document.createElement('div');
+        chips.className = 'graph-card-chips';
+        section.append(label, chips);
+        return { section, chips };
+      }
+
+      function renderGraphCard(id) {
+        const item = graphItemById(id);
+        if (!item) { graphCard.hidden = true; return; }
+        graphCard.replaceChildren();
+        graphCard.hidden = false;
+        const kicker = document.createElement('p');
+        kicker.className = 'graph-card-kicker';
+        kicker.textContent = 'Узел карты';
+        const title = document.createElement('h2');
+        title.textContent = item.word;
+        const shelvesSection = cardSection('Полки');
+        (item.shelves || ['custom']).forEach((shelfId) => {
+          const shelf = SHELF_BY_ID.get(shelfId) || { emoji: '✨', title: 'Своё' };
+          shelvesSection.chips.append(cardChip(`${shelf.emoji} ${shelf.title}`));
+        });
+        graphCard.append(kicker, title, shelvesSection.section);
+
+        const neighbors = (item.neighbors || []).map((neighborId) => WORD_BY_ID.get(neighborId)).filter(Boolean);
+        if (neighbors.length) {
+          const neighborsSection = cardSection('Соседи');
+          neighbors.forEach((neighbor) => neighborsSection.chips.append(cardChip(neighbor.word, {
+            button: true, wordId: neighbor.id, unselected: !isGraphItemSelected(neighbor.id)
+          })));
+          graphCard.append(neighborsSection.section);
+        }
+
+        const shadow = item.antonym ? WORD_BY_ID.get(item.antonym) : null;
+        if (shadow) {
+          const section = document.createElement('div');
+          section.className = 'graph-card-section';
+          const label = document.createElement('span');
+          label.className = 'graph-card-label';
+          label.textContent = 'Теневая пара';
+          const copy = document.createElement('p');
+          copy.className = 'graph-card-copy';
+          copy.textContent = `${shadow.word}. Это соседняя грань словаря, не вывод о тебе.`;
+          const button = document.createElement('button');
+          button.className = 'primary-button';
+          button.type = 'button';
+          button.dataset.addWord = shadow.id;
+          button.disabled = isGraphItemSelected(shadow.id);
+          button.textContent = button.disabled ? 'Уже в слепке' : 'И это про меня';
+          section.append(label, copy, button);
+          graphCard.append(section);
+        }
+
+        const activates = (item.activates || []).map((stoneId) => WORD_BY_ID.get(stoneId)).filter(Boolean);
+        if (activates.length) {
+          const activatesSection = cardSection('Какие камни может будить');
+          activates.forEach((stone) => activatesSection.chips.append(cardChip(stone.word, {
+            button: true, wordId: stone.id, unselected: !isGraphItemSelected(stone.id)
+          })));
+          const copy = document.createElement('p');
+          copy.className = 'graph-card-copy';
+          copy.textContent = 'Это связь словаря для исследования, не диагноз и не установленная реакция.';
+          activatesSection.section.append(copy);
+          graphCard.append(activatesSection.section);
+        }
+      }
+
+      function showGraphAddProposal(id) {
+        const item = WORD_BY_ID.get(id);
+        if (!item) return;
+        graphCard.replaceChildren();
+        graphCard.hidden = false;
+        const kicker = document.createElement('p');
+        kicker.className = 'graph-card-kicker';
+        kicker.textContent = 'Слово рядом';
+        const title = document.createElement('h2');
+        title.textContent = item.word;
+        const copy = document.createElement('p');
+        copy.className = 'graph-card-copy';
+        copy.textContent = 'Добавить и это? Слово появится в слепке и на графе.';
+        const actions = document.createElement('div');
+        actions.className = 'graph-card-actions';
+        const add = document.createElement('button');
+        add.className = 'primary-button';
+        add.type = 'button';
+        add.dataset.confirmAdd = item.id;
+        add.textContent = 'Добавить';
+        const cancel = document.createElement('button');
+        cancel.className = 'secondary-button';
+        cancel.type = 'button';
+        cancel.dataset.cancelAdd = 'true';
+        cancel.textContent = 'Не сейчас';
+        actions.append(add, cancel);
+        graphCard.append(kicker, title, copy, actions);
+        window.requestAnimationFrame(() => graphCard.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+      }
+
+      function addGraphWord(id) {
+        if (!WORD_BY_ID.has(id)) return;
+        if (!state.selectedIds.includes(id)) state.selectedIds.push(id);
+        state.view = 'graph';
+        persistState();
+        renderGraph();
+        selectGraphNode(id);
+      }
+
       function showView(view, focus = true, shouldPersist = true) {
+        const isScatter = view === 'scatter';
         const isSnapshot = view === 'snapshot';
-        scatterScreen.hidden = isSnapshot;
+        const isGraph = view === 'graph';
+        scatterScreen.hidden = !isScatter;
         snapshotScreen.hidden = !isSnapshot;
-        state.view = isSnapshot ? 'snapshot' : 'scatter';
-        document.body.classList.toggle('wave-two', !isSnapshot && state.wave === 2);
+        graphScreen.hidden = !isGraph;
+        state.view = isGraph ? 'graph' : isSnapshot ? 'snapshot' : 'scatter';
+        document.body.classList.toggle('wave-two', isScatter && state.wave === 2);
         if (isSnapshot) renderSnapshot();
+        if (isGraph) renderGraph();
         if (shouldPersist) persistState();
         if (focus) {
           window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-          window.requestAnimationFrame(() => document.getElementById(isSnapshot ? 'snapshotTitle' : 'scatterTitle').focus?.());
+          const titleId = isGraph ? 'graphTitle' : isSnapshot ? 'snapshotTitle' : 'scatterTitle';
+          window.requestAnimationFrame(() => {
+            document.getElementById(titleId).focus?.();
+            if (isGraph) {
+              graphViewport.scrollLeft = Math.max(0, (graphViewport.scrollWidth - graphViewport.clientWidth) / 2);
+              graphViewport.scrollTop = Math.max(0, (graphViewport.scrollHeight - graphViewport.clientHeight) / 2);
+            }
+          });
         }
       }
 
@@ -1276,6 +1914,41 @@
         renderScatter();
       });
 
+      function activateGraphTarget(target) {
+        const node = target.closest('[data-graph-node-id]');
+        if (node) {
+          selectGraphNode(node.dataset.graphNodeId);
+          return;
+        }
+        const ghost = target.closest('[data-ghost-id]');
+        if (ghost) showGraphAddProposal(ghost.dataset.ghostId);
+      }
+
+      graphSvg.addEventListener('click', (event) => activateGraphTarget(event.target));
+      graphSvg.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const target = event.target.closest('[data-graph-node-id], [data-ghost-id]');
+        if (!target) return;
+        event.preventDefault();
+        activateGraphTarget(target);
+      });
+
+      graphCard.addEventListener('click', (event) => {
+        const directAdd = event.target.closest('[data-add-word]');
+        if (directAdd) { addGraphWord(directAdd.dataset.addWord); return; }
+        const confirmAdd = event.target.closest('[data-confirm-add]');
+        if (confirmAdd) { addGraphWord(confirmAdd.dataset.confirmAdd); return; }
+        if (event.target.closest('[data-cancel-add]')) {
+          if (activeGraphNodeId) renderGraphCard(activeGraphNodeId);
+          else graphCard.hidden = true;
+          return;
+        }
+        const neighbor = event.target.closest('[data-card-word]');
+        if (!neighbor) return;
+        if (isGraphItemSelected(neighbor.dataset.cardWord)) selectGraphNode(neighbor.dataset.cardWord);
+        else showGraphAddProposal(neighbor.dataset.cardWord);
+      });
+
       backWaveButton.addEventListener('click', () => {
         if (state.wave !== 2) return;
         state.wave = 1;
@@ -1295,8 +1968,12 @@
         updateSelectionUI();
       });
 
+      document.getElementById('graphButton').addEventListener('click', () => showView('graph'));
+      document.getElementById('graphBackButton').addEventListener('click', () => showView('snapshot'));
+
       renderScatter();
-      if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
+      if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
+      else if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
       else showView('scatter', false, false);
     })();
   </script>
