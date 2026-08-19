@@ -867,22 +867,24 @@
       overflow: auto;
     }
 
-    .graph-zone { fill: rgba(49, 95, 82, 0.05); stroke: rgba(49, 95, 82, 0.16); stroke-width: 1.5; }
+    .graph-zone { fill: rgba(49, 95, 82, 0.045); stroke: rgba(49, 95, 82, 0.14); stroke-width: 1.5; }
     .graph-zone-label {
-      fill: rgba(38, 64, 55, 0.82);
-      stroke: rgba(246, 243, 233, 0.94);
-      stroke-width: 5px;
+      fill: rgba(38, 64, 55, 0.62);
+      stroke: rgba(246, 243, 233, 0.9);
+      stroke-width: 7px;
       paint-order: stroke fill;
       font-family: var(--sans);
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
+      font-size: 26px;
+      font-weight: 850;
+      letter-spacing: 0.1em;
+      pointer-events: none;
       text-transform: uppercase;
     }
 
     .graph-edge {
       fill: none;
       stroke: rgba(49, 95, 82, 0.42);
+      stroke-opacity: 0.42;
       stroke-linecap: round;
       stroke-width: 2;
       pointer-events: none;
@@ -903,7 +905,7 @@
       outline: none;
     }
 
-    .graph-edge.is-chain { stroke: #b17e39; stroke-width: 3.5; }
+    .graph-edge.is-chain { stroke-opacity: 1; stroke-width: 3.5; }
     .graph-edge.is-dimmed { opacity: 0.1; }
 
     .graph-whisker {
@@ -926,6 +928,7 @@
     .graph-node {
       cursor: pointer;
       opacity: 1;
+      transform: translate(var(--node-x), var(--node-y));
       animation: graph-node-arrive 420ms ease both;
       transition: opacity 220ms ease, filter 220ms ease;
     }
@@ -948,6 +951,11 @@
     .graph-node.is-heavy .graph-node-plate {
       stroke-width: 3;
       filter: drop-shadow(0 9px 11px rgba(18, 25, 29, 0.3));
+    }
+
+    .graph-node.is-pressured .graph-node-plate {
+      stroke: rgba(246, 221, 170, 0.9);
+      stroke-width: 3;
     }
 
     .graph-node.is-active .graph-node-plate { stroke: #f1cd82; stroke-width: 4; }
@@ -1026,8 +1034,8 @@
     }
 
     @keyframes graph-node-arrive {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; transform: translate(var(--anchor-x), var(--anchor-y)); }
+      to { opacity: 1; transform: translate(var(--node-x), var(--node-y)); }
     }
 
     @media (max-width: 639px) {
@@ -1135,6 +1143,7 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
       .word-token { --tilt: 0deg !important; --lift: 0px !important; }
+      .graph-node { animation: none !important; }
     }
   </style>
 </head>
@@ -1265,15 +1274,16 @@
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const GRAPH_WIDTH = 1200;
       const GRAPH_HEIGHT = 820;
+      const GRAPH_CLOUD_RADIUS = 116;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
         stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#8c6b91'
       };
       const GRAPH_ZONES = {
-        values: { x: 280, y: 185 }, goals: { x: 600, y: 145 }, action: { x: 920, y: 215 },
-        foresight: { x: 970, y: 540 }, stones: { x: 650, y: 670 }, supports: { x: 285, y: 635 },
-        triggers: { x: 145, y: 420 }, custom: { x: 590, y: 410 }
+        values: { x: 200, y: 145 }, goals: { x: 600, y: 145 }, action: { x: 1000, y: 145 },
+        foresight: { x: 350, y: 410 }, stones: { x: 850, y: 410 }, supports: { x: 300, y: 675 },
+        triggers: { x: 900, y: 675 }, custom: { x: 600, y: 675 }
       };
 
       const scatterScreen = document.getElementById('scatterScreen');
@@ -1311,6 +1321,7 @@
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
       let graphAdjacency = new Map();
+      let graphPressureSources = new Map();
       let graphScale = 1;
       let graphScaleInitialized = false;
       let graphFullscreenRestore = null;
@@ -1786,7 +1797,22 @@
         return adjacency;
       }
 
-      function computeGraphLayout(items, adjacency) {
+      function buildGraphPressure(items) {
+        const itemMap = new Map(items.map((item) => [item.id, item]));
+        const pressure = new Map(items.map((item) => [item.id, new Set()]));
+        items.forEach((item) => {
+          if (!(item.shelves || []).includes('triggers')) return;
+          (item.activates || []).forEach((stoneId) => {
+            const stone = itemMap.get(stoneId);
+            if (!stone || !(stone.shelves || []).includes('stones')) return;
+            pressure.get(item.id).add(stoneId);
+            pressure.get(stoneId).add(item.id);
+          });
+        });
+        return pressure;
+      }
+
+      function computeGraphLayout(items, adjacency, pressureSources) {
         const positions = new Map();
         const shelfIndexes = new Map();
         items.forEach((item) => {
@@ -1795,14 +1821,24 @@
           shelfIndexes.set(shelf, index + 1);
           const zone = GRAPH_ZONES[shelf] || GRAPH_ZONES.custom;
           const angle = ((Math.abs(hashValue(item.id)) % 628) / 100) + index * 1.7;
-          const ring = Math.floor(index / 5);
-          const radius = 34 + (index % 5) * 22 + ring * 38;
+          const pressureCount = (pressureSources.get(item.id) || new Set()).size;
+          const normalRadius = Math.min(GRAPH_CLOUD_RADIUS * 0.74, 28 + (index % 4) * 18 + Math.floor(index / 4) * 10);
+          const pressureRadius = pressureCount
+            ? GRAPH_CLOUD_RADIUS * (0.87 + 0.21 * Math.min(3, pressureCount))
+            : normalRadius;
+          const targetX = zone.x + Math.cos(angle) * pressureRadius;
+          const targetY = zone.y + Math.sin(angle) * pressureRadius;
           positions.set(item.id, {
-            x: zone.x + Math.cos(angle) * radius,
-            y: zone.y + Math.sin(angle) * radius,
+            x: targetX,
+            y: targetY,
+            targetX,
+            targetY,
+            anchorX: zone.x,
+            anchorY: zone.y,
             width: graphNodeWidth(item),
             height: shelf === 'stones' || shelf === 'triggers' ? 56 : 48,
-            shelf
+            shelf,
+            pressureCount
           });
         });
 
@@ -1810,9 +1846,8 @@
         for (let iteration = 0; iteration < 85; iteration += 1) {
           const alpha = 1 - iteration / 100;
           entries.forEach(([, position]) => {
-            const zone = GRAPH_ZONES[position.shelf] || GRAPH_ZONES.custom;
-            position.x += (zone.x - position.x) * 0.018 * alpha;
-            position.y += (zone.y - position.y) * 0.018 * alpha;
+            position.x += (position.targetX - position.x) * 0.028 * alpha;
+            position.y += (position.targetY - position.y) * 0.028 * alpha;
           });
 
           for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
@@ -1823,7 +1858,8 @@
               let dy = right.y - left.y;
               let distance = Math.hypot(dx, dy);
               if (distance < 0.1) { dx = 1; dy = 0; distance = 1; }
-              const minimum = (left.width + right.width) / 2 + 18;
+              const shelfGap = left.shelf === right.shelf ? 18 : 52;
+              const minimum = (left.width + right.width) / 2 + shelfGap;
               if (distance >= minimum) continue;
               const push = (minimum - distance) * 0.18 * alpha;
               const ux = dx / distance;
@@ -1843,7 +1879,8 @@
               const dx = target.x - source.x;
               const dy = target.y - source.y;
               const distance = Math.max(1, Math.hypot(dx, dy));
-              const pull = (distance - 155) * 0.007 * alpha;
+              const sameShelf = source.shelf === target.shelf;
+              const pull = (distance - (sameShelf ? 138 : 260)) * (sameShelf ? 0.006 : 0.0012) * alpha;
               source.x += dx / distance * pull;
               source.y += dy / distance * pull;
               target.x -= dx / distance * pull;
@@ -1852,6 +1889,14 @@
           });
 
           entries.forEach(([, position]) => {
+            const dx = position.x - position.anchorX;
+            const dy = position.y - position.anchorY;
+            const distance = Math.max(1, Math.hypot(dx, dy));
+            const maximumRadius = GRAPH_CLOUD_RADIUS * (position.pressureCount ? 1.5 : 1);
+            if (distance > maximumRadius) {
+              position.x = position.anchorX + dx / distance * maximumRadius;
+              position.y = position.anchorY + dy / distance * maximumRadius;
+            }
             position.x = Math.max(position.width / 2 + 34, Math.min(GRAPH_WIDTH - position.width / 2 - 34, position.x));
             position.y = Math.max(position.height / 2 + 34, Math.min(GRAPH_HEIGHT - position.height / 2 - 34, position.y));
           });
@@ -1875,17 +1920,17 @@
         const items = graphItems();
         const itemMap = new Map(items.map((item) => [item.id, item]));
         graphAdjacency = buildGraphAdjacency(items);
-        const positions = computeGraphLayout(items, graphAdjacency);
+        graphPressureSources = buildGraphPressure(items);
+        const positions = computeGraphLayout(items, graphAdjacency, graphPressureSources);
         graphSvg.replaceChildren();
+        const definitions = svgElement('defs');
+        graphSvg.append(definitions);
 
-        const usedShelves = new Set(items.map(primaryShelf));
-        usedShelves.forEach((shelfId) => {
-          const zone = GRAPH_ZONES[shelfId] || GRAPH_ZONES.custom;
-          const shelf = SHELF_BY_ID.get(shelfId) || { emoji: '✨', title: 'Своё' };
-          const circle = svgElement('circle', { class: 'graph-zone', cx: zone.x, cy: zone.y, r: 135 });
-          const label = svgElement('text', { class: 'graph-zone-label', x: zone.x, y: zone.y - 146, 'text-anchor': 'middle' });
-          label.textContent = `${shelf.emoji} ${shelf.title}`;
-          graphSvg.append(circle, label);
+        SHELVES.forEach((shelf) => {
+          const zone = GRAPH_ZONES[shelf.id];
+          graphSvg.append(svgElement('circle', {
+            class: 'graph-zone', cx: zone.x, cy: zone.y, r: GRAPH_CLOUD_RADIUS
+          }));
         });
 
         let edgeCount = 0;
@@ -1894,14 +1939,27 @@
             if (id >= neighborId) return;
             const source = positions.get(id);
             const target = positions.get(neighborId);
+            const sourceItem = itemMap.get(id);
+            const targetItem = itemMap.get(neighborId);
+            const gradientId = `graph-edge-gradient-${edgeCount}`;
+            const gradient = svgElement('linearGradient', {
+              id: gradientId,
+              gradientUnits: 'userSpaceOnUse',
+              x1: source.x.toFixed(1), y1: source.y.toFixed(1),
+              x2: target.x.toFixed(1), y2: target.y.toFixed(1)
+            });
+            gradient.append(
+              svgElement('stop', { offset: '0%', 'stop-color': GRAPH_COLORS[source.shelf] || GRAPH_COLORS.custom }),
+              svgElement('stop', { offset: '100%', 'stop-color': GRAPH_COLORS[target.shelf] || GRAPH_COLORS.custom })
+            );
+            definitions.append(gradient);
             const edge = svgElement('path', {
               class: 'graph-edge',
               d: graphCurve(source, target, `${id}:${neighborId}`),
               'data-source': id,
-              'data-target': neighborId
+              'data-target': neighborId,
+              style: `stroke:url(#${gradientId})`
             });
-            const sourceItem = itemMap.get(id);
-            const targetItem = itemMap.get(neighborId);
             const edgeHit = svgElement('path', {
               class: 'graph-edge-hit',
               d: graphCurve(source, target, `${id}:${neighborId}`),
@@ -1955,13 +2013,13 @@
         items.forEach((item, index) => {
           const position = positions.get(item.id);
           const group = svgElement('g', {
-            class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}`,
-            transform: `translate(${position.x.toFixed(1)} ${position.y.toFixed(1)})`,
+            class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}`,
             tabindex: 0,
             role: 'button',
             'aria-label': `Открыть слово «${item.word}»`,
             'data-graph-node-id': item.id,
-            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};animation-delay:${Math.min(index * 22, 260)}ms`
+            'data-pressure-index': position.pressureCount,
+            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;animation-delay:${Math.min(index * 22, 260)}ms`
           });
           const plate = svgElement('rect', {
             class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
@@ -1975,8 +2033,19 @@
           graphSvg.append(group);
         });
 
+        const zoneLabels = svgElement('g', { 'aria-hidden': 'true' });
+        SHELVES.forEach((shelf) => {
+          const zone = GRAPH_ZONES[shelf.id];
+          const label = svgElement('text', {
+            class: 'graph-zone-label', x: zone.x, y: zone.y - GRAPH_CLOUD_RADIUS + 18, 'text-anchor': 'middle'
+          });
+          label.textContent = shelf.title.toLocaleUpperCase('ru-RU');
+          zoneLabels.append(label);
+        });
+        graphSvg.append(zoneLabels);
+
         graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
-        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false);
+        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
         else {
           activeGraphNodeId = null;
           graphChainIds = new Set();
@@ -2021,12 +2090,29 @@
         });
       }
 
-      function selectGraphNode(id, scrollCard = true) {
+      function showGraphToast(message, duration = 5200) {
+        graphToast.textContent = message;
+        graphToast.hidden = false;
+        if (graphToastTimer) window.clearTimeout(graphToastTimer);
+        graphToastTimer = window.setTimeout(() => { graphToast.hidden = true; }, duration);
+      }
+
+      function pressureToastFor(id) {
+        const sources = [...(graphPressureSources.get(id) || new Set())]
+          .map((sourceId) => graphItemById(sourceId))
+          .filter(Boolean)
+          .sort((left, right) => left.word.localeCompare(right.word, 'ru'));
+        if (!sources.length) return;
+        showGraphToast(`На это слово давит: ${sources.map((item) => item.word).join(', ')}. Это не приговор — это то, что мешает ему работать.`);
+      }
+
+      function selectGraphNode(id, scrollCard = true, showPressure = true) {
         if (!isGraphItemSelected(id)) return;
         activeGraphNodeId = id;
         graphChainIds = graphChainFrom(id);
         updateGraphHighlight();
         renderGraphCard(id);
+        if (showPressure) pressureToastFor(id);
         if (scrollCard) window.requestAnimationFrame(() => graphCard.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
       }
 
@@ -2231,10 +2317,7 @@
       function activateGraphTarget(target) {
         const edge = target.closest('[data-graph-edge]');
         if (edge) {
-          graphToast.textContent = NEIGHBOR_EXPLANATION;
-          graphToast.hidden = false;
-          if (graphToastTimer) window.clearTimeout(graphToastTimer);
-          graphToastTimer = window.setTimeout(() => { graphToast.hidden = true; }, 5200);
+          showGraphToast(NEIGHBOR_EXPLANATION);
           return;
         }
         const node = target.closest('[data-graph-node-id]');
