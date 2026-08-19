@@ -716,9 +716,73 @@
       font-weight: 500;
     }
 
+    @media (max-width: 639px) {
+      .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(20px, env(safe-area-inset-bottom)); }
+      .topbar { margin-bottom: 9px; padding-inline: 4px; }
+      .brand { gap: 7px; font-size: 0.68rem; }
+      .brand-mark { width: 30px; height: 30px; font-size: 0.85rem; }
+      .version-chip { padding: 5px 8px; font-size: 0.62rem; }
+      .page { min-height: calc(100vh - 56px); border-radius: 21px; }
+      .screen { padding: 19px 13px 15px; }
+      #scatterScreen { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
+      .eyebrow { margin-bottom: 7px; font-size: 0.61rem; }
+      h1 { margin-bottom: 9px; font-size: clamp(1.72rem, 8.2vw, 2.7rem); line-height: 1.02; }
+      body.wave-two #scatterTitle { font-size: clamp(1.58rem, 7.2vw, 2.35rem); line-height: 1.08; }
+      .lead { margin-bottom: 9px; font-size: 0.88rem; line-height: 1.36; }
+      details.help { font-size: 0.74rem; }
+      .selection-bar {
+        top: 6px;
+        gap: 8px;
+        margin: 14px auto 6px;
+        padding: 8px 9px;
+        border-radius: 14px;
+      }
+      .selection-count { gap: 5px; font-size: 0.72rem; }
+      .selection-count strong { font-size: 1.05rem; }
+      .selection-more { font-size: 0.59rem; }
+      .selection-hint { max-width: 42%; font-size: 0.63rem; }
+      .word-field {
+        gap: 6px 5px;
+        min-height: 350px;
+        padding: 15px 0 22px;
+      }
+      .word-token {
+        min-height: 36px;
+        padding: 7px 10px;
+        font-size: max(0.68rem, calc(var(--token-size, 0.88rem) * 0.84));
+      }
+      .custom-card { margin-bottom: 10px; padding: 13px; border-radius: 16px; }
+      .custom-label { margin-bottom: 7px; font-size: 0.76rem; }
+      .custom-input { min-height: 40px; padding: 9px 10px; font-size: 0.82rem; }
+      .small-button { min-height: 40px; padding: 8px 11px; font-size: 0.8rem; }
+      .screen-actions {
+        width: min(360px, calc(100vw - 16px));
+        flex-wrap: wrap;
+        gap: 7px;
+        padding: 7px;
+        border-radius: 15px;
+      }
+      .screen-actions button { min-height: 40px; padding: 8px 12px; font-size: 0.8rem; }
+      #backWaveButton:not([hidden]) { flex: 1 0 100%; }
+      .snapshot-head { margin-bottom: 16px; }
+      .honesty-note { gap: 8px; margin-top: 12px; padding: 10px 11px; font-size: 0.72rem; }
+      .snapshot-small-note { font-size: 0.7rem; }
+      .shelf-grid { gap: 9px; margin-bottom: 16px; }
+      .shelf-card { min-height: 146px; padding: 13px; border-radius: 17px; }
+      .shelf-title-row { margin-bottom: 10px; }
+      .shelf-title { font-size: 0.98rem; }
+      .shelf-deepen { width: 32px; height: 32px; font-size: 1rem; }
+      .shelf-words { gap: 5px; min-height: 48px; }
+      .shelf-word { padding: 6px 9px; font-size: 0.71rem; }
+      .shelf-summary { margin-top: 10px; padding-top: 9px; font-size: 0.69rem; }
+      .snapshot-actions { gap: 7px; }
+      .snapshot-actions button { min-height: 40px; font-size: 0.8rem; }
+    }
+
     @media (min-width: 640px) {
       .app-shell { padding: 22px 22px 54px; }
       .screen { padding: 38px 34px 25px; }
+      h1 { font-size: clamp(2.15rem, 7vw, 4.5rem); }
       .word-field { gap: 11px 10px; padding-inline: 18px; }
       .word-token { min-height: 44px; padding: 10px 15px; }
       .shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
