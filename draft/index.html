@@ -1838,7 +1838,8 @@
             width: graphNodeWidth(item),
             height: shelf === 'stones' || shelf === 'triggers' ? 56 : 48,
             shelf,
-            pressureCount
+            pressureCount,
+            maximumRadius: pressureCount ? pressureRadius : GRAPH_CLOUD_RADIUS
           });
         });
 
@@ -1892,7 +1893,7 @@
             const dx = position.x - position.anchorX;
             const dy = position.y - position.anchorY;
             const distance = Math.max(1, Math.hypot(dx, dy));
-            const maximumRadius = GRAPH_CLOUD_RADIUS * (position.pressureCount ? 1.5 : 1);
+            const maximumRadius = position.maximumRadius;
             if (distance > maximumRadius) {
               position.x = position.anchorX + dx / distance * maximumRadius;
               position.y = position.anchorY + dy / distance * maximumRadius;
