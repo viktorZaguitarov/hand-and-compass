@@ -911,7 +911,7 @@
       }
 
       function summaryForShelf(shelf, words) {
-        if (!words.length) return `${shelf.emoji} ${shelf.title}: пока нет слов.`;
+        if (!words.length) return 'Пока пусто. Возможно, сюда стоит заглянуть позже.';
         const names = words.map((item) => item.word).join(', ');
         if (shelf.id === 'stones') return `${shelfCountLabel(words.length)}: ${names}. Это отмеченные трудности, не описание «поломки».`;
         if (shelf.id === 'triggers') return `${shelfCountLabel(words.length)}: ${names}. Это внешние сигналы, не черта характера.`;
