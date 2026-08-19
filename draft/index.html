@@ -867,12 +867,15 @@
       overflow: auto;
     }
 
-    .graph-zone { fill: rgba(49, 95, 82, 0.035); stroke: rgba(49, 95, 82, 0.09); stroke-width: 1; }
+    .graph-zone { fill: rgba(49, 95, 82, 0.05); stroke: rgba(49, 95, 82, 0.16); stroke-width: 1.5; }
     .graph-zone-label {
-      fill: rgba(49, 70, 62, 0.42);
+      fill: rgba(38, 64, 55, 0.82);
+      stroke: rgba(246, 243, 233, 0.94);
+      stroke-width: 5px;
+      paint-order: stroke fill;
       font-family: var(--sans);
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 15px;
+      font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -882,7 +885,22 @@
       stroke: rgba(49, 95, 82, 0.42);
       stroke-linecap: round;
       stroke-width: 2;
+      pointer-events: none;
       transition: opacity 220ms ease, stroke 220ms ease, stroke-width 220ms ease;
+    }
+
+    .graph-edge-hit {
+      fill: none;
+      stroke: transparent;
+      stroke-width: 28px;
+      pointer-events: stroke;
+      cursor: pointer;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .graph-edge-hit:focus-visible {
+      stroke: rgba(177, 126, 57, 0.18);
+      outline: none;
     }
 
     .graph-edge.is-chain { stroke: #b17e39; stroke-width: 3.5; }
@@ -976,6 +994,36 @@
     button.graph-chip { cursor: pointer; }
     .graph-chip.is-unselected { border-style: dashed; background: rgba(238, 230, 212, 0.5); }
     .graph-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+
+    .graph-neighbor-note {
+      margin: 13px 0 0;
+      padding: 9px 11px;
+      border-left: 3px solid rgba(49, 95, 82, 0.34);
+      color: var(--ink-soft);
+      background: rgba(220, 233, 223, 0.38);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .graph-toast {
+      position: fixed;
+      right: 12px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      left: 12px;
+      z-index: 140;
+      width: min(620px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 13px 15px;
+      border: 1px solid rgba(211, 193, 155, 0.34);
+      border-radius: 16px;
+      color: #f5f1e9;
+      background: rgba(26, 38, 43, 0.96);
+      box-shadow: 0 14px 34px rgba(11, 18, 22, 0.28);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      line-height: 1.42;
+      text-align: center;
+    }
 
     @keyframes graph-node-arrive {
       from { opacity: 0; }
@@ -1190,6 +1238,7 @@
         </div>
         <p class="graph-status" id="graphStatus" aria-live="polite"></p>
         <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
+        <div class="graph-toast" id="graphToast" role="status" aria-live="polite" hidden></div>
       </section>
     </main>
   </div>
@@ -1216,6 +1265,7 @@
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const GRAPH_WIDTH = 1200;
       const GRAPH_HEIGHT = 820;
+      const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
         stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#8c6b91'
@@ -1252,6 +1302,7 @@
       const graphZoomInButton = document.getElementById('graphZoomInButton');
       const graphScaleLabel = document.getElementById('graphScaleLabel');
       const graphExpandButton = document.getElementById('graphExpandButton');
+      const graphToast = document.getElementById('graphToast');
       const storageNotice = document.getElementById('storageNotice');
 
       let storageWasBroken = false;
@@ -1266,6 +1317,7 @@
       let graphGesture = null;
       let graphSuppressClickUntil = 0;
       let graphLastTap = null;
+      let graphToastTimer = null;
       const graphTouchPoints = new Map();
       const scatterSeed = createScatterSeed();
       const scatterOrder = shuffled(WORDS, scatterSeed);
@@ -1848,7 +1900,19 @@
               'data-source': id,
               'data-target': neighborId
             });
-            graphSvg.append(edge);
+            const sourceItem = itemMap.get(id);
+            const targetItem = itemMap.get(neighborId);
+            const edgeHit = svgElement('path', {
+              class: 'graph-edge-hit',
+              d: graphCurve(source, target, `${id}:${neighborId}`),
+              tabindex: 0,
+              role: 'button',
+              'aria-label': `Объяснить связь «${sourceItem.word}» и «${targetItem.word}»`,
+              'data-graph-edge': 'true',
+              'data-source': id,
+              'data-target': neighborId
+            });
+            graphSvg.append(edge, edgeHit);
             edgeCount += 1;
           });
         });
@@ -2006,11 +2070,14 @@
 
         const neighbors = (item.neighbors || []).map((neighborId) => WORD_BY_ID.get(neighborId)).filter(Boolean);
         if (neighbors.length) {
+          const explanation = document.createElement('p');
+          explanation.className = 'graph-neighbor-note';
+          explanation.textContent = NEIGHBOR_EXPLANATION;
           const neighborsSection = cardSection('Соседи');
           neighbors.forEach((neighbor) => neighborsSection.chips.append(cardChip(neighbor.word, {
             button: true, wordId: neighbor.id, unselected: !isGraphItemSelected(neighbor.id)
           })));
-          graphCard.append(neighborsSection.section);
+          graphCard.append(explanation, neighborsSection.section);
         }
 
         const shadow = item.antonym ? WORD_BY_ID.get(item.antonym) : null;
@@ -2091,6 +2158,10 @@
         const isSnapshot = view === 'snapshot';
         const isGraph = view === 'graph';
         if (!isGraph && graphScreen.classList.contains('is-fullscreen')) setGraphFullscreen(false, false);
+        if (!isGraph) {
+          graphToast.hidden = true;
+          if (graphToastTimer) window.clearTimeout(graphToastTimer);
+        }
         scatterScreen.hidden = !isScatter;
         snapshotScreen.hidden = !isSnapshot;
         graphScreen.hidden = !isGraph;
@@ -2158,6 +2229,14 @@
       });
 
       function activateGraphTarget(target) {
+        const edge = target.closest('[data-graph-edge]');
+        if (edge) {
+          graphToast.textContent = NEIGHBOR_EXPLANATION;
+          graphToast.hidden = false;
+          if (graphToastTimer) window.clearTimeout(graphToastTimer);
+          graphToastTimer = window.setTimeout(() => { graphToast.hidden = true; }, 5200);
+          return;
+        }
         const node = target.closest('[data-graph-node-id]');
         if (node) {
           selectGraphNode(node.dataset.graphNodeId);
@@ -2233,7 +2312,7 @@
       });
       graphSvg.addEventListener('keydown', (event) => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
-        const target = event.target.closest('[data-graph-node-id], [data-ghost-id]');
+        const target = event.target.closest('[data-graph-node-id], [data-ghost-id], [data-graph-edge]');
         if (!target) return;
         event.preventDefault();
         activateGraphTarget(target);
