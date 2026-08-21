@@ -834,7 +834,8 @@
     "zhivotnye",
     "dom"
    ],
-   "antonym": null
+   "antonym": null,
+   "interest": "zabota"
   },
   {
    "id": "muzyka",
@@ -848,7 +849,8 @@
     "vdohnovenie",
     "yumor"
    ],
-   "antonym": null
+   "antonym": null,
+   "interest": "vdohnovenie"
   },
   {
    "id": "yumor",
@@ -1224,7 +1226,8 @@
     "svoboda",
     "vdohnovenie"
    ],
-   "antonym": null
+   "antonym": null,
+   "interest": "novoe"
   },
   {
    "id": "scenarii",
@@ -1380,7 +1383,8 @@
     "idei",
     "yumor"
    ],
-   "antonym": null
+   "antonym": null,
+   "interest": "razdumya"
   },
   {
    "id": "lyubopytstvo",
@@ -1632,28 +1636,12 @@
    ]
   },
   {
-   "id": "int_muzyka",
-   "word": "музыка",
-   "shelves": [
-    "supports"
-   ],
-   "interest": "vdohnovenie"
-  },
-  {
    "id": "int_tyazhelaya_muzyka",
    "word": "тяжёлая музыка",
    "shelves": [
     "supports"
    ],
    "interest": "muzyka"
-  },
-  {
-   "id": "int_knigi",
-   "word": "книги",
-   "shelves": [
-    "supports"
-   ],
-   "interest": "razdumya"
   },
   {
    "id": "int_anime",
@@ -1682,14 +1670,6 @@
   {
    "id": "int_gotovka",
    "word": "готовка",
-   "shelves": [
-    "supports"
-   ],
-   "interest": "zabota"
-  },
-  {
-   "id": "int_rasteniya",
-   "word": "комнатные растения",
    "shelves": [
     "supports"
    ],
@@ -1726,14 +1706,6 @@
     "supports"
    ],
    "interest": "svoboda"
-  },
-  {
-   "id": "int_puteshestviya",
-   "word": "путешествия",
-   "shelves": [
-    "supports"
-   ],
-   "interest": "novoe"
   },
   {
    "id": "int_foto",
