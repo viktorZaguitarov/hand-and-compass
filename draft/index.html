@@ -73,9 +73,9 @@
       pointer-events: none;
     }
 
-    button, input { font: inherit; }
+    button, input, textarea { font: inherit; }
     button { cursor: pointer; }
-    button:focus-visible, input:focus-visible, summary:focus-visible {
+    button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
       outline: 3px solid rgba(189, 136, 64, 0.55);
       outline-offset: 3px;
     }
@@ -767,6 +767,7 @@
 
     .shelf-word {
       position: relative;
+      appearance: none;
       padding: 8px 11px;
       border: 1px solid rgba(49, 95, 82, 0.2);
       border: 1px solid color-mix(in srgb, var(--shelf-accent) 32%, transparent);
@@ -777,7 +778,12 @@
       font-family: var(--sans);
       font-size: 0.82rem;
       line-height: 1.2;
+      text-align: left;
     }
+
+    button.shelf-word { cursor: pointer; }
+    button.shelf-word:hover { border-color: color-mix(in srgb, var(--shelf-accent) 70%, transparent); }
+    .shelf-word-enter { margin-left: 5px; color: color-mix(in srgb, var(--shelf-accent) 78%, #1f332d); font-size: 0.66rem; font-weight: 800; white-space: nowrap; }
 
     .shelf-word.is-multi {
       border-style: double;
@@ -1281,6 +1287,7 @@
     .intersection-shelf-title { display: block; margin-bottom: 7px; color: var(--ink-soft); font-size: 0.64rem; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; }
     .intersection-words { display: flex; flex-wrap: wrap; gap: 6px; }
     .intersection-word {
+      appearance: none;
       padding: 6px 9px;
       border: 1px solid color-mix(in srgb, var(--shelf-accent) 44%, transparent);
       border-radius: 999px;
@@ -1290,6 +1297,7 @@
       font-size: 0.71rem;
       line-height: 1.25;
     }
+    button.intersection-word { cursor: pointer; font-family: var(--sans); }
 
     .intersection-summary { margin: 0; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.45; }
     .intersection-summary-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
@@ -1346,6 +1354,121 @@
       max-width: 940px;
       margin: 16px auto 0;
     }
+
+    .world-screen {
+      min-height: calc(100vh - 110px);
+      padding-bottom: 36px;
+      color: #e7ebef;
+      background:
+        radial-gradient(circle at 13% 8%, rgba(160, 123, 141, 0.2), transparent 21rem),
+        radial-gradient(circle at 86% 14%, rgba(116, 139, 167, 0.19), transparent 25rem),
+        linear-gradient(155deg, #1b2431 0%, #273245 54%, #1a222e 100%);
+      font-family: var(--sans);
+    }
+
+    .world-layout { width: min(860px, 100%); margin: 0 auto; }
+    .world-header { display: grid; gap: 13px; margin-bottom: 17px; }
+    .world-back { justify-self: start; min-height: 40px; padding: 8px 12px; font-size: 0.78rem; }
+    .world-eyebrow { margin: 0; color: #d8bcda; font-size: 0.63rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+    .world-title { margin: 0; color: #f2f4f7; font-family: var(--serif); font-size: clamp(2rem, 10vw, 4rem); font-weight: 500; line-height: 1; overflow-wrap: anywhere; }
+    .world-shelf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .world-shelf-chip {
+      padding: 6px 9px;
+      border: 1px solid color-mix(in srgb, var(--shelf-accent) 62%, #cfd9e6);
+      border-radius: 999px;
+      color: #f0f3f6;
+      background: color-mix(in srgb, var(--shelf-accent) 29%, #263144);
+      font-size: 0.7rem;
+      font-weight: 750;
+    }
+
+    .world-panel {
+      margin-top: 12px;
+      padding: 15px;
+      border: 1px solid rgba(205, 216, 229, 0.17);
+      border-radius: 19px;
+      background: rgba(19, 28, 41, 0.62);
+      box-shadow: 0 14px 31px rgba(5, 10, 18, 0.2);
+    }
+    .world-panel h2 { margin: 0 0 10px; color: #f0f3f6; font-family: var(--serif); font-size: 1.2rem; font-weight: 600; }
+    .world-panel-copy, .world-empty, .world-footer, .world-story-note, .world-form-status { margin: 0; color: #bbc5d0; font-size: 0.76rem; line-height: 1.45; }
+    .world-stat { color: #e6ebf0; font-size: 0.88rem; font-weight: 650; }
+    .world-stat.is-rare { color: #f0d7a8; }
+    .world-parent-row { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 10px; color: #bbc5d0; font-size: 0.75rem; }
+    .world-parent-button { min-height: 34px; padding: 6px 10px; border-color: rgba(216, 188, 218, 0.44); color: #f0e8f3; background: rgba(147, 105, 133, 0.27); font-size: 0.72rem; }
+
+    .world-bot-list { display: grid; gap: 8px; }
+    .world-bot-card {
+      width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 7px 10px;
+      padding: 12px;
+      border: 1px solid rgba(205, 216, 229, 0.16);
+      border-radius: 15px;
+      color: #e8edf2;
+      background: rgba(255, 255, 255, 0.055);
+      text-align: left;
+    }
+    .world-bot-card:hover { border-color: rgba(240, 215, 168, 0.52); background: rgba(255, 255, 255, 0.08); }
+    .world-bot-name { min-width: 0; color: #f4f5f7; font-family: var(--serif); font-size: 1.08rem; overflow-wrap: anywhere; }
+    .world-bot-character { grid-column: 1 / -1; color: #bcc6d1; font-size: 0.74rem; line-height: 1.38; }
+    .world-example-badge, .world-own-badge {
+      align-self: start;
+      padding: 4px 7px;
+      border-radius: 999px;
+      font-size: 0.58rem;
+      font-weight: 800;
+      letter-spacing: 0.055em;
+      line-height: 1.15;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .world-example-badge { color: #e7d7c4; background: rgba(189, 136, 64, 0.24); }
+    .world-own-badge { color: #d7eadf; background: rgba(80, 132, 108, 0.3); }
+
+    .world-stories { display: grid; gap: 10px; }
+    .world-story-card {
+      padding: 13px;
+      border: 1px solid rgba(205, 216, 229, 0.15);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.055);
+    }
+    .world-story-meta { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin-bottom: 8px; }
+    .world-story-author { min-width: 0; color: #dce3ea; font-size: 0.73rem; font-weight: 750; overflow-wrap: anywhere; }
+    .world-story-copy { margin: 0; color: #f1f3f5; font-family: var(--serif); font-size: 1rem; line-height: 1.48; }
+    .world-recognize-row { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin-top: 11px; }
+    .world-recognize {
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 1px solid rgba(216, 188, 218, 0.4);
+      border-radius: 999px;
+      color: #e7eaf0;
+      background: rgba(255, 255, 255, 0.045);
+      font-size: 0.71rem;
+      font-weight: 750;
+    }
+    .world-recognize[aria-pressed="true"] { border-color: rgba(240, 215, 168, 0.68); color: #f5dfaf; background: rgba(189, 136, 64, 0.2); }
+    .world-delete-story { min-height: 34px; padding: 6px 9px; border-color: rgba(218, 167, 170, 0.44); color: #f1d9da; background: rgba(152, 95, 99, 0.18); font-size: 0.7rem; }
+    .world-write-button { width: 100%; min-height: 42px; margin-top: 12px; padding: 9px 12px; font-size: 0.78rem; }
+    .world-story-form { display: grid; gap: 9px; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(205, 216, 229, 0.13); }
+    .world-story-label { color: #e8edf2; font-size: 0.78rem; font-weight: 750; }
+    .world-story-input {
+      width: 100%;
+      min-height: 104px;
+      resize: vertical;
+      padding: 11px;
+      border: 1px solid rgba(205, 216, 229, 0.25);
+      border-radius: 13px;
+      color: #edf1f4;
+      background: rgba(10, 17, 28, 0.6);
+      font-size: 0.83rem;
+      line-height: 1.42;
+    }
+    .world-story-input::placeholder { color: #8794a3; }
+    .world-form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .world-form-actions .primary-button, .world-form-actions .secondary-button { min-height: 40px; padding: 8px 12px; font-size: 0.76rem; }
+    .world-footer { margin: 17px 3px 0; text-align: center; }
 
     @keyframes graph-node-arrive {
       from { opacity: 0; transform: translate(var(--anchor-x), var(--anchor-y)) rotate(var(--node-tilt, 0deg)); }
@@ -1416,6 +1539,7 @@
       .shelf-deepen { width: 32px; height: 32px; font-size: 1rem; }
       .shelf-words { gap: 5px; min-height: 48px; }
       .shelf-word { padding: 6px 9px; font-size: 0.71rem; }
+      .shelf-word-enter { font-size: 0.6rem; }
       .shelf-summary { margin-top: 10px; padding-top: 9px; font-size: 0.69rem; }
       .snapshot-actions { gap: 7px; }
       .snapshot-actions button { min-height: 40px; font-size: 0.8rem; }
@@ -1463,6 +1587,19 @@
       .complement-column { padding: 9px; }
       .friction-item, .intersection-empty, .intersection-honesty { font-size: 0.7rem; }
       .intersections-actions .secondary-button { min-height: 44px; }
+      .world-screen { padding-inline: 12px; }
+      .world-header { gap: 11px; margin-bottom: 13px; }
+      .world-panel { margin-top: 9px; padding: 12px; border-radius: 16px; }
+      .world-panel h2 { font-size: 1.06rem; }
+      .world-panel-copy, .world-empty, .world-footer, .world-story-note, .world-form-status { font-size: 0.7rem; }
+      .world-stat { font-size: 0.8rem; }
+      .world-bot-card { padding: 10px; }
+      .world-bot-name { font-size: 1rem; }
+      .world-bot-character { font-size: 0.7rem; }
+      .world-story-card { padding: 11px; }
+      .world-story-copy { font-size: 0.92rem; }
+      .world-recognize { min-height: 38px; font-size: 0.68rem; }
+      .world-example-badge, .world-own-badge { font-size: 0.54rem; }
       .entry-screen, .custom-shelf-screen { min-height: calc(100vh - 88px); padding-inline: 18px; }
       .entry-copy h1 { font-size: clamp(1.75rem, 8vw, 2.55rem); }
       .graph-intro-copy h1 { font-size: clamp(1.65rem, 7.5vw, 2.35rem); }
@@ -1671,6 +1808,10 @@
           <button class="secondary-button" id="intersectionsBackButton" type="button">К слепку</button>
         </div>
       </section>
+
+      <section class="screen world-screen" id="wordWorldScreen" aria-labelledby="worldTitle" hidden>
+        <div class="world-layout" id="wordWorldContent" aria-live="polite"></div>
+      </section>
     </main>
   </div>
 
@@ -1683,6 +1824,7 @@
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
       const STORAGE_KEY = 'hand_compass_snapshot_v2_draft';
+      const WORLD_STORAGE_KEY = 'hand_compass_word_worlds_v1';
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
       const WORDS = Array.isArray(DATA.words) ? DATA.words : [];
@@ -1723,6 +1865,21 @@
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
         stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#7d827d'
       };
+      const BOT_ARCHETYPE_STORY_SEEDS = Object.freeze([
+        { id: 'dreamer', keyWords: ['mechty', 'fantazii', 'otkladyvanie'] },
+        { id: 'doer', keyWords: ['dvizhenie', 'reshitelnost', 'gotovo'] },
+        { id: 'strategist', keyWords: ['plan', 'raschet', 'davlenie'] },
+        { id: 'guardian', keyWords: ['dom', 'blizost', 'kholodnoe_molchanie'] },
+        { id: 'rebel', keyWords: ['svoboda', 'granicy', 'naporistost'] },
+        { id: 'hermit', keyWords: ['knigi', 'razdumya', 'zamknutost'] },
+        { id: 'star', keyWords: ['krasota', 'priznanie', 'publichnost'] },
+        { id: 'harmonizer', keyWords: ['prinyatie', 'dobrota', 'pokoy'] },
+        { id: 'analyst', keyWords: ['analiz', 'raschet', 'struktura'] },
+        { id: 'creator', keyWords: ['idei', 'muzyka', 'tvorchestvo'] },
+        { id: 'volcano', keyWords: ['kriki', 'nesderzhannost', 'vspylchivost'] },
+        { id: 'seeker', keyWords: ['lyubopytstvo', 'novoe', 'puteshestviya'] }
+      ]);
+      const BOT_STORY_SEED_BY_ARCHETYPE = new Map(BOT_ARCHETYPE_STORY_SEEDS.map((item) => [item.id, item]));
 
       const lightIntroScreen = document.getElementById('lightIntroScreen');
       const scatterScreen = document.getElementById('scatterScreen');
@@ -1760,10 +1917,13 @@
       const profileList = document.getElementById('profileList');
       const moreProfilesButton = document.getElementById('moreProfilesButton');
       const intersectionMap = document.getElementById('intersectionMap');
+      const wordWorldScreen = document.getElementById('wordWorldScreen');
+      const wordWorldContent = document.getElementById('wordWorldContent');
       const storageNotice = document.getElementById('storageNotice');
 
       let storageWasBroken = false;
       let state = restoreState();
+      let worldData = restoreWorldData();
       let focusedShelfId = null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -1781,13 +1941,17 @@
       const scatterSeed = createScatterSeed();
       const graphTiltSeed = createScatterSeed();
       const scatterOrder = shuffled(WORDS, scatterSeed);
+      let worldStoryComposerOpen = false;
+      let worldFormMessage = '';
 
       function emptyState() {
         return {
-          version: 3, selectedIds: [], customWords: [], selectionWaves: {},
+          version: 4, selectedIds: [], customWords: [], selectionWaves: {},
           waveOneIds: [], waveOneCustomIds: [], wave: 1, view: 'light-intro',
           pendingCustomId: null, pickerReturnView: 'scatter', matchTarget: 50,
-          matchVisibleCount: 3, activeProfileId: null, updatedAt: null
+          matchVisibleCount: 3, activeProfileId: null,
+          worldWordId: null, worldHistory: [], worldReturn: null, intersectionReturn: null,
+          updatedAt: null
         };
       }
 
@@ -1827,6 +1991,23 @@
               : waveOneIds.includes(id) || waveOneCustomIds.includes(id) ? 1 : 2;
           });
           const allowedSimpleViews = new Set(['light-intro', 'dark-intro', 'custom-shelf']);
+          const worldWordId = typeof parsed.worldWordId === 'string' && WORD_BY_ID.has(parsed.worldWordId)
+            ? parsed.worldWordId : null;
+          const worldHistory = Array.isArray(parsed.worldHistory)
+            ? parsed.worldHistory.filter((id) => typeof id === 'string' && WORD_BY_ID.has(id)).slice(-12)
+            : [];
+          const worldReturn = ['graph', 'snapshot', 'intersections'].includes(parsed.worldReturn?.view)
+            ? {
+                view: parsed.worldReturn.view,
+                wordId: typeof parsed.worldReturn.wordId === 'string' && WORD_BY_ID.has(parsed.worldReturn.wordId)
+                  ? parsed.worldReturn.wordId : worldWordId,
+                profileId: typeof parsed.worldReturn.profileId === 'string' && FAKE_PROFILES.some((profile) => profile.id === parsed.worldReturn.profileId)
+                  ? parsed.worldReturn.profileId : null
+              }
+            : null;
+          const intersectionReturn = parsed.intersectionReturn?.view === 'word-world' && worldWordId
+            ? { view: 'word-world', wordId: worldWordId }
+            : null;
           const restoredView = parsed.view === 'intersections' && selectionCount >= 3
             ? 'intersections'
             : parsed.view === 'graph' && selectionCount
@@ -1835,12 +2016,14 @@
             ? 'graph-intro'
             : parsed.view === 'snapshot' && selectionCount >= 3
             ? 'snapshot'
+            : parsed.view === 'word-world' && worldWordId
+            ? 'word-world'
             : allowedSimpleViews.has(parsed.view) || parsed.view === 'scatter'
             ? parsed.view
             : selectionCount ? 'scatter' : 'light-intro';
           const pendingCustomId = customIds.has(parsed.pendingCustomId) ? parsed.pendingCustomId : null;
           return {
-            version: 3,
+            version: 4,
             selectedIds,
             customWords,
             selectionWaves,
@@ -1857,6 +2040,10 @@
               ? Math.max(3, Math.floor(Number(parsed.matchVisibleCount) / 3) * 3)
               : 3,
             activeProfileId: null,
+            worldWordId,
+            worldHistory,
+            worldReturn,
+            intersectionReturn,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -1877,6 +2064,52 @@
           }
         } catch {
           showStorageNotice('Браузер не дал сохранить выбор. Пока он останется только на этом экране.');
+        }
+      }
+
+      function emptyWorldData() {
+        return { version: 1, storiesByWord: {}, recognitions: {} };
+      }
+
+      function restoreWorldData() {
+        try {
+          const raw = localStorage.getItem(WORLD_STORAGE_KEY);
+          if (!raw) return emptyWorldData();
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') throw new Error('invalid word worlds');
+          const storiesByWord = {};
+          if (parsed.storiesByWord && typeof parsed.storiesByWord === 'object') {
+            Object.entries(parsed.storiesByWord).forEach(([wordId, stories]) => {
+              if (!WORD_BY_ID.has(wordId) || !Array.isArray(stories)) return;
+              const validStories = stories
+                .filter((story) => story && typeof story.id === 'string' && typeof story.text === 'string' && story.text.trim())
+                .slice(-30)
+                .map((story) => ({
+                  id: story.id.slice(0, 120),
+                  text: story.text.trim().slice(0, 900),
+                  createdAt: typeof story.createdAt === 'string' ? story.createdAt : null
+                }));
+              if (validStories.length) storiesByWord[wordId] = validStories;
+            });
+          }
+          const recognitions = {};
+          if (parsed.recognitions && typeof parsed.recognitions === 'object') {
+            Object.entries(parsed.recognitions).forEach(([storyId, recognized]) => {
+              if (recognized === true && storyId.startsWith('bot:')) recognitions[storyId] = true;
+            });
+          }
+          return { version: 1, storiesByWord, recognitions };
+        } catch {
+          showStorageNotice('Истории миров не удалось прочитать. Исходная запись пока не изменена.');
+          return emptyWorldData();
+        }
+      }
+
+      function persistWorldData() {
+        try {
+          localStorage.setItem(WORLD_STORAGE_KEY, JSON.stringify(worldData));
+        } catch {
+          showStorageNotice('Браузер не дал сохранить историю. Пока она останется только на этом экране.');
         }
       }
 
@@ -1972,6 +2205,463 @@
         return `${count} ${noun}`;
       }
 
+      function profilesForWord(wordId) {
+        return FAKE_PROFILES.filter((profile) => Array.isArray(profile.words) && profile.words.includes(wordId));
+      }
+
+      function worldBotsForWord(wordId, limit = 5) {
+        const matches = profilesForWord(wordId).slice().sort((left, right) => left.id.localeCompare(right.id));
+        const picked = [];
+        const archetypes = new Set();
+        matches.forEach((profile) => {
+          if (picked.length >= limit || archetypes.has(profile.archetype)) return;
+          picked.push(profile);
+          archetypes.add(profile.archetype);
+        });
+        matches.forEach((profile) => {
+          if (picked.length >= limit || picked.some((item) => item.id === profile.id)) return;
+          picked.push(profile);
+        });
+        return picked;
+      }
+
+      function wordLabel(id) {
+        return WORD_BY_ID.get(id)?.word || null;
+      }
+
+      function profileCharacter(profile, activeWordId) {
+        const otherWords = (profile.words || []).filter((id) => id !== activeWordId && WORD_BY_ID.has(id));
+        const light = otherWords.find((id) => !['stones', 'triggers'].includes(primaryShelf(WORD_BY_ID.get(id))));
+        const tension = otherWords.find((id) => ['stones', 'triggers'].includes(primaryShelf(WORD_BY_ID.get(id))));
+        if (light && tension) return `В этом примере рядом «${wordLabel(light)}» и «${wordLabel(tension)}».`;
+        if (light) return `В этом примере в фокусе «${wordLabel(light)}» и ещё несколько близких слов.`;
+        if (tension) return `В этом примере рядом с этим словом есть «${wordLabel(tension)}».`;
+        return 'В этом примере слово отмечено в личном слепке.';
+      }
+
+      function worldStoryTitle(word) {
+        const shelves = new Set(word.shelves || []);
+        if (shelves.has('triggers')) return 'Что случалось';
+        if (shelves.has('stones')) return 'Как живут с этим';
+        if (shelves.has('action') || shelves.has('foresight')) return 'Как это проявляется';
+        return 'Истории';
+      }
+
+      function storyVariant(profile, word, index) {
+        const seed = BOT_STORY_SEED_BY_ARCHETYPE.get(profile.archetype);
+        const seedIndex = seed ? seed.keyWords.indexOf(word.id) : -1;
+        const value = seedIndex >= 0 ? seedIndex + index : Math.abs(hashValue(`${profile.id}:${word.id}:${index}`));
+        return value % 3;
+      }
+
+      function botStoryText(profile, word, index) {
+        const label = `«${word.word}»`;
+        const variant = storyVariant(profile, word, index);
+        const shelf = primaryShelf(word);
+        const templates = {
+          values: [
+            `В разговоре на работе всплыло ${label}. Я хотел не вмешиваться, но сказал, что для меня это важно. Вечером ещё прокручивал этот разговор.`,
+            `В магазине ошиблись со сдачей. Я вспомнил слово ${label} и вернулся к кассе. Домой пришёл позже, зато спокойно.`,
+            `В чате все быстро согласились, а я почувствовал: здесь для меня важно слово ${label}. Написал одну фразу и выключил телефон на час.`
+          ],
+          goals: [
+            `В воскресенье открыл блокнот и записал: сейчас для меня важно ${label}. Потом сделал один маленький шаг, чтобы запись не осталась красивой мыслью.`,
+            `После работы полчаса разбирался с тем, что для меня связано со словом ${label}. Устал, но оставил на столе список на завтра.`,
+            `С утра опять отложил всё вокруг ${label}, а вечером всё же поставил таймер на двадцать минут. За это время стало понятнее, с чего начать.`
+          ],
+          action: [
+            `Не стал ждать настроения и сделал маленький шаг в сторону ${label}. Закончил первый кусок, потом ещё один. К ночи появилось ощущение, что дело сдвинулось.`,
+            `В субботу поймал себя на том, что много думаю про слово ${label}, но руками ничего не делаю. Поставил обувь у двери и вышел хотя бы на короткую прогулку.`,
+            `Когда всё затянулось, я выбрал действие, которое у меня связано с ${label}, вместо ещё одного обсуждения. Получилось неловко, зато следующий шаг стал виден.`
+          ],
+          foresight: [
+            `Перед встречей накидал в заметках, где для меня может понадобиться ${label}. В разговоре не всё пошло по плану, но я не растерялся.`,
+            `Вечером прокрутил несколько вариантов, связанных со словом ${label}. Утром оставил только один и перестал дописывать бесконечные запасные планы.`,
+            `Собирался в дорогу и вспомнил слово ${label}. Потратил десять минут на подготовку, потом они сэкономили мне целый час.`
+          ],
+          stones: [
+            `Утром заметил, как у меня включается ${label}: открыл письмо и вместо ответа стал мыть чашки. К вечеру вернулся и написал хотя бы первые две строки.`,
+            `На этой неделе ${label} опять всплыло в мелочи. Я не стал себя ругать, просто записал, на чём застрял, и отложил один лишний пункт.`,
+            `Поймал ${label} в моменте, когда уже хотел всё бросить. Вышел за водой, вернулся и сделал только то, что было перед глазами.`
+          ],
+          supports: [
+            `После тяжёлого дня я вспомнил слово ${label} и сделал для себя небольшую паузу. Час был самый обычный, но стало легче не тащить всё в голове.`,
+            `В выходной специально оставил время для того, что у меня стоит за словом ${label}. Ничего большого не случилось, просто к вечеру снова появились силы.`,
+            `Когда всё пошло наперекосяк, я вспомнил, что для меня стоит за словом ${label}. Это не решило проблему, но помогло спокойно дожить до следующего утра.`
+          ],
+          triggers: [
+            `В очереди рядом случилось то, что я называю ${label}. Я почувствовал, что закипаю, и вышел на улицу на пару минут. Вернулся только когда смог говорить ровнее.`,
+            `Сегодня снова встретил то, что у меня связано с ${label}. Сначала хотел ответить резко, потом написал сообщение в заметках и не отправил его.`,
+            `Из-за того, что у меня связано с ${label}, я замолчал раньше, чем хотел. Позже написал коротко, что мне нужен перерыв, и это оказалось проще, чем объяснять всё сразу.`
+          ]
+        };
+        return (templates[shelf] || templates.values)[variant];
+      }
+
+      function botStoriesForWord(word) {
+        const profiles = worldBotsForWord(word.id, 5);
+        if (!profiles.length) return [];
+        const storyCount = Math.min(3, Math.max(2, profiles.length));
+        return Array.from({ length: storyCount }, (_, index) => {
+          const profile = profiles[index % profiles.length];
+          const id = `bot:${profile.id}:${word.id}:${index}`;
+          return {
+            id,
+            profile,
+            text: botStoryText(profile, word, index),
+            baseRecognition: 3 + Math.abs(hashValue(id)) % 38
+          };
+        });
+      }
+
+      function createWorldBotCard(profile, wordId) {
+        const card = document.createElement('button');
+        card.className = 'world-bot-card';
+        card.type = 'button';
+        card.dataset.worldProfileId = profile.id;
+        card.setAttribute('aria-label', `Открыть пересечение с примером профиля «${profile.name}»`);
+        const name = document.createElement('span');
+        name.className = 'world-bot-name';
+        name.textContent = profile.name;
+        const badge = document.createElement('span');
+        badge.className = 'world-example-badge';
+        badge.textContent = 'пример профиля';
+        const character = document.createElement('span');
+        character.className = 'world-bot-character';
+        character.textContent = profileCharacter(profile, wordId);
+        card.append(name, badge, character);
+        return card;
+      }
+
+      function createWorldBotStoryCard(story) {
+        const card = document.createElement('article');
+        card.className = 'world-story-card';
+        const meta = document.createElement('div');
+        meta.className = 'world-story-meta';
+        const author = document.createElement('span');
+        author.className = 'world-story-author';
+        author.textContent = story.profile.name;
+        const badge = document.createElement('span');
+        badge.className = 'world-example-badge';
+        badge.textContent = 'пример профиля';
+        meta.append(author, badge);
+        const copy = document.createElement('p');
+        copy.className = 'world-story-copy';
+        copy.textContent = story.text;
+        const recognitionRow = document.createElement('div');
+        recognitionRow.className = 'world-recognize-row';
+        const recognize = document.createElement('button');
+        const recognized = worldData.recognitions[story.id] === true;
+        recognize.className = 'world-recognize';
+        recognize.type = 'button';
+        recognize.dataset.toggleRecognition = story.id;
+        recognize.setAttribute('aria-pressed', String(recognized));
+        recognize.textContent = `Узнаю себя · ${story.baseRecognition + (recognized ? 1 : 0)}`;
+        const note = document.createElement('span');
+        note.className = 'world-story-note';
+        note.textContent = 'Это статистика слова, не лайк.';
+        recognitionRow.append(recognize, note);
+        card.append(meta, copy, recognitionRow);
+        return card;
+      }
+
+      function createWorldOwnStoryCard(story) {
+        const card = document.createElement('article');
+        card.className = 'world-story-card';
+        const meta = document.createElement('div');
+        meta.className = 'world-story-meta';
+        const author = document.createElement('span');
+        author.className = 'world-story-author';
+        author.textContent = 'Анонимно на этом устройстве';
+        const badge = document.createElement('span');
+        badge.className = 'world-own-badge';
+        badge.textContent = 'твоя история';
+        meta.append(author, badge);
+        const copy = document.createElement('p');
+        copy.className = 'world-story-copy';
+        copy.textContent = story.text;
+        const actions = document.createElement('div');
+        actions.className = 'world-recognize-row';
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'secondary-button world-delete-story';
+        deleteButton.type = 'button';
+        deleteButton.dataset.deleteWorldStory = story.id;
+        deleteButton.textContent = 'Удалить';
+        actions.append(deleteButton);
+        card.append(meta, copy, actions);
+        return card;
+      }
+
+      function renderWordWorld() {
+        const word = WORD_BY_ID.get(state.worldWordId);
+        if (!word) {
+          wordWorldContent.replaceChildren();
+          return;
+        }
+        const profiles = worldBotsForWord(word.id);
+        const stories = botStoriesForWord(word);
+        const ownStories = worldData.storiesByWord[word.id] || [];
+        wordWorldContent.replaceChildren();
+
+        const header = document.createElement('header');
+        header.className = 'world-header';
+        const back = document.createElement('button');
+        back.className = 'secondary-button world-back';
+        back.type = 'button';
+        back.dataset.worldBack = 'true';
+        back.textContent = '← Назад';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'world-eyebrow';
+        eyebrow.textContent = 'Мир слова · экран 5';
+        const title = document.createElement('h1');
+        title.className = 'world-title';
+        title.id = 'worldTitle';
+        title.tabIndex = -1;
+        title.textContent = word.word;
+        const chips = document.createElement('div');
+        chips.className = 'world-shelf-chips';
+        (word.shelves || []).forEach((shelfId) => {
+          const shelf = SHELF_BY_ID.get(shelfId) || CUSTOM_SHELF;
+          const chip = document.createElement('span');
+          chip.className = `world-shelf-chip shelf-${shelf.id}`;
+          chip.textContent = `${shelf.emoji} ${shelf.title}`;
+          chips.append(chip);
+        });
+        header.append(back, eyebrow, title, chips);
+
+        const statPanel = document.createElement('section');
+        statPanel.className = 'world-panel';
+        const count = profilesForWord(word.id).length;
+        const stat = document.createElement('p');
+        stat.className = `world-stat${count <= 5 ? ' is-rare' : ''}`;
+        stat.textContent = count <= 5
+          ? `Редкое слово: его выбрали всего ${count} из ${FAKE_PROFILES.length} примеров.`
+          : `Это слово выбрали ${count} из ${FAKE_PROFILES.length} примеров.`;
+        const statNote = document.createElement('p');
+        statNote.className = 'world-panel-copy';
+        statNote.textContent = 'Статистика среди примеров профилей.';
+        statPanel.append(stat, statNote);
+        const parent = word.interest ? WORD_BY_ID.get(word.interest) : null;
+        if (parent) {
+          const parentRow = document.createElement('div');
+          parentRow.className = 'world-parent-row';
+          const label = document.createElement('span');
+          label.textContent = 'Часть большего:';
+          const parentButton = document.createElement('button');
+          parentButton.className = 'secondary-button world-parent-button';
+          parentButton.type = 'button';
+          parentButton.dataset.openWorldParent = parent.id;
+          parentButton.textContent = parent.word;
+          parentRow.append(label, parentButton);
+          statPanel.append(parentRow);
+        }
+
+        const botPanel = document.createElement('section');
+        botPanel.className = 'world-panel';
+        const botTitle = document.createElement('h2');
+        botTitle.textContent = 'Кто здесь живёт';
+        botPanel.append(botTitle);
+        if (profiles.length) {
+          const list = document.createElement('div');
+          list.className = 'world-bot-list';
+          profiles.forEach((profile) => list.append(createWorldBotCard(profile, word.id)));
+          botPanel.append(list);
+        } else {
+          const empty = document.createElement('p');
+          empty.className = 'world-empty';
+          empty.textContent = 'В примерах профилей это слово пока никто не выбрал.';
+          botPanel.append(empty);
+        }
+
+        const storiesPanel = document.createElement('section');
+        storiesPanel.className = 'world-panel';
+        const storiesTitle = document.createElement('h2');
+        storiesTitle.textContent = worldStoryTitle(word);
+        storiesPanel.append(storiesTitle);
+        if (stories.length || ownStories.length) {
+          const list = document.createElement('div');
+          list.className = 'world-stories';
+          stories.forEach((story) => list.append(createWorldBotStoryCard(story)));
+          ownStories.forEach((story) => list.append(createWorldOwnStoryCard(story)));
+          storiesPanel.append(list);
+        } else {
+          const empty = document.createElement('p');
+          empty.className = 'world-empty';
+          empty.textContent = 'Пока нет истории из примеров. Можно оставить первую на этом устройстве.';
+          storiesPanel.append(empty);
+        }
+        const write = document.createElement('button');
+        write.className = 'secondary-button world-write-button';
+        write.type = 'button';
+        write.dataset.toggleWorldComposer = 'true';
+        write.setAttribute('aria-expanded', String(worldStoryComposerOpen));
+        write.textContent = worldStoryComposerOpen ? 'Скрыть поле' : 'Написать свою историю';
+        storiesPanel.append(write);
+        if (worldStoryComposerOpen) {
+          const form = document.createElement('form');
+          form.className = 'world-story-form';
+          form.dataset.worldStoryForm = 'true';
+          const label = document.createElement('label');
+          label.className = 'world-story-label';
+          label.htmlFor = 'worldStoryInput';
+          label.textContent = 'Твоя история';
+          const input = document.createElement('textarea');
+          input.className = 'world-story-input';
+          input.id = 'worldStoryInput';
+          input.name = 'story';
+          input.rows = 4;
+          input.maxLength = 900;
+          input.required = true;
+          input.placeholder = '1–5 строк о том, как это случается у тебя';
+          const note = document.createElement('p');
+          note.className = 'world-story-note';
+          note.textContent = 'Анонимно. Сохранится только на этом устройстве, пока продукт локальный.';
+          const actions = document.createElement('div');
+          actions.className = 'world-form-actions';
+          const save = document.createElement('button');
+          save.className = 'primary-button';
+          save.type = 'submit';
+          save.textContent = 'Сохранить';
+          const cancel = document.createElement('button');
+          cancel.className = 'secondary-button';
+          cancel.type = 'button';
+          cancel.dataset.cancelWorldComposer = 'true';
+          cancel.textContent = 'Отмена';
+          actions.append(save, cancel);
+          form.append(label, input, note, actions);
+          if (worldFormMessage) {
+            const status = document.createElement('p');
+            status.className = 'world-form-status';
+            status.textContent = worldFormMessage;
+            form.append(status);
+          }
+          storiesPanel.append(form);
+        }
+
+        const footer = document.createElement('p');
+        footer.className = 'world-footer';
+        footer.textContent = 'Когда подключатся живые люди, здесь появятся их истории — анонимно, по их выбору.';
+        wordWorldContent.append(header, statPanel, botPanel, storiesPanel, footer);
+      }
+
+      function openWordWorld(wordId, sourceView = state.view, profileId = state.activeProfileId) {
+        if (!WORD_BY_ID.has(wordId)) return;
+        state.worldWordId = wordId;
+        state.worldHistory = [];
+        state.worldReturn = {
+          view: ['graph', 'snapshot', 'intersections'].includes(sourceView) ? sourceView : 'graph',
+          wordId,
+          profileId: sourceView === 'intersections' ? profileId : null
+        };
+        state.intersectionReturn = null;
+        worldStoryComposerOpen = false;
+        worldFormMessage = '';
+        showView('word-world');
+      }
+
+      function openWorldParent(wordId) {
+        if (!WORD_BY_ID.has(wordId) || wordId === state.worldWordId) return;
+        if (state.worldWordId) state.worldHistory = [...state.worldHistory, state.worldWordId].slice(-12);
+        state.worldWordId = wordId;
+        worldStoryComposerOpen = false;
+        worldFormMessage = '';
+        showView('word-world');
+      }
+
+      function returnFromWordWorld() {
+        if (state.worldHistory.length) {
+          state.worldWordId = state.worldHistory.pop();
+          worldStoryComposerOpen = false;
+          worldFormMessage = '';
+          showView('word-world');
+          return;
+        }
+        const returnTo = state.worldReturn || { view: 'graph', wordId: state.worldWordId, profileId: null };
+        const wordId = returnTo.wordId || state.worldWordId;
+        state.worldWordId = null;
+        state.worldReturn = null;
+        worldStoryComposerOpen = false;
+        worldFormMessage = '';
+        if (returnTo.view === 'snapshot') {
+          showView('snapshot');
+          window.requestAnimationFrame(() => {
+            shelfGrid.querySelector(`[data-open-word-world="${CSS.escape(wordId || '')}"]`)?.scrollIntoView({
+              block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+            });
+          });
+          return;
+        }
+        if (returnTo.view === 'intersections') {
+          state.activeProfileId = returnTo.profileId;
+          showView('intersections', true, true, { preserveIntersection: true });
+          return;
+        }
+        showView('graph');
+        window.requestAnimationFrame(() => {
+          if (wordId && isGraphItemSelected(wordId)) selectGraphNode(wordId);
+          else if (wordId) showGraphAddProposal(wordId);
+        });
+      }
+
+      function openWorldProfile(profileId) {
+        if (!FAKE_PROFILES.some((profile) => profile.id === profileId) || !state.worldWordId) return;
+        state.activeProfileId = profileId;
+        state.intersectionReturn = { view: 'word-world', wordId: state.worldWordId };
+        showView('intersections', true, true, { preserveIntersection: true });
+      }
+
+      function returnFromIntersections() {
+        if (state.intersectionReturn?.view === 'word-world' && WORD_BY_ID.has(state.intersectionReturn.wordId)) {
+          state.worldWordId = state.intersectionReturn.wordId;
+          state.intersectionReturn = null;
+          showView('word-world');
+          return;
+        }
+        showView('snapshot');
+      }
+
+      function toggleStoryRecognition(storyId) {
+        if (!storyId.startsWith('bot:')) return;
+        if (worldData.recognitions[storyId]) delete worldData.recognitions[storyId];
+        else worldData.recognitions[storyId] = true;
+        persistWorldData();
+        renderWordWorld();
+      }
+
+      function saveOwnWorldStory(value) {
+        const lines = value.replace(/\r/g, '').split('\n').map((line) => line.trim()).filter(Boolean);
+        if (!lines.length) {
+          worldFormMessage = 'Напиши хотя бы одну строку.';
+          renderWordWorld();
+          return;
+        }
+        if (lines.length > 5) {
+          worldFormMessage = 'Оставь до пяти строк — так история останется короткой.';
+          renderWordWorld();
+          return;
+        }
+        const wordId = state.worldWordId;
+        if (!WORD_BY_ID.has(wordId)) return;
+        const randomPart = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const stories = worldData.storiesByWord[wordId] || [];
+        stories.push({ id: `own:${randomPart}`, text: lines.join('\n').slice(0, 900), createdAt: new Date().toISOString() });
+        worldData.storiesByWord[wordId] = stories.slice(-30);
+        persistWorldData();
+        worldStoryComposerOpen = false;
+        worldFormMessage = '';
+        renderWordWorld();
+      }
+
+      function deleteOwnWorldStory(storyId) {
+        const wordId = state.worldWordId;
+        if (!WORD_BY_ID.has(wordId)) return;
+        const stories = worldData.storiesByWord[wordId] || [];
+        worldData.storiesByWord[wordId] = stories.filter((story) => story.id !== storyId);
+        if (!worldData.storiesByWord[wordId].length) delete worldData.storiesByWord[wordId];
+        persistWorldData();
+        renderWordWorld();
+      }
+
       function matchWordWeight(id) {
         const item = WORD_BY_ID.get(id);
         if (!item) return 0;
@@ -2051,8 +2741,12 @@
           return distance || left.score - right.score || left.profile.id.localeCompare(right.profile.id);
         });
         state.matchVisibleCount = Math.max(3, Math.min(ranked.length, state.matchVisibleCount || 3));
-        const visible = ranked.slice(0, state.matchVisibleCount)
-          .sort((left, right) => left.score - right.score || left.profile.id.localeCompare(right.profile.id));
+        let visible = ranked.slice(0, state.matchVisibleCount);
+        const activeEntry = ranked.find(({ profile }) => profile.id === state.activeProfileId);
+        if (activeEntry && !visible.some(({ profile }) => profile.id === activeEntry.profile.id)) {
+          visible = [...visible.slice(0, Math.max(0, state.matchVisibleCount - 1)), activeEntry];
+        }
+        visible = visible.sort((left, right) => left.score - right.score || left.profile.id.localeCompare(right.profile.id));
         profileList.replaceChildren(...visible.map(({ profile, score }) => createProfileCard(profile, score)));
         moreProfilesButton.hidden = state.matchVisibleCount >= ranked.length;
         const active = visible.find(({ profile }) => profile.id === state.activeProfileId);
@@ -2104,10 +2798,7 @@
           items
             .sort((left, right) => matchWordWeight(right.id) - matchWordWeight(left.id) || left.word.localeCompare(right.word, 'ru'))
             .forEach((item) => {
-              const chip = document.createElement('span');
-              chip.className = 'intersection-word';
-              chip.textContent = item.word;
-              words.append(chip);
+              words.append(createIntersectionWordChip(item));
             });
           group.append(label, words);
           shelves.append(group);
@@ -2131,6 +2822,19 @@
 
       function intersectionItemWeight(item) {
         return Math.max(0, ...(item.shelves || []).map((shelfId) => SHELF_WEIGHTS[shelfId] || 0));
+      }
+
+      function createIntersectionWordChip(item) {
+        const isDictionaryWord = WORD_BY_ID.has(item.id);
+        const chip = document.createElement(isDictionaryWord ? 'button' : 'span');
+        chip.className = `intersection-word shelf-${primaryShelf(item)}`;
+        chip.textContent = item.word;
+        if (isDictionaryWord) {
+          chip.type = 'button';
+          chip.dataset.openWorldFromIntersection = item.id;
+          chip.setAttribute('aria-label', `Войти в мир слова «${item.word}»`);
+        }
+        return chip;
       }
 
       function russianList(items) {
@@ -2159,10 +2863,7 @@
         const chips = document.createElement('div');
         chips.className = 'intersection-summary-chips';
         topItems.forEach((item) => {
-          const chip = document.createElement('span');
-          chip.className = `intersection-word shelf-${primaryShelf(item)}`;
-          chip.textContent = item.word;
-          chips.append(chip);
+          chips.append(createIntersectionWordChip(item));
         });
         summary.append(chips);
         return summary;
@@ -2200,8 +2901,8 @@
               if (!seen.has(key)) {
                 seen.add(key);
                 points.push({
-                  leftLabel: 'его', leftWord: stone.word, leftShelf: 'stones',
-                  rightLabel: 'твой триггер', rightWord: trigger.word, rightShelf: 'triggers'
+                  leftLabel: 'его', leftId: stone.id, leftWord: stone.word, leftShelf: 'stones',
+                  rightLabel: 'твой триггер', rightId: trigger.id, rightWord: trigger.word, rightShelf: 'triggers'
                 });
               }
             }
@@ -2210,8 +2911,8 @@
               if (!seen.has(key)) {
                 seen.add(key);
                 points.push({
-                  leftLabel: 'его триггер', leftWord: trigger.word, leftShelf: 'triggers',
-                  rightLabel: 'твой камень', rightWord: stone.word, rightShelf: 'stones'
+                  leftLabel: 'его триггер', leftId: trigger.id, leftWord: trigger.word, leftShelf: 'triggers',
+                  rightLabel: 'твой камень', rightId: stone.id, rightWord: stone.word, rightShelf: 'stones'
                 });
               }
             }
@@ -2305,8 +3006,8 @@
         const frictionPoints = intersectionFriction(profile);
         if (frictionPoints.length) {
           const frictionItems = [...new Map(frictionPoints.flatMap((point) => [
-            [point.leftWord, { id: point.leftWord, word: point.leftWord, shelves: [point.leftShelf] }],
-            [point.rightWord, { id: point.rightWord, word: point.rightWord, shelves: [point.rightShelf] }]
+            [point.leftId, { id: point.leftId, word: point.leftWord, shelves: [point.leftShelf] }],
+            [point.rightId, { id: point.rightId, word: point.rightWord, shelves: [point.rightShelf] }]
           ])).values()];
           friction.append(createIntersectionSummary(`Точки трения: ${intersectionShelfPhrase(frictionItems)} (${connectionCountLabel(frictionPoints.length)}).`, frictionItems));
           appendIntersectionDetails(friction, (details) => {
@@ -2320,18 +3021,14 @@
               const leftLabel = document.createElement('span');
               leftLabel.className = 'friction-label';
               leftLabel.textContent = point.leftLabel;
-              const leftWord = document.createElement('span');
-              leftWord.className = `intersection-word shelf-${point.leftShelf}`;
-              leftWord.textContent = point.leftWord;
+              const leftWord = createIntersectionWordChip({ id: point.leftId, word: point.leftWord, shelves: [point.leftShelf] });
               const arrow = document.createElement('span');
               arrow.className = 'friction-arrow';
               arrow.textContent = '↔';
               const rightLabel = document.createElement('span');
               rightLabel.className = 'friction-label';
               rightLabel.textContent = point.rightLabel;
-              const rightWord = document.createElement('span');
-              rightWord.className = `intersection-word shelf-${point.rightShelf}`;
-              rightWord.textContent = point.rightWord;
+              const rightWord = createIntersectionWordChip({ id: point.rightId, word: point.rightWord, shelves: [point.rightShelf] });
               line.append(leftLabel, leftWord, arrow, rightLabel, rightWord);
               item.append(line);
               list.append(item);
@@ -2589,13 +3286,28 @@
         list.className = 'shelf-words';
         if (words.length) {
           words.forEach((item) => {
-            const word = document.createElement('span');
+            const isDictionaryWord = WORD_BY_ID.has(item.id);
+            const word = document.createElement(isDictionaryWord ? 'button' : 'span');
             word.className = 'shelf-word';
             if (item.shelves.length > 1) {
               word.classList.add('is-multi');
               word.title = 'Это слово живёт сразу в нескольких местах';
             }
-            word.textContent = item.word;
+            if (isDictionaryWord) {
+              word.type = 'button';
+              word.dataset.openWordWorld = item.id;
+              word.dataset.worldSource = 'snapshot';
+              word.setAttribute('aria-label', `Войти в мир слова «${item.word}»`);
+            }
+            const label = document.createElement('span');
+            label.textContent = item.word;
+            word.append(label);
+            if (isDictionaryWord) {
+              const enter = document.createElement('span');
+              enter.className = 'shelf-word-enter';
+              enter.textContent = 'В мир →';
+              word.append(enter);
+            }
             list.append(word);
           });
         }
@@ -3234,6 +3946,19 @@
         });
         graphCard.append(kicker, title, shelvesSection.section);
 
+        if (WORD_BY_ID.has(item.id)) {
+          const worldActions = document.createElement('div');
+          worldActions.className = 'graph-card-actions';
+          const worldButton = document.createElement('button');
+          worldButton.className = 'secondary-button';
+          worldButton.type = 'button';
+          worldButton.dataset.openWordWorld = item.id;
+          worldButton.dataset.worldSource = 'graph';
+          worldButton.textContent = 'Войти в мир слова';
+          worldActions.append(worldButton);
+          graphCard.append(worldActions);
+        }
+
         const interestParent = item.interest ? WORD_BY_ID.get(item.interest) : null;
         if (interestParent) {
           const parentNote = document.createElement('p');
@@ -3331,7 +4056,13 @@
         cancel.type = 'button';
         cancel.dataset.cancelAdd = 'true';
         cancel.textContent = 'Не сейчас';
-        actions.append(add, cancel);
+        const world = document.createElement('button');
+        world.className = 'secondary-button';
+        world.type = 'button';
+        world.dataset.openWordWorld = item.id;
+        world.dataset.worldSource = 'graph';
+        world.textContent = 'Войти в мир слова';
+        actions.append(add, world, cancel);
         graphCard.append(kicker, title, copy, actions);
         window.requestAnimationFrame(() => graphCard.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
       }
@@ -3348,7 +4079,7 @@
         selectGraphNode(id);
       }
 
-      function showView(view, focus = true, shouldPersist = true) {
+      function showView(view, focus = true, shouldPersist = true, options = {}) {
         const previousView = state.view;
         const isLightIntro = view === 'light-intro';
         const isScatter = view === 'scatter';
@@ -3358,7 +4089,8 @@
         const isGraphIntro = view === 'graph-intro';
         const isGraph = view === 'graph';
         const isIntersections = view === 'intersections';
-        if (isIntersections && previousView !== 'intersections') state.activeProfileId = null;
+        const isWordWorld = view === 'word-world';
+        if (isIntersections && previousView !== 'intersections' && !options.preserveIntersection) state.activeProfileId = null;
         if (isGraph) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
         if (!isGraph) {
           graphToast.hidden = true;
@@ -3372,20 +4104,26 @@
         graphIntroScreen.hidden = !isGraphIntro;
         graphScreen.hidden = !isGraph;
         intersectionsScreen.hidden = !isIntersections;
+        wordWorldScreen.hidden = !isWordWorld;
         state.view = isIntersections ? 'intersections'
           : isGraph ? 'graph'
           : isGraphIntro ? 'graph-intro'
           : isSnapshot ? 'snapshot'
+          : isWordWorld ? 'word-world'
           : isCustomShelf ? 'custom-shelf'
           : isDarkIntro ? 'dark-intro'
           : isScatter ? 'scatter'
           : 'light-intro';
-        document.body.classList.toggle('wave-two', isDarkIntro || (isScatter && state.wave === 2) || (isCustomShelf && state.wave === 2));
+        document.body.classList.toggle('wave-two', isDarkIntro || isWordWorld || (isScatter && state.wave === 2) || (isCustomShelf && state.wave === 2));
         if (isScatter) renderWaveUI();
         if (isCustomShelf) renderCustomShelfPicker();
         if (isSnapshot) renderSnapshot();
         if (isGraph) renderGraph();
-        if (isIntersections) renderProfileMatches();
+        if (isIntersections) {
+          document.getElementById('intersectionsBackButton').textContent = state.intersectionReturn ? 'Назад к миру слова' : 'К слепку';
+          renderProfileMatches();
+        }
+        if (isWordWorld) renderWordWorld();
         if (shouldPersist) persistState();
         if (focus) {
           const pageScrollBehavior = isGraph || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -3394,6 +4132,7 @@
             : isGraph ? 'graphTitle'
             : isGraphIntro ? 'graphIntroTitle'
             : isSnapshot ? 'snapshotTitle'
+            : isWordWorld ? 'worldTitle'
             : isCustomShelf ? 'customShelfTitle'
             : isDarkIntro ? 'darkIntroTitle'
             : isScatter ? 'scatterTitle'
@@ -3466,6 +4205,11 @@
       });
 
       shelfGrid.addEventListener('click', (event) => {
+        const worldButton = event.target.closest('[data-open-word-world]');
+        if (worldButton) {
+          openWordWorld(worldButton.dataset.openWordWorld, 'snapshot');
+          return;
+        }
         const button = event.target.closest('[data-deepen-shelf]');
         if (!button) return;
         focusedShelfId = button.dataset.deepenShelf;
@@ -3565,6 +4309,8 @@
       graphCard.addEventListener('click', (event) => {
         const chooseShelf = event.target.closest('[data-choose-custom-shelf]');
         if (chooseShelf) { openCustomShelfPicker(chooseShelf.dataset.chooseCustomShelf, 'graph'); return; }
+        const worldButton = event.target.closest('[data-open-word-world]');
+        if (worldButton) { openWordWorld(worldButton.dataset.openWordWorld, 'graph'); return; }
         const directAdd = event.target.closest('[data-add-word]');
         if (directAdd) { addGraphWord(directAdd.dataset.addWord); return; }
         const confirmAdd = event.target.closest('[data-confirm-add]');
@@ -3578,6 +4324,50 @@
         if (!neighbor) return;
         if (isGraphItemSelected(neighbor.dataset.cardWord)) selectGraphNode(neighbor.dataset.cardWord);
         else showGraphAddProposal(neighbor.dataset.cardWord);
+      });
+
+      wordWorldContent.addEventListener('click', (event) => {
+        if (event.target.closest('[data-world-back]')) {
+          returnFromWordWorld();
+          return;
+        }
+        const parent = event.target.closest('[data-open-world-parent]');
+        if (parent) {
+          openWorldParent(parent.dataset.openWorldParent);
+          return;
+        }
+        const profile = event.target.closest('[data-world-profile-id]');
+        if (profile) {
+          openWorldProfile(profile.dataset.worldProfileId);
+          return;
+        }
+        const recognition = event.target.closest('[data-toggle-recognition]');
+        if (recognition) {
+          toggleStoryRecognition(recognition.dataset.toggleRecognition);
+          return;
+        }
+        if (event.target.closest('[data-toggle-world-composer]')) {
+          worldStoryComposerOpen = !worldStoryComposerOpen;
+          worldFormMessage = '';
+          renderWordWorld();
+          if (worldStoryComposerOpen) window.requestAnimationFrame(() => document.getElementById('worldStoryInput')?.focus());
+          return;
+        }
+        if (event.target.closest('[data-cancel-world-composer]')) {
+          worldStoryComposerOpen = false;
+          worldFormMessage = '';
+          renderWordWorld();
+          return;
+        }
+        const deleteStory = event.target.closest('[data-delete-world-story]');
+        if (deleteStory) deleteOwnWorldStory(deleteStory.dataset.deleteWorldStory);
+      });
+
+      wordWorldContent.addEventListener('submit', (event) => {
+        const form = event.target.closest('[data-world-story-form]');
+        if (!form) return;
+        event.preventDefault();
+        saveOwnWorldStory(form.elements.story?.value || '');
       });
 
       backWaveButton.addEventListener('click', () => {
@@ -3599,7 +4389,7 @@
       document.getElementById('intersectionsButton').addEventListener('click', () => showView('intersections'));
       document.getElementById('graphBackButton').addEventListener('click', () => showView('snapshot'));
       document.getElementById('graphIntersectionsButton').addEventListener('click', () => showView('intersections'));
-      document.getElementById('intersectionsBackButton').addEventListener('click', () => showView('snapshot'));
+      document.getElementById('intersectionsBackButton').addEventListener('click', returnFromIntersections);
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
       profileList.addEventListener('click', (event) => {
@@ -3615,6 +4405,11 @@
             behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
           }));
         }
+      });
+      intersectionMap.addEventListener('click', (event) => {
+        const word = event.target.closest('[data-open-world-from-intersection]');
+        if (!word) return;
+        openWordWorld(word.dataset.openWorldFromIntersection, 'intersections', state.activeProfileId);
       });
       moreProfilesButton.addEventListener('click', () => {
         const previousCount = state.matchVisibleCount || 3;
@@ -3633,6 +4428,7 @@
 
       renderScatter();
       if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
+      else if (state.view === 'word-world' && state.worldWordId) showView('word-world', false, false);
       else if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
       else if (state.view === 'graph-intro' && totalSelected() >= 3) showView('graph-intro', false, false);
       else if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
