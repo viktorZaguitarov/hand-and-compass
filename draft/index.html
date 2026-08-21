@@ -898,14 +898,6 @@
       line-height: 1;
     }
 
-    .graph-scale {
-      min-width: 42px;
-      color: var(--ink-soft);
-      font-family: var(--sans);
-      font-size: 0.66rem;
-      text-align: center;
-    }
-
     .graph-legend {
       max-width: 1040px;
       margin: 0 auto 7px;
@@ -966,50 +958,10 @@
 
     .graph-canvas {
       display: block;
-      width: 2376px;
-      height: 2376px;
+      width: 3600px;
+      height: 3600px;
       max-width: none;
       transform-origin: 0 0;
-    }
-
-    body.graph-fullscreen { overflow: hidden; }
-
-    .graph-screen.is-fullscreen {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: grid;
-      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-      width: 100%;
-      height: 100dvh;
-      padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
-      background: #f5f1e7;
-    }
-
-    .graph-screen.is-fullscreen .graph-topbar { width: 100%; max-width: none; margin-bottom: 7px; padding: 0 6px; }
-
-    .graph-screen.is-fullscreen .graph-head .lead { display: none; }
-    .graph-screen.is-fullscreen .graph-head h1 { margin-bottom: 0; font-size: clamp(1.35rem, 5vw, 2rem); }
-    .graph-screen.is-fullscreen .graph-toolbar { width: 100%; max-width: none; margin-bottom: 7px; }
-    .graph-screen.is-fullscreen .graph-legend { width: 100%; max-width: none; margin-bottom: 6px; }
-    .graph-screen.is-fullscreen .graph-viewport {
-      width: 100%;
-      max-width: none;
-      height: auto;
-      min-height: 0;
-      margin: 0;
-      border-radius: 16px;
-    }
-    .graph-screen.is-fullscreen .graph-status { width: 100%; max-width: none; margin-top: 5px; }
-    .graph-screen.is-fullscreen .graph-card {
-      position: absolute;
-      right: max(10px, env(safe-area-inset-right));
-      bottom: max(10px, env(safe-area-inset-bottom));
-      left: max(10px, env(safe-area-inset-left));
-      z-index: 4;
-      max-height: min(44vh, 390px);
-      margin: 0 auto;
-      overflow: auto;
     }
 
     .graph-zone { fill: rgba(49, 95, 82, 0.055); stroke: rgba(49, 95, 82, 0.13); stroke-width: 1.2; }
@@ -1241,30 +1193,6 @@
       font-size: 0.66rem;
     }
 
-    .match-quick-actions {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 7px;
-      margin-top: 12px;
-    }
-
-    .match-quick {
-      min-height: 42px;
-      padding: 8px 10px;
-      border: 1px solid rgba(49, 95, 82, 0.18);
-      border-radius: 999px;
-      color: var(--forest-dark);
-      background: rgba(220, 233, 223, 0.55);
-      font-size: 0.76rem;
-      font-weight: 700;
-    }
-
-    .match-quick[aria-pressed="true"] {
-      color: #fffdf7;
-      border-color: var(--forest);
-      background: var(--forest);
-    }
-
     .profile-list {
       display: grid;
       grid-template-columns: 1fr;
@@ -1362,6 +1290,12 @@
       font-size: 0.71rem;
       line-height: 1.25;
     }
+
+    .intersection-summary { margin: 0; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.45; }
+    .intersection-summary-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+    .intersection-summary-chips .intersection-word { font-size: 0.71rem; }
+    .intersection-details-toggle { min-height: 38px; margin-top: 11px; padding: 6px 10px; font-size: 0.72rem; }
+    .intersection-details { margin-top: 11px; }
 
     .complement-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .complement-column {
@@ -1489,17 +1423,16 @@
       .graph-topbar { padding-inline: 3px; }
       .graph-head { width: 100%; padding-inline: 3px; }
       .graph-head h1 { font-size: 1.35rem; }
-      .graph-toolbar { width: 100%; flex-wrap: wrap; gap: 5px; padding: 5px; }
+      .graph-toolbar { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.28fr) auto; gap: 5px; padding: 5px; }
       .graph-toolbar-nav,
-      .graph-toolbar-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+      .graph-toolbar-actions { display: contents; }
       .graph-toolbar .secondary-button { width: 100%; min-height: 36px; padding: 6px 7px; font-size: 0.7rem; }
-      .graph-zoom-controls { justify-content: space-between; min-width: 0; padding: 2px 4px; }
+      .graph-zoom-controls { justify-content: space-between; min-width: 0; padding: 2px; }
       .graph-zoom-button { width: 34px; min-height: 34px; }
-      .graph-scale { min-width: 37px; font-size: 0.6rem; }
       .graph-legend { max-width: none; padding-inline: 3px; font-size: 0.62rem; }
       .graph-legend-items { gap: 4px 8px; }
       .graph-viewport { height: 62vh; min-height: 410px; border-radius: 18px; }
-      .graph-canvas { width: 2376px; height: 2376px; }
+      .graph-canvas { width: 3600px; height: 3600px; }
       .graph-card { margin-top: 9px; padding: 13px; border-radius: 17px; }
       .graph-card h2 { font-size: 1.22rem; }
       .graph-card-copy { font-size: 0.72rem; }
@@ -1513,8 +1446,6 @@
       .match-value { font-size: 1.08rem; }
       .match-range { height: 48px; }
       .match-range-scale { font-size: 0.59rem; }
-      .match-quick-actions { gap: 5px; margin-top: 9px; }
-      .match-quick { min-width: 0; min-height: 44px; padding: 7px 5px; font-size: 0.65rem; }
       .profile-list { gap: 8px; margin-bottom: 10px; }
       .profile-card { min-height: 118px; gap: 9px; padding: 12px; border-radius: 16px; }
       .profile-name { font-size: 1.08rem; overflow-wrap: anywhere; }
@@ -1526,6 +1457,7 @@
       .intersection-map-score { font-size: 1.1rem; }
       .intersection-section { padding: 12px 0; }
       .intersection-section h2 { margin-bottom: 8px; font-size: 1rem; }
+      .intersection-summary { font-size: 0.72rem; }
       .intersection-shelf { padding: 8px; }
       .intersection-word { padding: 5px 8px; font-size: 0.66rem; overflow-wrap: anywhere; }
       .complement-column { padding: 9px; }
@@ -1692,10 +1624,8 @@
           <div class="graph-toolbar-actions">
             <div class="graph-zoom-controls" aria-label="Масштаб графа">
               <button class="graph-zoom-button" id="graphZoomOutButton" type="button" aria-label="Уменьшить граф">−</button>
-              <span class="graph-scale" id="graphScaleLabel" aria-live="polite">100%</span>
               <button class="graph-zoom-button" id="graphZoomInButton" type="button" aria-label="Увеличить граф">+</button>
             </div>
-            <button class="secondary-button" id="graphExpandButton" type="button" aria-pressed="false">Развернуть</button>
           </div>
         </div>
 
@@ -1708,7 +1638,7 @@
         </details>
 
         <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
-          <svg class="graph-canvas" id="graphSvg" viewBox="0 0 2376 2376" role="img" aria-label="Связи между выбранными словами"></svg>
+          <svg class="graph-canvas" id="graphSvg" viewBox="0 0 3600 3600" role="img" aria-label="Связи между выбранными словами"></svg>
         </div>
         <p class="graph-status" id="graphStatus" aria-live="polite"></p>
         <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
@@ -1729,11 +1659,6 @@
           </div>
           <input class="match-range" id="matchRange" type="range" min="0" max="100" step="1" value="50">
           <div class="match-range-scale" aria-hidden="true"><span>меньше общего</span><span>больше общего</span></div>
-          <div class="match-quick-actions" aria-label="Быстрый выбор похожести">
-            <button class="match-quick" type="button" data-match-preset="opposite">Противоположность</button>
-            <button class="match-quick" type="button" data-match-preset="middle">Середина</button>
-            <button class="match-quick" type="button" data-match-preset="mirror">Зеркало</button>
-          </div>
         </section>
 
         <div class="profile-list" id="profileList" aria-live="polite"></div>
@@ -1788,22 +1713,15 @@
         action: 1.5, triggers: 1, supports: 0.5
       };
       const SVG_NS = 'http://www.w3.org/2000/svg';
-      const GRAPH_CONTENT_WIDTH = 1320;
-      const GRAPH_CONTENT_HEIGHT = 1320;
-      const GRAPH_PADDING = Math.round(GRAPH_CONTENT_WIDTH * 0.4);
-      const GRAPH_WIDTH = GRAPH_CONTENT_WIDTH + GRAPH_PADDING * 2;
-      const GRAPH_HEIGHT = GRAPH_CONTENT_HEIGHT + GRAPH_PADDING * 2;
-      const GRAPH_CLOUD_RADIUS = 190;
-      const GRAPH_CLEAR_CENTER_RADIUS = GRAPH_CLOUD_RADIUS * 0.68;
+      const GRAPH_MIN_CANVAS_SIZE = 3600;
+      const GRAPH_CANVAS_PADDING = 360;
+      const GRAPH_CLOUD_GAP = 250;
+      const GRAPH_NODE_GAP = 20;
+      const GRAPH_LABEL_CLEAR_RADIUS = 118;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
         stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#7d827d'
-      };
-      const GRAPH_ZONES = {
-        values: { x: 738, y: 738 }, goals: { x: 1188, y: 738 }, action: { x: 1638, y: 738 },
-        foresight: { x: 850, y: 1188 }, stones: { x: 1526, y: 1188 }, supports: { x: 850, y: 1638 },
-        triggers: { x: 1526, y: 1638 }, custom: { x: 1188, y: 1880 }
       };
 
       const lightIntroScreen = document.getElementById('lightIntroScreen');
@@ -1835,13 +1753,10 @@
       const graphCard = document.getElementById('graphCard');
       const graphZoomOutButton = document.getElementById('graphZoomOutButton');
       const graphZoomInButton = document.getElementById('graphZoomInButton');
-      const graphScaleLabel = document.getElementById('graphScaleLabel');
-      const graphExpandButton = document.getElementById('graphExpandButton');
       const graphToast = document.getElementById('graphToast');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
-      const matchQuickActions = document.querySelector('.match-quick-actions');
       const profileList = document.getElementById('profileList');
       const moreProfilesButton = document.getElementById('moreProfilesButton');
       const intersectionMap = document.getElementById('intersectionMap');
@@ -1854,9 +1769,10 @@
       let graphChainIds = new Set();
       let graphAdjacency = new Map();
       let graphPressureSources = new Map();
+      let graphZones = new Map();
+      let graphCanvas = { width: GRAPH_MIN_CANVAS_SIZE, height: GRAPH_MIN_CANVAS_SIZE };
+      let graphBounds = { minX: 0, minY: 0, maxX: GRAPH_MIN_CANVAS_SIZE, maxY: GRAPH_MIN_CANVAS_SIZE };
       let graphScale = 1;
-      let graphScaleInitialized = false;
-      let graphFullscreenRestore = null;
       let graphGesture = null;
       let graphSuppressClickUntil = 0;
       let graphLastTap = null;
@@ -2047,6 +1963,15 @@
         return `${count} ${noun}`;
       }
 
+      function connectionCountLabel(count) {
+        const mod10 = count % 10;
+        const mod100 = count % 100;
+        const noun = mod10 === 1 && mod100 !== 11
+          ? 'связь'
+          : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? 'связи' : 'связей';
+        return `${count} ${noun}`;
+      }
+
       function matchWordWeight(id) {
         const item = WORD_BY_ID.get(id);
         if (!item) return 0;
@@ -2120,12 +2045,6 @@
         const scored = scoredProfiles();
         matchRange.value = String(state.matchTarget);
         matchValue.textContent = `${state.matchTarget}%`;
-        matchQuickActions.querySelectorAll('[data-match-preset]').forEach((button) => {
-          const preset = button.dataset.matchPreset;
-          const target = preset === 'mirror' ? 100 : preset === 'opposite' ? 0 : 50;
-          button.dataset.matchValue = String(target);
-          button.setAttribute('aria-pressed', String(state.matchTarget === target));
-        });
 
         const ranked = scored.sort((left, right) => {
           const distance = Math.abs(left.score - state.matchTarget) - Math.abs(right.score - state.matchTarget);
@@ -2196,6 +2115,77 @@
         container.append(shelves);
       }
 
+      const SHELF_SUMMARY_FORMS = {
+        values: 'ценностями', goals: 'целями', action: 'действием', foresight: 'предвидением',
+        stones: 'камнями', supports: 'опорами', triggers: 'триггерами', custom: 'своими словами'
+      };
+
+      function intersectionItems(ids, customWords = []) {
+        const dictionaryItems = [...new Set(ids)].map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const normalizedCustomWords = customWords.map((item) => ({
+          ...item,
+          shelves: [SHELF_BY_ID.has(item.shelfId) ? item.shelfId : 'custom']
+        }));
+        return [...dictionaryItems, ...normalizedCustomWords];
+      }
+
+      function intersectionItemWeight(item) {
+        return Math.max(0, ...(item.shelves || []).map((shelfId) => SHELF_WEIGHTS[shelfId] || 0));
+      }
+
+      function russianList(items) {
+        if (items.length < 2) return items[0] || '';
+        if (items.length === 2) return `${items[0]} и ${items[1]}`;
+        return `${items.slice(0, -1).join(', ')} и ${items.at(-1)}`;
+      }
+
+      function intersectionShelfPhrase(items) {
+        const shelfIds = SHELVES.map((shelf) => shelf.id)
+          .concat('custom')
+          .filter((shelfId) => items.some((item) => (item.shelves || []).includes(shelfId)));
+        return russianList(shelfIds.map((shelfId) => SHELF_SUMMARY_FORMS[shelfId]));
+      }
+
+      function createIntersectionSummary(text, items) {
+        const summary = document.createElement('div');
+        const line = document.createElement('p');
+        line.className = 'intersection-summary';
+        line.textContent = text;
+        summary.append(line);
+        const topItems = [...items]
+          .sort((left, right) => intersectionItemWeight(right) - intersectionItemWeight(left) || left.word.localeCompare(right.word, 'ru'))
+          .slice(0, 3);
+        if (!topItems.length) return summary;
+        const chips = document.createElement('div');
+        chips.className = 'intersection-summary-chips';
+        topItems.forEach((item) => {
+          const chip = document.createElement('span');
+          chip.className = `intersection-word shelf-${primaryShelf(item)}`;
+          chip.textContent = item.word;
+          chips.append(chip);
+        });
+        summary.append(chips);
+        return summary;
+      }
+
+      function appendIntersectionDetails(section, renderDetails) {
+        const toggle = document.createElement('button');
+        toggle.className = 'secondary-button intersection-details-toggle';
+        toggle.type = 'button';
+        toggle.textContent = 'Показать все';
+        toggle.setAttribute('aria-expanded', 'false');
+        const details = document.createElement('div');
+        details.className = 'intersection-details';
+        details.hidden = true;
+        renderDetails(details);
+        toggle.addEventListener('click', () => {
+          details.hidden = !details.hidden;
+          toggle.textContent = details.hidden ? 'Показать все' : 'Скрыть список';
+          toggle.setAttribute('aria-expanded', String(!details.hidden));
+        });
+        section.append(toggle, details);
+      }
+
       function intersectionFriction(profile) {
         const mine = new Set(state.selectedIds);
         const theirs = new Set(profile.words || []);
@@ -2245,6 +2235,10 @@
         const commonIds = [...mine].filter((id) => theirs.has(id));
         const theirsOnly = [...theirs].filter((id) => !mine.has(id));
         const mineOnly = [...mine].filter((id) => !theirs.has(id));
+        const commonItems = intersectionItems(commonIds);
+        const theirsOnlyItems = intersectionItems(theirsOnly);
+        const mineOnlyItems = intersectionItems(mineOnly, state.customWords);
+        const complementItems = theirsOnlyItems.concat(mineOnlyItems);
 
         intersectionMap.replaceChildren();
         intersectionMap.hidden = false;
@@ -2264,56 +2258,86 @@
         head.append(heading, percentage);
 
         const common = createIntersectionSection('Общее поле');
-        appendIntersectionShelfGroups(common, commonIds);
+        if (commonItems.length) {
+          common.append(createIntersectionSummary(`Сходитесь ${intersectionShelfPhrase(commonItems)} (${shelfCountLabel(commonItems.length)}).`, commonItems));
+          appendIntersectionDetails(common, (details) => appendIntersectionShelfGroups(details, commonIds));
+        } else {
+          const empty = document.createElement('p');
+          empty.className = 'intersection-empty';
+          empty.textContent = 'Общих выбранных слов пока нет.';
+          common.append(empty);
+        }
 
         const complement = createIntersectionSection('Дополнение');
-        const complementGrid = document.createElement('div');
-        complementGrid.className = 'complement-grid';
-        const theirsColumn = document.createElement('div');
-        theirsColumn.className = 'complement-column';
-        const theirsTitle = document.createElement('h3');
-        theirsTitle.textContent = 'У него есть, у тебя нет';
-        theirsColumn.append(theirsTitle);
-        appendIntersectionShelfGroups(theirsColumn, theirsOnly);
-        const mineColumn = document.createElement('div');
-        mineColumn.className = 'complement-column';
-        const mineTitle = document.createElement('h3');
-        mineTitle.textContent = 'У тебя есть, у него нет';
-        mineColumn.append(mineTitle);
-        appendIntersectionShelfGroups(mineColumn, mineOnly, state.customWords);
-        complementGrid.append(theirsColumn, mineColumn);
-        complement.append(complementGrid);
+        if (complementItems.length) {
+          const complementLine = theirsOnlyItems.length && mineOnlyItems.length
+            ? `Дополняете друг друга ${intersectionShelfPhrase(complementItems)} (${shelfCountLabel(complementItems.length)}).`
+            : theirsOnlyItems.length
+            ? `У него есть ещё ${intersectionShelfPhrase(theirsOnlyItems)} (${shelfCountLabel(theirsOnlyItems.length)}).`
+            : `У тебя есть ещё ${intersectionShelfPhrase(mineOnlyItems)} (${shelfCountLabel(mineOnlyItems.length)}).`;
+          complement.append(createIntersectionSummary(complementLine, complementItems));
+          appendIntersectionDetails(complement, (details) => {
+            const complementGrid = document.createElement('div');
+            complementGrid.className = 'complement-grid';
+            const theirsColumn = document.createElement('div');
+            theirsColumn.className = 'complement-column';
+            const theirsTitle = document.createElement('h3');
+            theirsTitle.textContent = 'У него есть, у тебя нет';
+            theirsColumn.append(theirsTitle);
+            appendIntersectionShelfGroups(theirsColumn, theirsOnly);
+            const mineColumn = document.createElement('div');
+            mineColumn.className = 'complement-column';
+            const mineTitle = document.createElement('h3');
+            mineTitle.textContent = 'У тебя есть, у него нет';
+            mineColumn.append(mineTitle);
+            appendIntersectionShelfGroups(mineColumn, mineOnly, state.customWords);
+            complementGrid.append(theirsColumn, mineColumn);
+            details.append(complementGrid);
+          });
+        } else {
+          const empty = document.createElement('p');
+          empty.className = 'intersection-empty';
+          empty.textContent = 'Разных выбранных слов пока нет.';
+          complement.append(empty);
+        }
 
         const friction = createIntersectionSection('Точки трения');
         const frictionPoints = intersectionFriction(profile);
         if (frictionPoints.length) {
-          const list = document.createElement('div');
-          list.className = 'friction-list';
-          frictionPoints.forEach((point) => {
-            const item = document.createElement('div');
-            item.className = 'friction-item';
-            const line = document.createElement('div');
-            line.className = 'friction-line';
-            const leftLabel = document.createElement('span');
-            leftLabel.className = 'friction-label';
-            leftLabel.textContent = point.leftLabel;
-            const leftWord = document.createElement('span');
-            leftWord.className = `intersection-word shelf-${point.leftShelf}`;
-            leftWord.textContent = point.leftWord;
-            const arrow = document.createElement('span');
-            arrow.className = 'friction-arrow';
-            arrow.textContent = '↔';
-            const rightLabel = document.createElement('span');
-            rightLabel.className = 'friction-label';
-            rightLabel.textContent = point.rightLabel;
-            const rightWord = document.createElement('span');
-            rightWord.className = `intersection-word shelf-${point.rightShelf}`;
-            rightWord.textContent = point.rightWord;
-            line.append(leftLabel, leftWord, arrow, rightLabel, rightWord);
-            item.append(line);
-            list.append(item);
+          const frictionItems = [...new Map(frictionPoints.flatMap((point) => [
+            [point.leftWord, { id: point.leftWord, word: point.leftWord, shelves: [point.leftShelf] }],
+            [point.rightWord, { id: point.rightWord, word: point.rightWord, shelves: [point.rightShelf] }]
+          ])).values()];
+          friction.append(createIntersectionSummary(`Точки трения: ${intersectionShelfPhrase(frictionItems)} (${connectionCountLabel(frictionPoints.length)}).`, frictionItems));
+          appendIntersectionDetails(friction, (details) => {
+            const list = document.createElement('div');
+            list.className = 'friction-list';
+            frictionPoints.forEach((point) => {
+              const item = document.createElement('div');
+              item.className = 'friction-item';
+              const line = document.createElement('div');
+              line.className = 'friction-line';
+              const leftLabel = document.createElement('span');
+              leftLabel.className = 'friction-label';
+              leftLabel.textContent = point.leftLabel;
+              const leftWord = document.createElement('span');
+              leftWord.className = `intersection-word shelf-${point.leftShelf}`;
+              leftWord.textContent = point.leftWord;
+              const arrow = document.createElement('span');
+              arrow.className = 'friction-arrow';
+              arrow.textContent = '↔';
+              const rightLabel = document.createElement('span');
+              rightLabel.className = 'friction-label';
+              rightLabel.textContent = point.rightLabel;
+              const rightWord = document.createElement('span');
+              rightWord.className = `intersection-word shelf-${point.rightShelf}`;
+              rightWord.textContent = point.rightWord;
+              line.append(leftLabel, leftWord, arrow, rightLabel, rightWord);
+              item.append(line);
+              list.append(item);
+            });
+            details.append(list);
           });
-          friction.append(list);
         } else {
           const empty = document.createElement('p');
           empty.className = 'intersection-empty';
@@ -2629,27 +2653,80 @@
         return Math.min(184, Math.max(92, 34 + item.word.length * 7));
       }
 
+      function graphNodeHeight(item) {
+        const shelf = primaryShelf(item);
+        return shelf === 'stones' || shelf === 'triggers' ? 56 : 48;
+      }
+
+      function activeGraphShelves(items) {
+        const activeIds = new Set(items.map((item) => primaryShelf(item)));
+        const shelves = SHELVES.filter((shelf) => activeIds.has(shelf.id));
+        if (activeIds.has('custom')) shelves.push(CUSTOM_SHELF);
+        return shelves;
+      }
+
+      function graphCloudRadius(items) {
+        const requiredArea = items.reduce((total, item) => {
+          const width = graphNodeWidth(item) + GRAPH_NODE_GAP * 2;
+          const height = graphNodeHeight(item) + GRAPH_NODE_GAP * 2;
+          return total + width * height;
+        }, 0);
+        return Math.max(250, Math.sqrt(requiredArea / (Math.PI * 0.48)) + 56);
+      }
+
+      function buildGraphZones(items, expansion = 1) {
+        const shelves = activeGraphShelves(items);
+        const byShelf = new Map(shelves.map((shelf) => [shelf.id, []]));
+        items.forEach((item) => byShelf.get(primaryShelf(item))?.push(item));
+        const radii = new Map(shelves.map((shelf) => [shelf.id, graphCloudRadius(byShelf.get(shelf.id)) * expansion]));
+        const maximumRadius = Math.max(250, ...radii.values());
+        const columns = shelves.length <= 3 ? Math.max(1, shelves.length) : shelves.length <= 4 ? 2 : 3;
+        const rows = Math.ceil(shelves.length / columns);
+        const cellWidth = maximumRadius * 2 + GRAPH_CLOUD_GAP;
+        const cellHeight = maximumRadius * 2 + GRAPH_CLOUD_GAP;
+        const width = Math.max(GRAPH_MIN_CANVAS_SIZE, cellWidth * columns + GRAPH_CANVAS_PADDING * 2);
+        const height = Math.max(GRAPH_MIN_CANVAS_SIZE, cellHeight * rows + GRAPH_CANVAS_PADDING * 2);
+        const originX = (width - cellWidth * columns) / 2;
+        const originY = (height - cellHeight * rows) / 2;
+        const zones = new Map();
+        shelves.forEach((shelf, index) => {
+          const column = index % columns;
+          const row = Math.floor(index / columns);
+          zones.set(shelf.id, {
+            x: originX + cellWidth * (column + 0.5),
+            y: originY + cellHeight * (row + 0.5),
+            radius: radii.get(shelf.id)
+          });
+        });
+        return { zones, shelves, canvas: { width, height } };
+      }
+
       function graphMinimumScale() {
         const viewportWidth = Math.max(280, graphViewport.clientWidth || window.innerWidth);
-        return Math.min(1, Math.max(0.2, (viewportWidth - 4) / GRAPH_WIDTH));
+        return Math.min(1, Math.max(0.12, (viewportWidth - 4) / graphCanvas.width));
       }
 
       function graphInitialScale() {
         const viewportWidth = Math.max(280, graphViewport.clientWidth || window.innerWidth);
-        return Math.min(1, Math.max(graphMinimumScale(), (viewportWidth - 12) / GRAPH_CONTENT_WIDTH));
+        const viewportHeight = Math.max(280, graphViewport.clientHeight || window.innerHeight);
+        const boundsWidth = Math.max(1, graphBounds.maxX - graphBounds.minX + 48);
+        const boundsHeight = Math.max(1, graphBounds.maxY - graphBounds.minY + 48);
+        const fit = Math.min((viewportWidth - 16) / boundsWidth, (viewportHeight - 16) / boundsHeight);
+        return Math.min(1, Math.max(graphMinimumScale(), fit));
       }
 
       function centerGraphViewport() {
-        graphViewport.scrollLeft = Math.max(0, (GRAPH_WIDTH * graphScale - graphViewport.clientWidth) / 2);
-        graphViewport.scrollTop = Math.max(0, (GRAPH_HEIGHT * graphScale - graphViewport.clientHeight) / 2);
+        const focusX = (graphBounds.minX + graphBounds.maxX) / 2;
+        const focusY = (graphBounds.minY + graphBounds.maxY) / 2;
+        graphViewport.scrollLeft = Math.max(0, focusX * graphScale - graphViewport.clientWidth / 2);
+        graphViewport.scrollTop = Math.max(0, focusY * graphScale - graphViewport.clientHeight / 2);
       }
 
       function setGraphScaleValue(value) {
         const minimum = graphMinimumScale();
         graphScale = Math.min(2.4, Math.max(minimum, value));
-        graphSvg.style.width = `${GRAPH_WIDTH * graphScale}px`;
-        graphSvg.style.height = `${GRAPH_HEIGHT * graphScale}px`;
-        graphScaleLabel.textContent = `${Math.round(graphScale * 100)}%`;
+        graphSvg.style.width = `${graphCanvas.width * graphScale}px`;
+        graphSvg.style.height = `${graphCanvas.height * graphScale}px`;
         graphZoomOutButton.disabled = graphScale <= minimum + 0.005;
         graphZoomInButton.disabled = graphScale >= 2.395;
       }
@@ -2665,42 +2742,7 @@
 
       function fitGraphToViewport() {
         setGraphScaleValue(graphInitialScale());
-        graphScaleInitialized = true;
         centerGraphViewport();
-      }
-
-      function setGraphFullscreen(expanded, restorePrevious = true) {
-        const isExpanded = graphScreen.classList.contains('is-fullscreen');
-        if (expanded === isExpanded) return;
-        if (expanded) {
-          graphFullscreenRestore = {
-            scale: graphScale,
-            left: graphViewport.scrollLeft,
-            top: graphViewport.scrollTop
-          };
-          graphScreen.classList.add('is-fullscreen');
-          document.body.classList.add('graph-fullscreen');
-          graphExpandButton.textContent = 'Свернуть';
-          graphExpandButton.setAttribute('aria-pressed', 'true');
-          window.requestAnimationFrame(fitGraphToViewport);
-          return;
-        }
-
-        graphScreen.classList.remove('is-fullscreen');
-        document.body.classList.remove('graph-fullscreen');
-        graphExpandButton.textContent = 'Развернуть';
-        graphExpandButton.setAttribute('aria-pressed', 'false');
-        const previous = graphFullscreenRestore;
-        graphFullscreenRestore = null;
-        window.requestAnimationFrame(() => {
-          if (restorePrevious && previous) {
-            setGraphScaleValue(previous.scale);
-            graphViewport.scrollLeft = previous.left;
-            graphViewport.scrollTop = previous.top;
-          } else if (!graphScreen.hidden) {
-            fitGraphToViewport();
-          }
-        });
       }
 
       function graphTouchPoint(event) {
@@ -2790,78 +2832,109 @@
         const dx = position.x - position.anchorX;
         const dy = position.y - labelCenterY;
         const labelHalfWidth = Math.max(82, shelf.title.length * 18);
-        const requiredX = labelHalfWidth + position.width / 2 + 10;
-        const requiredY = 28 + position.height / 2 + 10;
+        const requiredX = labelHalfWidth + position.width / 2 + 14;
+        const requiredY = 28 + position.height / 2 + 14;
         if (Math.abs(dx) >= requiredX || Math.abs(dy) >= requiredY) return;
         const direction = dy < 0 || (Math.abs(dy) < 0.1 && Math.sin(position.angle) < 0) ? -1 : 1;
         position.y = labelCenterY + direction * requiredY;
       }
 
-      function computeGraphLayout(items, adjacency, pressureSources) {
+      function constrainGraphPosition(position, canvas) {
+        keepGraphNodeOffShelfLabel(position);
+        keepGraphNodeInRadialBand(position);
+        position.x = Math.max(position.width / 2 + 26, Math.min(canvas.width - position.width / 2 - 26, position.x));
+        position.y = Math.max(position.height / 2 + 26, Math.min(canvas.height - position.height / 2 - 26, position.y));
+      }
+
+      function resolveGraphCollisions(entries, gap, strength = 1) {
+        let collisions = 0;
+        for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
+          const [, left] = entries[leftIndex];
+          for (let rightIndex = leftIndex + 1; rightIndex < entries.length; rightIndex += 1) {
+            const [, right] = entries[rightIndex];
+            let dx = right.x - left.x;
+            let dy = right.y - left.y;
+            if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+              dx = (leftIndex % 2 ? -1 : 1) * 0.1;
+              dy = (rightIndex % 2 ? -1 : 1) * 0.1;
+            }
+            const pairGap = left.shelf === right.shelf ? gap : gap + 18;
+            const overlapX = (left.width + right.width) / 2 + pairGap - Math.abs(dx);
+            const overlapY = (left.height + right.height) / 2 + pairGap - Math.abs(dy);
+            if (overlapX <= 0 || overlapY <= 0) continue;
+            collisions += 1;
+            if (overlapX < overlapY) {
+              const push = overlapX * 0.5 * strength + 0.35;
+              const direction = dx < 0 ? -1 : 1;
+              left.x -= direction * push;
+              right.x += direction * push;
+            } else {
+              const push = overlapY * 0.5 * strength + 0.35;
+              const direction = dy < 0 ? -1 : 1;
+              left.y -= direction * push;
+              right.y += direction * push;
+            }
+          }
+        }
+        return collisions;
+      }
+
+      function graphBoundsFrom(positions) {
+        const entries = [...positions.values()];
+        if (!entries.length) return { minX: 0, minY: 0, maxX: graphCanvas.width, maxY: graphCanvas.height };
+        return entries.reduce((bounds, position) => ({
+          minX: Math.min(bounds.minX, position.x - position.width / 2),
+          minY: Math.min(bounds.minY, position.y - position.height / 2),
+          maxX: Math.max(bounds.maxX, position.x + position.width / 2),
+          maxY: Math.max(bounds.maxY, position.y + position.height / 2)
+        }), { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity });
+      }
+
+      function layoutGraphAttempt(items, adjacency, pressureSources, expansion) {
+        const plan = buildGraphZones(items, expansion);
         const positions = new Map();
         const shelfIndexes = new Map();
+        const shelfCounts = new Map(plan.shelves.map((shelf) => [shelf.id, items.filter((item) => primaryShelf(item) === shelf.id).length]));
         items.forEach((item) => {
           const shelf = primaryShelf(item);
           const index = shelfIndexes.get(shelf) || 0;
           shelfIndexes.set(shelf, index + 1);
-          const zone = GRAPH_ZONES[shelf] || GRAPH_ZONES.custom;
-          const angle = ((Math.abs(hashValue(item.id)) % 628) / 100) + index * 1.7;
+          const zone = plan.zones.get(shelf);
+          const width = graphNodeWidth(item);
+          const height = graphNodeHeight(item);
           const pressureCount = (pressureSources.get(item.id) || new Set()).size;
-          const normalRadius = Math.min(
-            GRAPH_CLOUD_RADIUS * 0.9,
-            GRAPH_CLEAR_CENTER_RADIUS + (index % 3) * GRAPH_CLOUD_RADIUS * 0.1
-          );
+          const maximumRadius = Math.max(GRAPH_LABEL_CLEAR_RADIUS + 12, zone.radius - Math.max(width, height) / 2 - GRAPH_NODE_GAP);
+          const minimumRadius = Math.min(maximumRadius - 8, GRAPH_LABEL_CLEAR_RADIUS + height / 3);
+          const distribution = Math.sqrt((index + 0.6) / Math.max(1, shelfCounts.get(shelf)));
+          const ordinaryRadius = minimumRadius + (maximumRadius - minimumRadius) * distribution * 0.84;
           const pressureRadius = pressureCount
-            ? GRAPH_CLOUD_RADIUS * (0.87 + 0.21 * Math.min(3, pressureCount))
-            : normalRadius;
-          const targetX = zone.x + Math.cos(angle) * pressureRadius;
-          const targetY = zone.y + Math.sin(angle) * pressureRadius;
+            ? ordinaryRadius + (maximumRadius - ordinaryRadius) * (0.36 + 0.13 * Math.min(3, pressureCount))
+            : ordinaryRadius;
+          const angle = ((Math.abs(hashValue(item.id)) % 628) / 100) + index * 2.399963229728653;
           positions.set(item.id, {
-            x: targetX,
-            y: targetY,
-            targetX,
-            targetY,
+            x: zone.x + Math.cos(angle) * pressureRadius,
+            y: zone.y + Math.sin(angle) * pressureRadius,
+            targetX: zone.x + Math.cos(angle) * pressureRadius,
+            targetY: zone.y + Math.sin(angle) * pressureRadius,
             angle,
             anchorX: zone.x,
             anchorY: zone.y,
-            width: graphNodeWidth(item),
-            height: shelf === 'stones' || shelf === 'triggers' ? 56 : 48,
+            width,
+            height,
             shelf,
             pressureCount,
-            minimumRadius: pressureCount ? pressureRadius : GRAPH_CLEAR_CENTER_RADIUS,
-            maximumRadius: pressureCount ? pressureRadius : GRAPH_CLOUD_RADIUS
+            minimumRadius,
+            maximumRadius
           });
         });
 
         const entries = [...positions.entries()];
-        for (let iteration = 0; iteration < 85; iteration += 1) {
-          const alpha = 1 - iteration / 100;
+        for (let iteration = 0; iteration < 360; iteration += 1) {
+          const alpha = 1 - iteration / 440;
           entries.forEach(([, position]) => {
-            position.x += (position.targetX - position.x) * 0.028 * alpha;
-            position.y += (position.targetY - position.y) * 0.028 * alpha;
+            position.x += (position.targetX - position.x) * 0.012 * alpha;
+            position.y += (position.targetY - position.y) * 0.012 * alpha;
           });
-
-          for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
-            const [, left] = entries[leftIndex];
-            for (let rightIndex = leftIndex + 1; rightIndex < entries.length; rightIndex += 1) {
-              const [, right] = entries[rightIndex];
-              let dx = right.x - left.x;
-              let dy = right.y - left.y;
-              let distance = Math.hypot(dx, dy);
-              if (distance < 0.1) { dx = 1; dy = 0; distance = 1; }
-              const shelfGap = left.shelf === right.shelf ? 18 : 52;
-              const minimum = (left.width + right.width) / 2 + shelfGap;
-              if (distance >= minimum) continue;
-              const push = (minimum - distance) * 0.18 * alpha;
-              const ux = dx / distance;
-              const uy = dy / distance;
-              left.x -= ux * push;
-              left.y -= uy * push;
-              right.x += ux * push;
-              right.y += uy * push;
-            }
-          }
-
           adjacency.forEach((neighbors, id) => {
             const source = positions.get(id);
             neighbors.forEach((neighborId) => {
@@ -2870,60 +2943,38 @@
               const dx = target.x - source.x;
               const dy = target.y - source.y;
               const distance = Math.max(1, Math.hypot(dx, dy));
-              const sameShelf = source.shelf === target.shelf;
-              const pull = (distance - (sameShelf ? 138 : 260)) * (sameShelf ? 0.006 : 0.0012) * alpha;
+              const preferredDistance = source.shelf === target.shelf ? 188 : 360;
+              const pull = (distance - preferredDistance) * (source.shelf === target.shelf ? 0.0018 : 0.00025) * alpha;
               source.x += dx / distance * pull;
               source.y += dy / distance * pull;
               target.x -= dx / distance * pull;
               target.y -= dy / distance * pull;
             });
           });
-
-          entries.forEach(([, position]) => {
-            keepGraphNodeOffShelfLabel(position);
-            keepGraphNodeInRadialBand(position);
-            position.x = Math.max(position.width / 2 + 34, Math.min(GRAPH_WIDTH - position.width / 2 - 34, position.x));
-            position.y = Math.max(position.height / 2 + 34, Math.min(GRAPH_HEIGHT - position.height / 2 - 34, position.y));
-          });
+          resolveGraphCollisions(entries, GRAPH_NODE_GAP, 1);
+          entries.forEach(([, position]) => constrainGraphPosition(position, plan.canvas));
         }
 
-        for (let iteration = 0; iteration < 140; iteration += 1) {
-          let collisions = 0;
-          for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
-            const [, left] = entries[leftIndex];
-            for (let rightIndex = leftIndex + 1; rightIndex < entries.length; rightIndex += 1) {
-              const [, right] = entries[rightIndex];
-              if (left.shelf !== right.shelf) continue;
-              let dx = right.x - left.x;
-              let dy = right.y - left.y;
-              if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
-                dx = (leftIndex % 2 ? -1 : 1) * 0.1;
-                dy = (rightIndex % 2 ? -1 : 1) * 0.1;
-              }
-              const overlapX = (left.width + right.width) / 2 + 14 - Math.abs(dx);
-              const overlapY = (left.height + right.height) / 2 + 14 - Math.abs(dy);
-              if (overlapX <= 0 || overlapY <= 0) continue;
-              collisions += 1;
-              if (overlapX < overlapY) {
-                const push = overlapX * 0.52;
-                const direction = dx < 0 ? -1 : 1;
-                left.x -= direction * push;
-                right.x += direction * push;
-              } else {
-                const push = overlapY * 0.52;
-                const direction = dy < 0 ? -1 : 1;
-                left.y -= direction * push;
-                right.y += direction * push;
-              }
-            }
-          }
-          entries.forEach(([, position]) => {
-            keepGraphNodeOffShelfLabel(position);
-            keepGraphNodeInRadialBand(position);
-          });
+        let collisions = 0;
+        for (let iteration = 0; iteration < 900; iteration += 1) {
+          collisions = resolveGraphCollisions(entries, GRAPH_NODE_GAP, 1.08);
+          entries.forEach(([, position]) => constrainGraphPosition(position, plan.canvas));
           if (!collisions) break;
         }
-        return positions;
+        return { positions, zones: plan.zones, shelves: plan.shelves, canvas: plan.canvas, collisions };
+      }
+
+      function computeGraphLayout(items, adjacency, pressureSources) {
+        let bestLayout = null;
+        for (let attempt = 0; attempt < 7; attempt += 1) {
+          const layout = layoutGraphAttempt(items, adjacency, pressureSources, 1 + attempt * 0.16);
+          bestLayout = layout;
+          if (!layout.collisions) break;
+        }
+        graphZones = bestLayout.zones;
+        graphCanvas = bestLayout.canvas;
+        graphBounds = graphBoundsFrom(bestLayout.positions);
+        return { positions: bestLayout.positions, shelves: bestLayout.shelves };
       }
 
       function graphNodeTilt(id) {
@@ -2944,19 +2995,20 @@
 
       function renderGraph() {
         const items = graphItems();
-        const graphShelves = [...SHELVES];
-        if (items.some((item) => primaryShelf(item) === 'custom')) graphShelves.push(CUSTOM_SHELF);
         const itemMap = new Map(items.map((item) => [item.id, item]));
         graphAdjacency = buildGraphAdjacency(items);
         graphPressureSources = buildGraphPressure(items);
-        const positions = computeGraphLayout(items, graphAdjacency, graphPressureSources);
+        const layout = computeGraphLayout(items, graphAdjacency, graphPressureSources);
+        const positions = layout.positions;
+        const graphShelves = layout.shelves;
+        graphSvg.setAttribute('viewBox', `0 0 ${graphCanvas.width} ${graphCanvas.height}`);
         graphSvg.replaceChildren();
         const definitions = svgElement('defs');
         graphSvg.append(definitions);
 
         const zoneLabels = svgElement('g', { 'aria-hidden': 'true' });
         graphShelves.forEach((shelf) => {
-          const zone = GRAPH_ZONES[shelf.id];
+          const zone = graphZones.get(shelf.id);
           const label = svgElement('text', {
             class: 'graph-zone-label', x: zone.x, y: zone.y + 16, 'text-anchor': 'middle'
           });
@@ -2966,9 +3018,9 @@
         graphSvg.append(zoneLabels);
 
         graphShelves.forEach((shelf) => {
-          const zone = GRAPH_ZONES[shelf.id];
+          const zone = graphZones.get(shelf.id);
           graphSvg.append(svgElement('circle', {
-            class: 'graph-zone', cx: zone.x, cy: zone.y, r: GRAPH_CLOUD_RADIUS
+            class: 'graph-zone', cx: zone.x, cy: zone.y, r: zone.radius
           }));
         });
 
@@ -3022,8 +3074,8 @@
             const angle = ((Math.abs(hashValue(`${item.id}:${neighborId}`)) % 628) / 100) + index * 1.35;
             const length = 66 + index * 10;
             const target = {
-              x: Math.max(28, Math.min(GRAPH_WIDTH - 28, source.x + Math.cos(angle) * length)),
-              y: Math.max(28, Math.min(GRAPH_HEIGHT - 28, source.y + Math.sin(angle) * length))
+              x: Math.max(28, Math.min(graphCanvas.width - 28, source.x + Math.cos(angle) * length)),
+              y: Math.max(28, Math.min(graphCanvas.height - 28, source.y + Math.sin(angle) * length))
             };
             const whisker = svgElement('path', {
               class: 'graph-whisker',
@@ -3080,7 +3132,7 @@
           graphCard.hidden = true;
           updateGraphHighlight();
         }
-        if (!graphScaleInitialized) window.requestAnimationFrame(fitGraphToViewport);
+        window.requestAnimationFrame(fitGraphToViewport);
       }
 
       function graphChainFrom(id) {
@@ -3308,7 +3360,6 @@
         const isIntersections = view === 'intersections';
         if (isIntersections && previousView !== 'intersections') state.activeProfileId = null;
         if (isGraph) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        if (!isGraph && graphScreen.classList.contains('is-fullscreen')) setGraphFullscreen(false, false);
         if (!isGraph) {
           graphToast.hidden = true;
           if (graphToastTimer) window.clearTimeout(graphToastTimer);
@@ -3551,11 +3602,6 @@
       document.getElementById('intersectionsBackButton').addEventListener('click', () => showView('snapshot'));
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
-      matchQuickActions.addEventListener('click', (event) => {
-        const button = event.target.closest('[data-match-preset]');
-        if (!button) return;
-        setMatchTarget(button.dataset.matchValue);
-      });
       profileList.addEventListener('click', (event) => {
         const button = event.target.closest('[data-profile-id]');
         if (!button) return;
@@ -3581,10 +3627,6 @@
       });
       graphZoomOutButton.addEventListener('click', () => zoomGraphTo(graphScale / 1.3));
       graphZoomInButton.addEventListener('click', () => zoomGraphTo(graphScale * 1.3));
-      graphExpandButton.addEventListener('click', () => setGraphFullscreen(!graphScreen.classList.contains('is-fullscreen')));
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && graphScreen.classList.contains('is-fullscreen')) setGraphFullscreen(false);
-      });
       window.addEventListener('resize', () => {
         if (!graphScreen.hidden) window.requestAnimationFrame(fitGraphToViewport);
       });
