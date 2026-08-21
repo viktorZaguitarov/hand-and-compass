@@ -799,6 +799,92 @@
       font-size: 0.72rem;
     }
 
+    .shelf-word.has-own-story {
+      border-color: color-mix(in srgb, var(--gold) 78%, var(--shelf-accent));
+      box-shadow: 0 0 0 2px rgba(189, 136, 64, 0.2), 0 0 15px rgba(189, 136, 64, 0.25);
+    }
+
+    .shelf-word.has-own-story::before {
+      position: absolute;
+      top: -8px;
+      right: -4px;
+      display: grid;
+      width: 17px;
+      height: 17px;
+      place-items: center;
+      border: 1px solid rgba(255, 253, 247, 0.92);
+      border-radius: 50%;
+      color: #fffdf7;
+      background: var(--gold);
+      box-shadow: 0 2px 7px rgba(96, 61, 20, 0.24);
+      content: "✦";
+      font-size: 0.64rem;
+      line-height: 1;
+    }
+
+    .snapshot-summary {
+      max-width: 1040px;
+      margin: 0 auto 16px;
+      padding: 0 15px;
+      border: 1px solid rgba(49, 95, 82, 0.17);
+      border-radius: 19px;
+      background: rgba(255, 253, 247, 0.76);
+      box-shadow: 0 9px 24px rgba(38, 54, 46, 0.06);
+      font-family: var(--sans);
+    }
+
+    .snapshot-summary > summary {
+      display: flex;
+      align-items: center;
+      min-height: 50px;
+      cursor: pointer;
+      color: var(--forest-dark);
+      font-size: 0.88rem;
+      font-weight: 800;
+      list-style: none;
+    }
+
+    .snapshot-summary > summary::-webkit-details-marker { display: none; }
+    .snapshot-summary > summary::after { margin-left: auto; color: var(--forest); content: "⌃"; font-size: 1rem; }
+    .snapshot-summary:not([open]) > summary::after { content: "⌄"; }
+
+    .snapshot-summary-content {
+      display: grid;
+      gap: 9px;
+      padding: 0 0 14px;
+    }
+
+    .snapshot-summary-row {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 0.79rem;
+      line-height: 1.45;
+    }
+
+    .snapshot-summary-row strong { color: var(--forest-dark); }
+    .snapshot-summary-words { display: inline-flex; flex-wrap: wrap; gap: 5px; vertical-align: middle; }
+
+    .snapshot-summary-word {
+      min-height: 29px;
+      padding: 4px 8px;
+      border: 1px solid rgba(49, 95, 82, 0.16);
+      border-radius: 999px;
+      color: var(--forest-dark);
+      background: rgba(220, 233, 223, 0.56);
+      font: inherit;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .snapshot-summary-note {
+      margin: 1px 0 0;
+      color: var(--ink-soft);
+      font-size: 0.72rem;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
     .shelf-summary {
       margin: 14px 0 0;
       padding-top: 12px;
@@ -1062,6 +1148,12 @@
     .graph-node.is-chain .graph-node-plate { filter: drop-shadow(0 0 9px rgba(189, 136, 64, 0.5)); }
     .graph-node.is-dimmed { opacity: 0.16; filter: grayscale(0.55); }
 
+    .graph-node.has-own-story .graph-node-plate {
+      stroke: #f1cd82;
+      stroke-width: 2.8;
+      filter: drop-shadow(0 0 10px rgba(189, 136, 64, 0.6));
+    }
+
     .graph-status {
       min-height: 1.3em;
       max-width: 1040px;
@@ -1102,6 +1194,20 @@
     button.graph-chip { cursor: pointer; }
     .graph-chip.is-unselected { border-style: dashed; background: rgba(238, 230, 212, 0.5); }
     .graph-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .graph-card-own-story {
+      width: 100%;
+      min-height: 36px;
+      padding: 8px 10px;
+      border: 1px solid rgba(189, 136, 64, 0.45);
+      border-radius: 12px;
+      color: #75511e;
+      background: rgba(246, 221, 170, 0.31);
+      font: inherit;
+      font-size: 0.76rem;
+      font-weight: 750;
+      text-align: left;
+      cursor: pointer;
+    }
 
     .graph-neighbor-note {
       margin: 13px 0 0;
@@ -1725,6 +1831,11 @@
           <p class="snapshot-small-note" id="snapshotSmallNote" hidden>Слепок получился маленьким — можно вернуться и добавить слова в любой момент.</p>
         </header>
 
+        <details class="snapshot-summary" id="snapshotSummary" open>
+          <summary>Сводка</summary>
+          <div class="snapshot-summary-content" id="snapshotSummaryContent"></div>
+        </details>
+
         <div class="shelf-grid" id="shelfGrid"></div>
 
         <div class="snapshot-actions">
@@ -1904,6 +2015,7 @@
       const scatterStatus = document.getElementById('scatterStatus');
       const shelfGrid = document.getElementById('shelfGrid');
       const snapshotSmallNote = document.getElementById('snapshotSmallNote');
+      const snapshotSummaryContent = document.getElementById('snapshotSummaryContent');
       const graphViewport = document.getElementById('graphViewport');
       const graphSvg = document.getElementById('graphSvg');
       const graphStatus = document.getElementById('graphStatus');
@@ -2229,6 +2341,10 @@
         return WORD_BY_ID.get(id)?.word || null;
       }
 
+      function hasOwnWorldStory(wordId) {
+        return Array.isArray(worldData.storiesByWord[wordId]) && worldData.storiesByWord[wordId].length > 0;
+      }
+
       function profileCharacter(profile, activeWordId) {
         const otherWords = (profile.words || []).filter((id) => id !== activeWordId && WORD_BY_ID.has(id));
         const light = otherWords.find((id) => !['stones', 'triggers'].includes(primaryShelf(WORD_BY_ID.get(id))));
@@ -2254,9 +2370,8 @@
         return value % 3;
       }
 
-      function botStoryText(profile, word, index) {
+      function botStoryText(profile, word, index, variantOffset = 0) {
         const label = `«${word.word}»`;
-        const variant = storyVariant(profile, word, index);
         const shelf = primaryShelf(word);
         const templates = {
           values: [
@@ -2295,20 +2410,32 @@
             `Из-за того, что у меня связано с ${label}, я замолчал раньше, чем хотел. Позже написал коротко, что мне нужен перерыв, и это оказалось проще, чем объяснять всё сразу.`
           ]
         };
-        return (templates[shelf] || templates.values)[variant];
+        const variants = templates[shelf] || templates.values;
+        const variant = (storyVariant(profile, word, index) + variantOffset) % variants.length;
+        return variants[variant];
       }
 
       function botStoriesForWord(word) {
         const profiles = worldBotsForWord(word.id, 5);
         if (!profiles.length) return [];
         const storyCount = Math.min(3, Math.max(2, profiles.length));
+        const usedTexts = new Set();
         return Array.from({ length: storyCount }, (_, index) => {
           const profile = profiles[index % profiles.length];
           const id = `bot:${profile.id}:${word.id}:${index}`;
+          let text = '';
+          for (let variantOffset = 0; variantOffset < 3; variantOffset += 1) {
+            const candidate = botStoryText(profile, word, index, variantOffset);
+            if (usedTexts.has(candidate)) continue;
+            text = candidate;
+            break;
+          }
+          if (!text) text = `${botStoryText(profile, word, index)} Я записал это отдельно, чтобы не спутать с чужой историей.`;
+          usedTexts.add(text);
           return {
             id,
             profile,
-            text: botStoryText(profile, word, index),
+            text,
             baseRecognition: 3 + Math.abs(hashValue(id)) % 38
           };
         });
@@ -2598,7 +2725,7 @@
         }
         showView('graph');
         window.requestAnimationFrame(() => {
-          if (wordId && isGraphItemSelected(wordId)) selectGraphNode(wordId);
+          if (wordId && isGraphItemSelected(wordId)) selectGraphNode(wordId, true, true, false);
           else if (wordId) showGraphAddProposal(wordId);
         });
       }
@@ -3216,7 +3343,7 @@
         persistState();
         if (returnView === 'scatter') renderScatter();
         showView(returnView);
-        if (returnView === 'graph') window.requestAnimationFrame(() => selectGraphNode(itemId, false, false));
+        if (returnView === 'graph') window.requestAnimationFrame(() => selectGraphNode(itemId, false, false, false));
       }
 
       function animateWordToken(button) {
@@ -3233,10 +3360,104 @@
         return '';
       }
 
+      function selectedPressurePairs(selectedWords) {
+        const selectedIds = new Set(selectedWords.map((item) => item.id));
+        return selectedWords
+          .filter((item) => item.shelves.includes('triggers'))
+          .flatMap((trigger) => (trigger.activates || [])
+            .filter((stoneId) => selectedIds.has(stoneId) && WORD_BY_ID.has(stoneId))
+            .map((stoneId) => ({ trigger, stone: WORD_BY_ID.get(stoneId) })));
+      }
+
+      function snapshotSummaryWord(word, extra = '') {
+        const button = document.createElement('button');
+        button.className = 'snapshot-summary-word';
+        button.type = 'button';
+        button.dataset.snapshotSummaryWord = word.id;
+        button.textContent = `${word.word}${extra}`;
+        button.setAttribute('aria-label', `Открыть мир слова «${word.word}»`);
+        return button;
+      }
+
+      function appendSnapshotSummaryRow(label, content) {
+        const row = document.createElement('p');
+        row.className = 'snapshot-summary-row';
+        const lead = document.createElement('strong');
+        lead.textContent = `${label}: `;
+        row.append(lead);
+        if (typeof content === 'string') row.append(content);
+        else row.append(content);
+        snapshotSummaryContent.append(row);
+      }
+
+      function renderSnapshotSummary(selectedWords) {
+        snapshotSummaryContent.replaceChildren();
+        const shelfCounts = SHELVES.map((shelf, index) => ({
+          shelf,
+          index,
+          count: selectedWords.filter((item) => item.shelves.includes(shelf.id)).length
+            + state.customWords.filter((item) => item.shelfId === shelf.id).length
+        }));
+        const strongest = shelfCounts
+          .filter((item) => item.count > 0)
+          .sort((left, right) => right.count - left.count || left.index - right.index)
+          .slice(0, 2);
+        appendSnapshotSummaryRow(
+          'Сильнее всего представлены',
+          strongest.length
+            ? strongest.map(({ shelf, count }) => `${shelf.emoji} ${shelf.title} (${count})`).join(' и ')
+            : 'пока нет отмеченных слов'
+        );
+
+        const rareWords = selectedWords
+          .map((word) => ({ word, profileCount: profilesForWord(word.id).length }))
+          .sort((left, right) => left.profileCount - right.profileCount || left.word.word.localeCompare(right.word.word, 'ru'))
+          .slice(0, 3);
+        const rareContent = document.createElement('span');
+        rareContent.className = 'snapshot-summary-words';
+        if (rareWords.length) rareWords.forEach(({ word, profileCount }) => {
+          rareContent.append(snapshotSummaryWord(word, ` · N ${profileCount}`));
+        });
+        else rareContent.textContent = 'пока нет отмеченных слов';
+        appendSnapshotSummaryRow('Самые редкие твои слова (среди примеров)', rareContent);
+
+        const pressurePairs = selectedPressurePairs(selectedWords);
+        const pressureByStone = new Map();
+        pressurePairs.forEach(({ stone, trigger }) => {
+          if (!pressureByStone.has(stone.id)) pressureByStone.set(stone.id, { stone, triggers: new Set() });
+          pressureByStone.get(stone.id).triggers.add(trigger.id);
+        });
+        const maxPressure = Math.max(0, ...[...pressureByStone.values()].map(({ triggers }) => triggers.size));
+        const mostPressured = [...pressureByStone.values()]
+          .filter(({ triggers }) => triggers.size === maxPressure && maxPressure > 0)
+          .sort((left, right) => left.stone.word.localeCompare(right.stone.word, 'ru'));
+        const pressureContent = document.createElement('span');
+        pressureContent.className = 'snapshot-summary-words';
+        if (mostPressured.length) mostPressured.forEach(({ stone, triggers }) => {
+          pressureContent.append(snapshotSummaryWord(stone, ` · ${triggers.size}`));
+        });
+        else pressureContent.textContent = 'пока нет выбранных камней, на которые указывают триггеры';
+        appendSnapshotSummaryRow('Больше всего давления на', pressureContent);
+
+        const pairContent = document.createElement('span');
+        pairContent.className = 'snapshot-summary-words';
+        if (pressurePairs.length) pressurePairs.forEach(({ trigger, stone }) => {
+          pairContent.append(snapshotSummaryWord(trigger, ` → ${stone.word}`));
+        });
+        else pairContent.textContent = 'пока нет выбранных пар';
+        appendSnapshotSummaryRow('Твои триггеры связаны с камнями', pairContent);
+
+        const note = document.createElement('p');
+        note.className = 'snapshot-summary-note';
+        note.textContent = 'Это навигация по твоему слепку, а не вывод о тебе.';
+        snapshotSummaryContent.append(note);
+      }
+
       function renderSnapshot() {
         shelfGrid.replaceChildren();
         snapshotSmallNote.hidden = totalSelected() >= 5;
         const selectedWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        renderSnapshotSummary(selectedWords);
 
         SHELVES.forEach((shelf) => {
           const assignedCustomWords = state.customWords
@@ -3289,6 +3510,7 @@
             const isDictionaryWord = WORD_BY_ID.has(item.id);
             const word = document.createElement(isDictionaryWord ? 'button' : 'span');
             word.className = 'shelf-word';
+            if (isDictionaryWord && hasOwnWorldStory(item.id)) word.classList.add('has-own-story');
             if (item.shelves.length > 1) {
               word.classList.add('is-multi');
               word.title = 'Это слово живёт сразу в нескольких местах';
@@ -3297,7 +3519,7 @@
               word.type = 'button';
               word.dataset.openWordWorld = item.id;
               word.dataset.worldSource = 'snapshot';
-              word.setAttribute('aria-label', `Войти в мир слова «${item.word}»`);
+              word.setAttribute('aria-label', `Войти в мир слова «${item.word}»${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`);
             }
             const label = document.createElement('span');
             label.textContent = item.word;
@@ -3816,10 +4038,10 @@
         items.forEach((item, index) => {
           const position = positions.get(item.id);
           const group = svgElement('g', {
-            class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}`,
+            class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}${hasOwnWorldStory(item.id) ? ' has-own-story' : ''}`,
             tabindex: 0,
             role: 'button',
-            'aria-label': `Открыть слово «${item.word}»`,
+            'aria-label': `Открыть слово «${item.word}»${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
             'data-graph-node-id': item.id,
             'data-pressure-index': position.pressureCount,
             style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
@@ -3837,7 +4059,7 @@
         });
 
         graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
-        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
+        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false, false);
         else {
           activeGraphNodeId = null;
           graphChainIds = new Set();
@@ -3848,20 +4070,15 @@
       }
 
       function graphChainFrom(id) {
-        const visited = new Set([id]);
-        let frontier = [id];
-        for (let depth = 0; depth < 2; depth += 1) {
-          const next = [];
-          frontier.forEach((currentId) => {
-            (graphAdjacency.get(currentId) || new Set()).forEach((neighborId) => {
-              if (visited.has(neighborId)) return;
-              visited.add(neighborId);
-              next.push(neighborId);
-            });
-          });
-          frontier = next;
-        }
-        return visited;
+        const direct = new Set([id]);
+        (graphAdjacency.get(id) || new Set()).forEach((neighborId) => direct.add(neighborId));
+        const item = graphItemById(id);
+        if (item?.antonym && isGraphItemSelected(item.antonym)) direct.add(item.antonym);
+        (item?.activates || []).forEach((stoneId) => {
+          if (isGraphItemSelected(stoneId)) direct.add(stoneId);
+        });
+        (graphPressureSources.get(id) || new Set()).forEach((relatedId) => direct.add(relatedId));
+        return direct;
       }
 
       function updateGraphHighlight() {
@@ -3873,12 +4090,12 @@
           node.classList.toggle('is-dimmed', hasActive && !graphChainIds.has(id));
         });
         graphSvg.querySelectorAll('.graph-edge').forEach((edge) => {
-          const inChain = graphChainIds.has(edge.dataset.source) && graphChainIds.has(edge.dataset.target);
-          edge.classList.toggle('is-chain', hasActive && inChain);
-          edge.classList.toggle('is-dimmed', hasActive && !inChain);
+          const isDirectEdge = edge.dataset.source === activeGraphNodeId || edge.dataset.target === activeGraphNodeId;
+          edge.classList.toggle('is-chain', hasActive && isDirectEdge);
+          edge.classList.toggle('is-dimmed', hasActive && !isDirectEdge);
         });
         graphSvg.querySelectorAll('.graph-whisker, .graph-ghost').forEach((element) => {
-          element.classList.toggle('is-dimmed', hasActive && !graphChainIds.has(element.dataset.source));
+          element.classList.toggle('is-dimmed', hasActive && element.dataset.source !== activeGraphNodeId);
         });
       }
 
@@ -3898,8 +4115,19 @@
         showGraphToast(`На это слово давит: ${sources.map((item) => item.word).join(', ')}. Это не приговор — это то, что мешает ему работать.`);
       }
 
-      function selectGraphNode(id, scrollCard = true, showPressure = true) {
+      function clearGraphFocus() {
+        activeGraphNodeId = null;
+        graphChainIds = new Set();
+        graphCard.hidden = true;
+        updateGraphHighlight();
+      }
+
+      function selectGraphNode(id, scrollCard = true, showPressure = true, allowToggle = true) {
         if (!isGraphItemSelected(id)) return;
+        if (allowToggle && activeGraphNodeId === id) {
+          clearGraphFocus();
+          return;
+        }
         activeGraphNodeId = id;
         graphChainIds = graphChainFrom(id);
         updateGraphHighlight();
@@ -3949,6 +4177,15 @@
         if (WORD_BY_ID.has(item.id)) {
           const worldActions = document.createElement('div');
           worldActions.className = 'graph-card-actions';
+          if (hasOwnWorldStory(item.id)) {
+            const ownStoryLink = document.createElement('button');
+            ownStoryLink.className = 'graph-card-own-story';
+            ownStoryLink.type = 'button';
+            ownStoryLink.dataset.openWordWorld = item.id;
+            ownStoryLink.dataset.worldSource = 'graph';
+            ownStoryLink.textContent = 'У этого слова есть твоя история →';
+            worldActions.append(ownStoryLink);
+          }
           const worldButton = document.createElement('button');
           worldButton.className = 'secondary-button';
           worldButton.type = 'button';
@@ -4216,6 +4453,11 @@
         state.wave = 1;
         showView('scatter');
         renderScatter();
+      });
+
+      snapshotSummaryContent.addEventListener('click', (event) => {
+        const wordButton = event.target.closest('[data-snapshot-summary-word]');
+        if (wordButton) openWordWorld(wordButton.dataset.snapshotSummaryWord, 'snapshot');
       });
 
       function activateGraphTarget(target) {
