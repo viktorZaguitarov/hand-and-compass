@@ -188,10 +188,12 @@
       max-width: 820px;
       margin-inline: auto;
       color: #eef1f5;
-      font-size: clamp(1.9rem, 7vw, 3.55rem);
-      font-style: italic;
-      font-weight: 400;
-      line-height: 1.05;
+      font-family: var(--sans);
+      font-size: clamp(1.08rem, 4.2vw, 1.52rem);
+      font-style: normal;
+      font-weight: 650;
+      line-height: 1.3;
+      letter-spacing: -0.015em;
     }
 
     body.wave-two #scatterScreen .eyebrow { color: #c6a7b6; }
@@ -214,13 +216,13 @@
       background: rgba(239, 242, 246, 0.94);
       box-shadow: 0 7px 18px rgba(3, 8, 16, 0.22);
     }
-    body.wave-two .word-token[aria-pressed="true"].is-wave-one-choice {
+    body .word-token[aria-pressed="true"].is-wave-one-choice {
       color: #fffdf6;
       border-color: #294f45;
       background: #315f52;
       box-shadow: 0 8px 20px rgba(4, 9, 17, 0.3), inset 0 0 0 2px rgba(222, 236, 226, 0.28);
     }
-    body.wave-two .word-token[aria-pressed="true"].is-wave-two-choice {
+    body .word-token[aria-pressed="true"].is-wave-two-choice {
       color: #fff8fc;
       border-color: #d1a9bd;
       background: linear-gradient(145deg, #8b607b, #624c6e);
@@ -253,6 +255,44 @@
       z-index: 1;
       padding: 24px 18px 18px;
     }
+
+    .entry-screen,
+    .custom-shelf-screen {
+      min-height: calc(100vh - 110px);
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 24px;
+      text-align: center;
+    }
+
+    .entry-copy,
+    .shelf-picker-card {
+      width: min(680px, 100%);
+      margin: 0 auto;
+    }
+
+    .entry-copy h1 {
+      margin-bottom: 24px;
+      font-size: clamp(2rem, 8vw, 4.2rem);
+      line-height: 1.08;
+    }
+
+    .entry-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+
+    .choice-title {
+      max-width: 820px;
+      margin: 0 auto 8px;
+      font-family: var(--sans);
+      font-size: clamp(1.08rem, 4.2vw, 1.52rem);
+      font-weight: 650;
+      line-height: 1.3;
+      letter-spacing: -0.015em;
+    }
+
+    body.wave-two .entry-copy h1,
+    body.wave-two .shelf-picker-card h1,
+    body.wave-two .choice-title { color: #eef1f5; }
 
     #scatterScreen { padding-bottom: 112px; }
 
@@ -409,6 +449,8 @@
     }
 
     .word-token:active { transform: translateY(var(--lift)) rotate(var(--tilt)) scale(0.96); }
+
+    .word-token.is-tap-reacting { animation: word-token-tap 250ms ease-out; }
 
     .word-token[aria-pressed="true"] {
       color: #fffdf6;
@@ -612,7 +654,41 @@
     .shelf-stones { --shelf-accent: #55574f; }
     .shelf-supports { --shelf-accent: #78905c; }
     .shelf-triggers { --shelf-accent: #b46a4f; }
-    .shelf-custom { --shelf-accent: #9b79a0; }
+    .shelf-custom { --shelf-accent: #7d827d; }
+
+    .shelf-picker-card h1 { margin-bottom: 7px; font-size: clamp(2rem, 8vw, 3.5rem); }
+    .shelf-picker-word {
+      margin: 0 0 20px;
+      color: var(--rose);
+      font-family: var(--sans);
+      font-size: 1rem;
+      font-weight: 750;
+    }
+    body.wave-two .shelf-picker-word { color: #d8bcda; }
+    .shelf-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      width: min(620px, 100%);
+      margin: 0 auto;
+    }
+    .shelf-picker-button {
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid color-mix(in srgb, var(--shelf-accent) 42%, transparent);
+      border-radius: 15px;
+      color: color-mix(in srgb, var(--shelf-accent) 78%, #1f332d);
+      background: color-mix(in srgb, var(--shelf-accent) 13%, #fffdf7);
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 750;
+    }
+    .shelf-picker-button.is-unknown { grid-column: 1 / -1; }
+    body.wave-two .shelf-picker-button {
+      color: #edf1f4;
+      border-color: color-mix(in srgb, var(--shelf-accent) 55%, #d7dce5);
+      background: color-mix(in srgb, var(--shelf-accent) 28%, #263144);
+    }
 
     .shelf-title-row {
       display: flex;
@@ -1271,6 +1347,12 @@
       to { opacity: 1; transform: translate(var(--node-x), var(--node-y)) rotate(var(--node-tilt, 0deg)); }
     }
 
+    @keyframes word-token-tap {
+      0%, 100% { transform: translateY(var(--lift)) rotate(var(--tilt)) scale(var(--scale)); }
+      38% { transform: translateY(calc(var(--lift) + 3px)) rotate(var(--tilt)) scale(0.94); }
+      72% { transform: translateY(calc(var(--lift) - 3px)) rotate(var(--tilt)) scale(1.07); }
+    }
+
     @media (max-width: 639px) {
       .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(20px, env(safe-area-inset-bottom)); }
       .topbar { margin-bottom: 9px; padding-inline: 4px; }
@@ -1282,7 +1364,7 @@
       #scatterScreen { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
       .eyebrow { margin-bottom: 7px; font-size: 0.61rem; }
       h1 { margin-bottom: 9px; font-size: clamp(1.72rem, 8.2vw, 2.7rem); line-height: 1.02; }
-      body.wave-two #scatterTitle { font-size: clamp(1.58rem, 7.2vw, 2.35rem); line-height: 1.08; }
+      body.wave-two #scatterTitle { font-size: 1rem; line-height: 1.28; }
       .lead { margin-bottom: 9px; font-size: 0.88rem; line-height: 1.36; }
       details.help { font-size: 0.74rem; }
       .selection-bar {
@@ -1374,6 +1456,11 @@
       .complement-column { padding: 9px; }
       .friction-item, .intersection-empty, .intersection-honesty { font-size: 0.7rem; }
       .intersections-actions .secondary-button { min-height: 44px; }
+      .entry-screen, .custom-shelf-screen { min-height: calc(100vh - 88px); padding-inline: 18px; }
+      .entry-copy h1 { font-size: clamp(1.75rem, 8vw, 2.55rem); }
+      .choice-title { font-size: 1rem; line-height: 1.28; }
+      .shelf-picker-grid { grid-template-columns: 1fr; gap: 7px; }
+      .shelf-picker-button.is-unknown { grid-column: auto; }
     }
 
     @media (min-width: 640px) {
@@ -1404,6 +1491,7 @@
       html { scroll-behavior: auto; }
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
       .word-token { --tilt: 0deg !important; --lift: 0px !important; }
+      .word-token.is-tap-reacting { animation: none !important; }
       .graph-node { animation: none !important; }
     }
   </style>
@@ -1421,15 +1509,19 @@
     <main class="page">
       <div class="notice" id="storageNotice" role="status" hidden></div>
 
-      <section class="screen" id="scatterScreen" aria-labelledby="scatterTitle">
+      <section class="screen entry-screen" id="lightIntroScreen" aria-labelledby="lightIntroTitle">
+        <div class="entry-copy">
+          <h1 id="lightIntroTitle" tabindex="-1">Выбери слова, которые отзываются и близки тебе. Минимум 5, лучше 10–15.</h1>
+          <div class="entry-actions">
+            <button class="primary-button" id="startLightButton" type="button">Начать</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="scatterScreen" aria-labelledby="scatterTitle" hidden>
         <header class="screen-head">
-          <p class="eyebrow" id="scatterEyebrow">Слепок · волна 1 из 2</p>
-          <h1 id="scatterTitle" tabindex="-1">Что отзывается сейчас?</h1>
-          <p class="lead" id="scatterLead">Выбери хотя бы 3 слова, которые откликаются. 8–15 — ориентир, не предел.</p>
-          <details class="help">
-            <summary>Подробнее</summary>
-            <p>Здесь нет правильного набора. Полки пока скрыты: сначала важен только собственный отклик.</p>
-          </details>
+          <p class="eyebrow" id="scatterStep">1 из 2</p>
+          <h1 class="choice-title" id="scatterTitle" tabindex="-1">Ценности, цели, опоры — светлые составляющие твоего мироощущения.</h1>
         </header>
 
         <div class="selection-bar" aria-live="polite">
@@ -1437,7 +1529,7 @@
             <div class="selection-count"><strong id="selectedCount">0</strong><span id="selectedCountLabel">слов выбрано</span></div>
             <span class="selection-more">можно и больше, если откликается</span>
           </div>
-          <span class="selection-hint" id="selectionHint">Минимум 3</span>
+          <span class="selection-hint" id="selectionHint">Минимум 5</span>
         </div>
 
         <div class="word-field" id="wordField" aria-label="Россыпь слов"></div>
@@ -1456,6 +1548,24 @@
           <button class="primary-button" id="doneButton" type="button" disabled>Дальше</button>
         </div>
         <p class="action-status" id="scatterStatus" aria-live="polite"></p>
+      </section>
+
+      <section class="screen entry-screen" id="darkIntroScreen" aria-labelledby="darkIntroTitle" hidden>
+        <div class="entry-copy">
+          <h1 id="darkIntroTitle" tabindex="-1">Теперь наоборот: выбери то, что раздражает, угнетает или выбивает из равновесия.</h1>
+          <div class="entry-actions">
+            <button class="secondary-button" id="darkIntroBackButton" type="button">Назад</button>
+            <button class="primary-button" id="startDarkButton" type="button">Продолжить</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen custom-shelf-screen" id="customShelfScreen" aria-labelledby="customShelfTitle" hidden>
+        <div class="shelf-picker-card">
+          <h1 id="customShelfTitle" tabindex="-1">Куда его положить?</h1>
+          <p class="shelf-picker-word" id="customShelfWord"></p>
+          <div class="shelf-picker-grid" id="customShelfOptions"></div>
+        </div>
       </section>
 
       <section class="screen" id="snapshotScreen" aria-labelledby="snapshotTitle" hidden>
@@ -1568,6 +1678,7 @@
         { id: 'supports', emoji: '🌿', title: 'Опоры' },
         { id: 'triggers', emoji: '⚡', title: 'Триггеры' }
       ];
+      const CUSTOM_SHELF = { id: 'custom', emoji: '✨', title: 'Своё' };
       const SHELF_BY_ID = new Map(SHELVES.map((item) => [item.id, item]));
       const SHELF_WEIGHTS = {
         values: 3, stones: 2, goals: 2, foresight: 1.5,
@@ -1584,20 +1695,24 @@
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
         values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
-        stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#8c6b91'
+        stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#7d827d'
       };
       const GRAPH_ZONES = {
         values: { x: 738, y: 738 }, goals: { x: 1188, y: 738 }, action: { x: 1638, y: 738 },
         foresight: { x: 850, y: 1188 }, stones: { x: 1526, y: 1188 }, supports: { x: 850, y: 1638 },
-        triggers: { x: 1526, y: 1638 }, custom: { x: 1188, y: 1638 }
+        triggers: { x: 1526, y: 1638 }, custom: { x: 1188, y: 1880 }
       };
 
+      const lightIntroScreen = document.getElementById('lightIntroScreen');
       const scatterScreen = document.getElementById('scatterScreen');
+      const darkIntroScreen = document.getElementById('darkIntroScreen');
+      const customShelfScreen = document.getElementById('customShelfScreen');
       const snapshotScreen = document.getElementById('snapshotScreen');
       const graphScreen = document.getElementById('graphScreen');
-      const scatterEyebrow = document.getElementById('scatterEyebrow');
+      const scatterStep = document.getElementById('scatterStep');
       const scatterTitle = document.getElementById('scatterTitle');
-      const scatterLead = document.getElementById('scatterLead');
+      const customShelfWord = document.getElementById('customShelfWord');
+      const customShelfOptions = document.getElementById('customShelfOptions');
       const wordField = document.getElementById('wordField');
       const selectedCount = document.getElementById('selectedCount');
       const selectedCountLabel = document.getElementById('selectedCountLabel');
@@ -1649,8 +1764,10 @@
 
       function emptyState() {
         return {
-          version: 2, selectedIds: [], customWords: [], waveOneIds: [], waveOneCustomIds: [],
-          wave: 1, view: 'scatter', matchTarget: 50, matchVisibleCount: 3, activeProfileId: null, updatedAt: null
+          version: 3, selectedIds: [], customWords: [], selectionWaves: {},
+          waveOneIds: [], waveOneCustomIds: [], wave: 1, view: 'light-intro',
+          pendingCustomId: null, pickerReturnView: 'scatter', matchTarget: 50,
+          matchVisibleCount: 3, activeProfileId: null, updatedAt: null
         };
       }
 
@@ -1665,7 +1782,11 @@
             : [];
           const customWords = Array.isArray(parsed.customWords)
             ? parsed.customWords.filter((item) => item && typeof item.id === 'string' && typeof item.word === 'string' && item.word.trim())
-                .map((item) => ({ id: item.id, word: item.word.trim().slice(0, 64) }))
+                .map((item) => ({
+                  id: item.id,
+                  word: item.word.trim().slice(0, 64),
+                  shelfId: SHELF_BY_ID.has(item.shelfId) ? item.shelfId : 'custom'
+                }))
             : [];
           const selectionCount = selectedIds.length + customWords.length;
           const customIds = new Set(customWords.map((item) => item.id));
@@ -1675,19 +1796,36 @@
           const waveOneCustomIds = Array.isArray(parsed.waveOneCustomIds)
             ? [...new Set(parsed.waveOneCustomIds.filter((id) => customIds.has(id)))]
             : [...customIds];
+          const knownIds = new Set([...selectedIds, ...customIds]);
+          const selectionWaves = {};
+          knownIds.forEach((id) => {
+            const savedWave = Number(parsed.selectionWaves?.[id]);
+            selectionWaves[id] = savedWave === 2 ? 2
+              : savedWave === 1 ? 1
+              : waveOneIds.includes(id) || waveOneCustomIds.includes(id) ? 1 : 2;
+          });
+          const allowedSimpleViews = new Set(['light-intro', 'dark-intro', 'custom-shelf']);
           const restoredView = parsed.view === 'intersections' && selectionCount >= 3
             ? 'intersections'
             : parsed.view === 'graph' && selectionCount
             ? 'graph'
-            : parsed.view === 'snapshot' && selectionCount >= 3 ? 'snapshot' : 'scatter';
+            : parsed.view === 'snapshot' && selectionCount >= 3
+            ? 'snapshot'
+            : allowedSimpleViews.has(parsed.view) || parsed.view === 'scatter'
+            ? parsed.view
+            : selectionCount ? 'scatter' : 'light-intro';
+          const pendingCustomId = customIds.has(parsed.pendingCustomId) ? parsed.pendingCustomId : null;
           return {
-            version: 2,
+            version: 3,
             selectedIds,
             customWords,
+            selectionWaves,
             waveOneIds,
             waveOneCustomIds,
             wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
-            view: restoredView,
+            view: restoredView === 'custom-shelf' && !pendingCustomId ? 'scatter' : restoredView,
+            pendingCustomId,
+            pickerReturnView: ['scatter', 'graph', 'snapshot'].includes(parsed.pickerReturnView) ? parsed.pickerReturnView : 'scatter',
             matchTarget: Number.isFinite(Number(parsed.matchTarget))
               ? Math.max(0, Math.min(100, Math.round(Number(parsed.matchTarget))))
               : 50,
@@ -1708,6 +1846,7 @@
 
       function persistState() {
         try {
+          syncLegacyWaveLists();
           state.updatedAt = new Date().toISOString();
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           if (storageWasBroken) {
@@ -1761,6 +1900,28 @@
 
       function totalSelected() {
         return state.selectedIds.length + state.customWords.length;
+      }
+
+      function selectionWave(id) {
+        return state.selectionWaves[id] === 2 ? 2 : 1;
+      }
+
+      function setSelectionWave(id, wave = state.wave) {
+        state.selectionWaves[id] = wave === 2 ? 2 : 1;
+      }
+
+      function removeSelectionWave(id) {
+        delete state.selectionWaves[id];
+      }
+
+      function syncLegacyWaveLists() {
+        state.waveOneIds = state.selectedIds.filter((id) => selectionWave(id) === 1);
+        state.waveOneCustomIds = state.customWords.filter((item) => selectionWave(item.id) === 1).map((item) => item.id);
+      }
+
+      function lightSelectionCount() {
+        return [...state.selectedIds, ...state.customWords.map((item) => item.id)]
+          .filter((id) => selectionWave(id) === 1).length;
       }
 
       function wordCountLabel(count) {
@@ -1882,12 +2043,18 @@
 
       function appendIntersectionShelfGroups(container, ids, customWords = []) {
         const dictionaryItems = [...new Set(ids)].map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const normalizedCustomWords = customWords.map((item) => ({
+          ...item,
+          shelves: [SHELF_BY_ID.has(item.shelfId) ? item.shelfId : 'custom']
+        }));
         const groups = SHELVES.map((shelf) => ({
           shelf,
-          items: dictionaryItems.filter((item) => (item.shelves || []).includes(shelf.id))
+          items: [...dictionaryItems, ...normalizedCustomWords]
+            .filter((item) => (item.shelves || []).includes(shelf.id))
         })).filter((group) => group.items.length);
-        if (customWords.length) {
-          groups.push({ shelf: { id: 'custom', emoji: '✨', title: 'Своё' }, items: customWords });
+        const unassignedCustomWords = normalizedCustomWords.filter((item) => item.shelves[0] === 'custom');
+        if (unassignedCustomWords.length) {
+          groups.push({ shelf: CUSTOM_SHELF, items: unassignedCustomWords });
         }
         if (!groups.length) {
           const empty = document.createElement('p');
@@ -2065,8 +2232,8 @@
           button.textContent = item.word;
           const isSelected = state.selectedIds.includes(item.id);
           button.setAttribute('aria-pressed', String(isSelected));
-          button.classList.toggle('is-wave-one-choice', isSelected && state.waveOneIds.includes(item.id));
-          button.classList.toggle('is-wave-two-choice', isSelected && !state.waveOneIds.includes(item.id));
+          button.classList.toggle('is-wave-one-choice', isSelected && selectionWave(item.id) === 1);
+          button.classList.toggle('is-wave-two-choice', isSelected && selectionWave(item.id) === 2);
           button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
           button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
           button.style.setProperty('--token-size', `${0.8 + (hash % 5) * 0.035}rem`);
@@ -2080,8 +2247,8 @@
           button.dataset.customId = item.id;
           button.textContent = item.word;
           button.setAttribute('aria-pressed', 'true');
-          button.classList.toggle('is-wave-one-choice', state.waveOneCustomIds.includes(item.id));
-          button.classList.toggle('is-wave-two-choice', !state.waveOneCustomIds.includes(item.id));
+          button.classList.toggle('is-wave-one-choice', selectionWave(item.id) === 1);
+          button.classList.toggle('is-wave-two-choice', selectionWave(item.id) === 2);
           button.setAttribute('aria-label', `${item.word}. Своё слово, нажми, чтобы убрать`);
           button.style.setProperty('--tilt', `${(hash % 7) - 3}deg`);
           button.style.setProperty('--lift', `${(Math.floor(hash / 7) % 7) - 3}px`);
@@ -2095,13 +2262,10 @@
       function renderWaveUI() {
         const isSecondWave = state.wave === 2;
         document.body.classList.toggle('wave-two', isSecondWave && state.view === 'scatter');
-        scatterEyebrow.textContent = `Слепок · волна ${isSecondWave ? 2 : 1} из 2`;
+        scatterStep.textContent = `${isSecondWave ? 2 : 1} из 2`;
         scatterTitle.textContent = isSecondWave
-          ? 'А теперь честнее: что раздражает, мешает, выбивает?'
-          : 'Что отзывается сейчас?';
-        scatterLead.textContent = isSecondWave
-          ? 'Камни и триггеры тоже часть карты — без них она нечестная.'
-          : 'Выбери хотя бы 3 слова, которые откликаются. 8–15 — ориентир, не предел.';
+          ? 'Камни и триггеры — тоже часть личности. Без них слепок нечестный.'
+          : 'Ценности, цели, опоры — светлые составляющие твоего мироощущения.';
         backWaveButton.hidden = !isSecondWave;
         skipButton.hidden = !isSecondWave;
         doneButton.textContent = isSecondWave ? 'Готово' : 'Дальше';
@@ -2109,13 +2273,14 @@
 
       function updateSelectionUI() {
         const count = totalSelected();
+        const lightCount = lightSelectionCount();
         selectedCount.textContent = String(count);
         selectedCountLabel.textContent = wordCountLabel(count);
-        doneButton.disabled = state.wave === 1 && count < 3;
+        doneButton.disabled = state.wave === 1 && lightCount < 5;
         selectionHint.textContent = state.wave === 2
           ? 'Можно закончить или выбрать ещё'
-          : count < 3 ? `Ещё ${3 - count} до следующей волны`
-            : count < 8 ? 'Уже можно продолжить' : count <= 15 ? 'Хороший объём' : 'Выбирай столько, сколько нужно';
+          : lightCount < 5 ? `Ещё ${5 - lightCount} до следующей волны`
+            : lightCount < 10 ? 'Уже можно продолжить' : lightCount <= 15 ? 'Хороший объём' : 'Можно остановиться';
       }
 
       function toggleWord(id) {
@@ -2123,10 +2288,10 @@
         const wasSelected = state.selectedIds.includes(id);
         if (wasSelected) {
           state.selectedIds = state.selectedIds.filter((item) => item !== id);
-          state.waveOneIds = state.waveOneIds.filter((item) => item !== id);
+          removeSelectionWave(id);
         } else {
           state.selectedIds.push(id);
-          if (state.wave === 1 && !state.waveOneIds.includes(id)) state.waveOneIds.push(id);
+          setSelectionWave(id);
         }
         state.view = 'scatter';
         persistState();
@@ -2134,8 +2299,8 @@
         if (button) {
           const isSelected = state.selectedIds.includes(id);
           button.setAttribute('aria-pressed', String(isSelected));
-          button.classList.toggle('is-wave-one-choice', isSelected && state.waveOneIds.includes(id));
-          button.classList.toggle('is-wave-two-choice', isSelected && !state.waveOneIds.includes(id));
+          button.classList.toggle('is-wave-one-choice', isSelected && selectionWave(id) === 1);
+          button.classList.toggle('is-wave-two-choice', isSelected && selectionWave(id) === 2);
         }
         updateSelectionUI();
         scatterStatus.textContent = '';
@@ -2154,7 +2319,7 @@
         if (dictionaryMatch) {
           if (!state.selectedIds.includes(dictionaryMatch.id)) {
             state.selectedIds.push(dictionaryMatch.id);
-            if (state.wave === 1 && !state.waveOneIds.includes(dictionaryMatch.id)) state.waveOneIds.push(dictionaryMatch.id);
+            setSelectionWave(dictionaryMatch.id);
           }
           const token = wordField.querySelector(`[data-word-id="${CSS.escape(dictionaryMatch.id)}"]`);
           if (token) token.setAttribute('aria-pressed', 'true');
@@ -2164,24 +2329,73 @@
         } else {
           const randomPart = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
           const customId = `custom:${randomPart}`;
-          state.customWords.push({ id: customId, word: clean });
-          if (state.wave === 1) state.waveOneCustomIds.push(customId);
-          scatterStatus.textContent = 'Своё слово добавлено. Полка определится позже.';
+          state.customWords.push({ id: customId, word: clean, shelfId: 'custom' });
+          setSelectionWave(customId);
+          state.pendingCustomId = customId;
+          state.pickerReturnView = 'scatter';
+          scatterStatus.textContent = '';
         }
 
-        state.view = 'scatter';
         customWordInput.value = '';
         persistState();
-        renderScatter();
+        if (state.pendingCustomId) showView('custom-shelf');
+        else renderScatter();
       }
 
       function removeCustomWord(id) {
         state.customWords = state.customWords.filter((item) => item.id !== id);
-        state.waveOneCustomIds = state.waveOneCustomIds.filter((item) => item !== id);
+        removeSelectionWave(id);
         state.view = 'scatter';
         persistState();
         renderScatter();
         scatterStatus.textContent = '';
+      }
+
+      function openCustomShelfPicker(id, returnView = state.view) {
+        if (!state.customWords.some((item) => item.id === id)) return;
+        state.pendingCustomId = id;
+        state.pickerReturnView = ['scatter', 'graph', 'snapshot'].includes(returnView) ? returnView : 'scatter';
+        showView('custom-shelf');
+      }
+
+      function renderCustomShelfPicker() {
+        const item = state.customWords.find((word) => word.id === state.pendingCustomId);
+        if (!item) {
+          state.pendingCustomId = null;
+          showView('scatter');
+          return;
+        }
+        customShelfWord.textContent = `«${item.word}»`;
+        customShelfOptions.replaceChildren();
+        [...SHELVES, CUSTOM_SHELF].forEach((shelf) => {
+          const button = document.createElement('button');
+          button.className = `shelf-picker-button shelf-${shelf.id}${shelf.id === 'custom' ? ' is-unknown' : ''}`;
+          button.type = 'button';
+          button.dataset.chooseShelf = shelf.id;
+          button.textContent = shelf.id === 'custom' ? 'Пока не знаю' : `${shelf.emoji} ${shelf.title}`;
+          customShelfOptions.append(button);
+        });
+      }
+
+      function chooseCustomShelf(shelfId) {
+        const item = state.customWords.find((word) => word.id === state.pendingCustomId);
+        if (!item || (shelfId !== 'custom' && !SHELF_BY_ID.has(shelfId))) return;
+        item.shelfId = shelfId;
+        const returnView = state.pickerReturnView || 'scatter';
+        const itemId = item.id;
+        state.pendingCustomId = null;
+        persistState();
+        if (returnView === 'scatter') renderScatter();
+        showView(returnView);
+        if (returnView === 'graph') window.requestAnimationFrame(() => selectGraphNode(itemId, false, false));
+      }
+
+      function animateWordToken(button) {
+        if (!button || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        button.classList.remove('is-tap-reacting');
+        void button.offsetWidth;
+        button.classList.add('is-tap-reacting');
+        window.setTimeout(() => button.classList.remove('is-tap-reacting'), 260);
       }
 
       function summaryForShelf(shelf, words) {
@@ -2196,13 +2410,19 @@
         const selectedWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
 
         SHELVES.forEach((shelf) => {
-          const words = selectedWords.filter((item) => item.shelves.includes(shelf.id));
+          const assignedCustomWords = state.customWords
+            .filter((item) => item.shelfId === shelf.id)
+            .map((item) => ({ ...item, shelves: [shelf.id] }));
+          const words = [
+            ...selectedWords.filter((item) => item.shelves.includes(shelf.id)),
+            ...assignedCustomWords
+          ];
           shelfGrid.append(createShelfCard(shelf, words));
         });
 
-        if (state.customWords.length) {
-          const customShelf = { id: 'custom', emoji: '✨', title: 'Своё' };
-          const card = createShelfCard(customShelf, state.customWords.map((item) => ({ ...item, shelves: ['custom'] })));
+        const unassignedCustomWords = state.customWords.filter((item) => item.shelfId === 'custom');
+        if (unassignedCustomWords.length) {
+          const card = createShelfCard(CUSTOM_SHELF, unassignedCustomWords.map((item) => ({ ...item, shelves: ['custom'] })));
           shelfGrid.append(card);
         }
       }
@@ -2268,12 +2488,25 @@
 
       function graphItems() {
         const dictionaryWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
-        const customWords = state.customWords.map((item) => ({ ...item, shelves: ['custom'], neighbors: [], antonym: null }));
+        const customWords = state.customWords.map((item) => ({
+          ...item,
+          shelves: [SHELF_BY_ID.has(item.shelfId) ? item.shelfId : 'custom'],
+          neighbors: [],
+          antonym: null
+        }));
         return [...dictionaryWords, ...customWords];
       }
 
       function graphItemById(id) {
-        return WORD_BY_ID.get(id) || state.customWords.find((item) => item.id === id) || null;
+        const dictionaryItem = WORD_BY_ID.get(id);
+        if (dictionaryItem) return dictionaryItem;
+        const customItem = state.customWords.find((item) => item.id === id);
+        return customItem ? {
+          ...customItem,
+          shelves: [SHELF_BY_ID.has(customItem.shelfId) ? customItem.shelfId : 'custom'],
+          neighbors: [],
+          antonym: null
+        } : null;
       }
 
       function isGraphItemSelected(id) {
@@ -2438,7 +2671,7 @@
       }
 
       function keepGraphNodeOffShelfLabel(position) {
-        const shelf = SHELF_BY_ID.get(position.shelf);
+        const shelf = SHELF_BY_ID.get(position.shelf) || (position.shelf === 'custom' ? CUSTOM_SHELF : null);
         if (!shelf) return;
         const labelCenterY = position.anchorY - 9;
         const dx = position.x - position.anchorX;
@@ -2598,6 +2831,8 @@
 
       function renderGraph() {
         const items = graphItems();
+        const graphShelves = [...SHELVES];
+        if (items.some((item) => primaryShelf(item) === 'custom')) graphShelves.push(CUSTOM_SHELF);
         const itemMap = new Map(items.map((item) => [item.id, item]));
         graphAdjacency = buildGraphAdjacency(items);
         graphPressureSources = buildGraphPressure(items);
@@ -2607,7 +2842,7 @@
         graphSvg.append(definitions);
 
         const zoneLabels = svgElement('g', { 'aria-hidden': 'true' });
-        SHELVES.forEach((shelf) => {
+        graphShelves.forEach((shelf) => {
           const zone = GRAPH_ZONES[shelf.id];
           const label = svgElement('text', {
             class: 'graph-zone-label', x: zone.x, y: zone.y + 16, 'text-anchor': 'middle'
@@ -2617,7 +2852,7 @@
         });
         graphSvg.append(zoneLabels);
 
-        SHELVES.forEach((shelf) => {
+        graphShelves.forEach((shelf) => {
           const zone = GRAPH_ZONES[shelf.id];
           graphSvg.append(svgElement('circle', {
             class: 'graph-zone', cx: zone.x, cy: zone.y, r: GRAPH_CLOUD_RADIUS
@@ -2834,6 +3069,18 @@
         });
         graphCard.append(kicker, title, shelvesSection.section);
 
+        if (item.id.startsWith('custom:')) {
+          const shelfAction = document.createElement('div');
+          shelfAction.className = 'graph-card-actions';
+          const shelfButton = document.createElement('button');
+          shelfButton.className = 'secondary-button';
+          shelfButton.type = 'button';
+          shelfButton.dataset.chooseCustomShelf = item.id;
+          shelfButton.textContent = 'Выбрать полку';
+          shelfAction.append(shelfButton);
+          graphCard.append(shelfAction);
+        }
+
         const neighbors = (item.neighbors || []).map((neighborId) => WORD_BY_ID.get(neighborId)).filter(Boolean);
         if (neighbors.length) {
           const explanation = document.createElement('p');
@@ -2912,7 +3159,10 @@
 
       function addGraphWord(id) {
         if (!WORD_BY_ID.has(id)) return;
-        if (!state.selectedIds.includes(id)) state.selectedIds.push(id);
+        if (!state.selectedIds.includes(id)) {
+          state.selectedIds.push(id);
+          setSelectionWave(id);
+        }
         state.view = 'graph';
         persistState();
         renderGraph();
@@ -2920,7 +3170,10 @@
       }
 
       function showView(view, focus = true, shouldPersist = true) {
+        const isLightIntro = view === 'light-intro';
         const isScatter = view === 'scatter';
+        const isDarkIntro = view === 'dark-intro';
+        const isCustomShelf = view === 'custom-shelf';
         const isSnapshot = view === 'snapshot';
         const isGraph = view === 'graph';
         const isIntersections = view === 'intersections';
@@ -2929,19 +3182,36 @@
           graphToast.hidden = true;
           if (graphToastTimer) window.clearTimeout(graphToastTimer);
         }
+        lightIntroScreen.hidden = !isLightIntro;
         scatterScreen.hidden = !isScatter;
+        darkIntroScreen.hidden = !isDarkIntro;
+        customShelfScreen.hidden = !isCustomShelf;
         snapshotScreen.hidden = !isSnapshot;
         graphScreen.hidden = !isGraph;
         intersectionsScreen.hidden = !isIntersections;
-        state.view = isIntersections ? 'intersections' : isGraph ? 'graph' : isSnapshot ? 'snapshot' : 'scatter';
-        document.body.classList.toggle('wave-two', isScatter && state.wave === 2);
+        state.view = isIntersections ? 'intersections'
+          : isGraph ? 'graph'
+          : isSnapshot ? 'snapshot'
+          : isCustomShelf ? 'custom-shelf'
+          : isDarkIntro ? 'dark-intro'
+          : isScatter ? 'scatter'
+          : 'light-intro';
+        document.body.classList.toggle('wave-two', isDarkIntro || (isScatter && state.wave === 2) || (isCustomShelf && state.wave === 2));
+        if (isScatter) renderWaveUI();
+        if (isCustomShelf) renderCustomShelfPicker();
         if (isSnapshot) renderSnapshot();
         if (isGraph) renderGraph();
         if (isIntersections) renderProfileMatches();
         if (shouldPersist) persistState();
         if (focus) {
           window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-          const titleId = isIntersections ? 'intersectionsTitle' : isGraph ? 'graphTitle' : isSnapshot ? 'snapshotTitle' : 'scatterTitle';
+          const titleId = isIntersections ? 'intersectionsTitle'
+            : isGraph ? 'graphTitle'
+            : isSnapshot ? 'snapshotTitle'
+            : isCustomShelf ? 'customShelfTitle'
+            : isDarkIntro ? 'darkIntroTitle'
+            : isScatter ? 'scatterTitle'
+            : 'lightIntroTitle';
           window.requestAnimationFrame(() => {
             document.getElementById(titleId).focus?.();
             if (isGraph) {
@@ -2955,11 +3225,16 @@
       wordField.addEventListener('click', (event) => {
         const button = event.target.closest('[data-word-id]');
         if (button) {
+          animateWordToken(button);
           toggleWord(button.dataset.wordId);
           return;
         }
         const customButton = event.target.closest('[data-custom-id]');
-        if (customButton) removeCustomWord(customButton.dataset.customId);
+        if (customButton) {
+          animateWordToken(customButton);
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) removeCustomWord(customButton.dataset.customId);
+          else window.setTimeout(() => removeCustomWord(customButton.dataset.customId), 130);
+        }
       });
 
       customWordForm.addEventListener('submit', (event) => {
@@ -2967,18 +3242,31 @@
         addCustomWord(customWordInput.value);
       });
 
+      document.getElementById('startLightButton').addEventListener('click', () => {
+        state.wave = 1;
+        showView('scatter');
+      });
+
+      document.getElementById('startDarkButton').addEventListener('click', () => {
+        state.wave = 2;
+        showView('scatter');
+      });
+
+      document.getElementById('darkIntroBackButton').addEventListener('click', () => {
+        state.wave = 1;
+        showView('scatter');
+      });
+
+      customShelfOptions.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-choose-shelf]');
+        if (button) chooseCustomShelf(button.dataset.chooseShelf);
+      });
+
       doneButton.addEventListener('click', () => {
         if (state.wave === 1) {
-          if (totalSelected() < 3) return;
-          state.waveOneIds = [...state.selectedIds];
-          state.waveOneCustomIds = state.customWords.map((item) => item.id);
+          if (lightSelectionCount() < 5) return;
           state.wave = 2;
-          state.view = 'scatter';
-          persistState();
-          renderWaveUI();
-          updateSelectionUI();
-          window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-          window.requestAnimationFrame(() => scatterTitle.focus?.());
+          showView('dark-intro');
           return;
         }
         showView('snapshot');
@@ -3086,6 +3374,8 @@
       });
 
       graphCard.addEventListener('click', (event) => {
+        const chooseShelf = event.target.closest('[data-choose-custom-shelf]');
+        if (chooseShelf) { openCustomShelfPicker(chooseShelf.dataset.chooseCustomShelf, 'graph'); return; }
         const directAdd = event.target.closest('[data-add-word]');
         if (directAdd) { addGraphWord(directAdd.dataset.addWord); return; }
         const confirmAdd = event.target.closest('[data-confirm-add]');
@@ -3104,12 +3394,7 @@
       backWaveButton.addEventListener('click', () => {
         if (state.wave !== 2) return;
         state.wave = 1;
-        state.view = 'scatter';
-        persistState();
-        renderWaveUI();
-        updateSelectionUI();
-        window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-        window.requestAnimationFrame(() => scatterTitle.focus?.());
+        showView('scatter');
       });
 
       document.getElementById('editButton').addEventListener('click', () => {
@@ -3166,7 +3451,10 @@
       if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
       else if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
       else if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
-      else showView('scatter', false, false);
+      else if (state.view === 'custom-shelf' && state.pendingCustomId) showView('custom-shelf', false, false);
+      else if (state.view === 'dark-intro') showView('dark-intro', false, false);
+      else if (state.view === 'scatter') showView('scatter', false, false);
+      else showView('light-intro', false, false);
     })();
   </script>
 </body>
