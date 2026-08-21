@@ -75,9 +75,18 @@
 
     button, input, textarea { font: inherit; }
     button { cursor: pointer; }
-    button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
+    :where(button, input, textarea, summary, [tabindex]) {
+      -webkit-tap-highlight-color: transparent;
+    }
+    :where(button, input, textarea, summary, [tabindex]):focus {
+      outline: none;
+    }
+    :where(button, input, textarea, summary, [tabindex]):focus-visible {
       outline: 3px solid rgba(189, 136, 64, 0.55);
       outline-offset: 3px;
+    }
+    body.is-pointer-input :where(button, input, textarea, summary, [tabindex]):focus-visible {
+      outline: none;
     }
 
     [hidden] { display: none !important; }
@@ -1029,12 +1038,18 @@
 
     .graph-legend-items .is-whisker::before { border-top-style: dashed; opacity: 0.62; }
 
-    .graph-viewport {
+    .graph-stage {
+      position: relative;
       width: 100%;
       max-width: 1040px;
-      height: min(66vh, 700px);
-      min-height: 430px;
       margin: 0 auto;
+    }
+
+    .graph-viewport {
+      width: 100%;
+      height: min(58vh, 620px);
+      min-height: 380px;
+      margin: 0;
       overflow: auto;
       border: 1px solid rgba(83, 104, 96, 0.2);
       border-radius: 24px;
@@ -1129,7 +1144,7 @@
     .graph-node-label {
       fill: #fffdf7;
       font-family: var(--sans);
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 700;
       pointer-events: none;
     }
@@ -1154,6 +1169,12 @@
       filter: drop-shadow(0 0 10px rgba(189, 136, 64, 0.6));
     }
 
+    body:not(.is-pointer-input) .graph-node:focus-visible .graph-node-plate,
+    body:not(.is-pointer-input) .graph-ghost:focus-visible .graph-ghost-dot {
+      stroke: #f1cd82;
+      stroke-width: 3;
+    }
+
     .graph-status {
       min-height: 1.3em;
       max-width: 1040px;
@@ -1165,21 +1186,29 @@
     }
 
     .graph-card {
-      max-width: 760px;
-      margin: 13px auto 0;
-      padding: 17px;
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      left: 12px;
+      z-index: 3;
+      max-width: 720px;
+      max-height: calc(100% - 24px);
+      margin: 0 auto;
+      padding: 12px;
       border: 1px solid rgba(83, 104, 96, 0.2);
-      border-radius: 21px;
-      background: rgba(255, 253, 247, 0.94);
+      border-radius: 18px;
+      background: rgba(255, 253, 247, 0.97);
       box-shadow: 0 13px 32px rgba(38, 54, 46, 0.12);
       font-family: var(--sans);
+      overflow: auto;
+      overscroll-behavior: contain;
     }
 
-    .graph-card-kicker { margin: 0 0 5px; color: var(--rose); font-size: 0.67rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
-    .graph-card h2 { margin: 0 0 10px; color: var(--forest-dark); font-family: var(--serif); font-size: 1.45rem; font-weight: 500; }
-    .graph-card-copy { margin: 0 0 12px; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.45; }
+    .graph-card-kicker { margin: 0 0 3px; color: var(--rose); font-size: 0.62rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
+    .graph-card h2 { margin: 0 0 6px; color: var(--forest-dark); font-family: var(--serif); font-size: 1.18rem; font-weight: 500; line-height: 1.1; }
+    .graph-card-copy { margin: 0 0 9px; color: var(--ink-soft); font-size: 0.75rem; line-height: 1.4; }
 
-    .graph-card-section { margin-top: 13px; }
+    .graph-card-section { margin-top: 10px; }
     .graph-card-label { display: block; margin-bottom: 7px; color: var(--ink-soft); font-size: 0.68rem; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
     .graph-card-chips { display: flex; flex-wrap: wrap; gap: 7px; }
     .graph-chip {
@@ -1193,9 +1222,10 @@
     }
     button.graph-chip { cursor: pointer; }
     .graph-chip.is-unselected { border-style: dashed; background: rgba(238, 230, 212, 0.5); }
-    .graph-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 13px; }
+    .graph-card-shelves { gap: 5px; }
+    .graph-card-shelves .graph-chip { min-height: 29px; padding: 4px 8px; font-size: 0.68rem; }
+    .graph-card-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
     .graph-card-own-story {
-      width: 100%;
       min-height: 36px;
       padding: 8px 10px;
       border: 1px solid rgba(189, 136, 64, 0.45);
@@ -1208,6 +1238,38 @@
       text-align: left;
       cursor: pointer;
     }
+
+    .graph-card-brief {
+      display: -webkit-box;
+      margin: 8px 0 0;
+      overflow: hidden;
+      color: var(--ink-soft);
+      font-size: 0.71rem;
+      line-height: 1.35;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+
+    .graph-card-details {
+      margin-top: 8px;
+      border-top: 1px solid rgba(83, 104, 96, 0.14);
+    }
+
+    .graph-card-details > summary {
+      display: flex;
+      align-items: center;
+      min-height: 34px;
+      cursor: pointer;
+      color: var(--forest-dark);
+      font-size: 0.74rem;
+      font-weight: 750;
+      list-style: none;
+    }
+
+    .graph-card-details > summary::-webkit-details-marker { display: none; }
+    .graph-card-details > summary::after { margin-left: auto; content: "⌄"; font-size: 0.92rem; }
+    .graph-card-details[open] > summary::after { content: "⌃"; }
+    .graph-card-detail-content { padding-bottom: 2px; }
 
     .graph-neighbor-note {
       margin: 13px 0 0;
@@ -1661,10 +1723,10 @@
       .graph-zoom-button { width: 34px; min-height: 34px; }
       .graph-legend { max-width: none; padding-inline: 3px; font-size: 0.62rem; }
       .graph-legend-items { gap: 4px 8px; }
-      .graph-viewport { height: 62vh; min-height: 410px; border-radius: 18px; }
+      .graph-viewport { height: 54vh; min-height: 350px; border-radius: 18px; }
       .graph-canvas { width: 3600px; height: 3600px; }
-      .graph-card { margin-top: 9px; padding: 13px; border-radius: 17px; }
-      .graph-card h2 { font-size: 1.22rem; }
+      .graph-card { right: 8px; bottom: 8px; left: 8px; max-height: calc(100% - 16px); padding: 10px; border-radius: 15px; }
+      .graph-card h2 { font-size: 1.08rem; }
       .graph-card-copy { font-size: 0.72rem; }
       .graph-chip { min-height: 34px; padding: 6px 9px; font-size: 0.69rem; }
       .graph-card-actions .primary-button,
@@ -1885,11 +1947,13 @@
           </div>
         </details>
 
-        <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
-          <svg class="graph-canvas" id="graphSvg" viewBox="0 0 3600 3600" role="img" aria-label="Связи между выбранными словами"></svg>
+        <div class="graph-stage">
+          <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
+            <svg class="graph-canvas" id="graphSvg" viewBox="0 0 3600 3600" role="img" aria-label="Связи между выбранными словами"></svg>
+          </div>
+          <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
         </div>
         <p class="graph-status" id="graphStatus" aria-live="polite"></p>
-        <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
         <div class="graph-toast" id="graphToast" role="status" aria-live="polite" hidden></div>
       </section>
 
@@ -1968,8 +2032,8 @@
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const GRAPH_MIN_CANVAS_SIZE = 3600;
       const GRAPH_CANVAS_PADDING = 360;
-      const GRAPH_CLOUD_GAP = 250;
-      const GRAPH_NODE_GAP = 20;
+      const GRAPH_CLOUD_GAP = 175;
+      const GRAPH_NODE_GAP = 24;
       const GRAPH_LABEL_CLEAR_RADIUS = 118;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
@@ -2055,6 +2119,13 @@
       const scatterOrder = shuffled(WORDS, scatterSeed);
       let worldStoryComposerOpen = false;
       let worldFormMessage = '';
+
+      document.addEventListener('pointerdown', () => {
+        document.body.classList.add('is-pointer-input');
+      }, true);
+      document.addEventListener('keydown', () => {
+        document.body.classList.remove('is-pointer-input');
+      }, true);
 
       function emptyState() {
         return {
@@ -3584,12 +3655,12 @@
       }
 
       function graphNodeWidth(item) {
-        return Math.min(184, Math.max(92, 34 + item.word.length * 7));
+        return Math.min(216, Math.max(108, 40 + item.word.length * 8.2));
       }
 
       function graphNodeHeight(item) {
         const shelf = primaryShelf(item);
-        return shelf === 'stones' || shelf === 'triggers' ? 56 : 48;
+        return shelf === 'stones' || shelf === 'triggers' ? 66 : 56;
       }
 
       function activeGraphShelves(items) {
@@ -3813,6 +3884,20 @@
         return collisions;
       }
 
+      function countGraphCollisions(entries, gap = 0) {
+        let collisions = 0;
+        for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
+          const [, left] = entries[leftIndex];
+          for (let rightIndex = leftIndex + 1; rightIndex < entries.length; rightIndex += 1) {
+            const [, right] = entries[rightIndex];
+            const overlapX = (left.width + right.width) / 2 + gap - Math.abs(right.x - left.x);
+            const overlapY = (left.height + right.height) / 2 + gap - Math.abs(right.y - left.y);
+            if (overlapX > 0 && overlapY > 0) collisions += 1;
+          }
+        }
+        return collisions;
+      }
+
       function graphBoundsFrom(positions) {
         const entries = [...positions.values()];
         if (!entries.length) return { minX: 0, minY: 0, maxX: graphCanvas.width, maxY: graphCanvas.height };
@@ -3895,15 +3980,26 @@
           entries.forEach(([, position]) => constrainGraphPosition(position, plan.canvas));
           if (!collisions) break;
         }
-        return { positions, zones: plan.zones, shelves: plan.shelves, canvas: plan.canvas, collisions };
+        return {
+          positions,
+          zones: plan.zones,
+          shelves: plan.shelves,
+          canvas: plan.canvas,
+          collisions,
+          visualCollisions: countGraphCollisions(entries, 5)
+        };
       }
 
       function computeGraphLayout(items, adjacency, pressureSources) {
         let bestLayout = null;
         for (let attempt = 0; attempt < 7; attempt += 1) {
           const layout = layoutGraphAttempt(items, adjacency, pressureSources, 1 + attempt * 0.16);
-          bestLayout = layout;
-          if (!layout.collisions) break;
+          if (!bestLayout
+            || layout.visualCollisions < bestLayout.visualCollisions
+            || (layout.visualCollisions === bestLayout.visualCollisions && layout.collisions < bestLayout.collisions)) {
+            bestLayout = layout;
+          }
+          if (!layout.visualCollisions) break;
         }
         graphZones = bestLayout.zones;
         graphCanvas = bestLayout.canvas;
@@ -3912,7 +4008,7 @@
       }
 
       function graphNodeTilt(id) {
-        return (Math.abs(hashValue(`${graphTiltSeed}:${id}`)) % 13) - 6;
+        return (Math.abs(hashValue(`${graphTiltSeed}:${id}`)) % 9) - 4;
       }
 
       function graphCurve(source, target, key) {
@@ -4050,7 +4146,7 @@
             class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
             width: position.width, height: position.height, rx: position.height / 2
           });
-          const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 5, 'text-anchor': 'middle' });
+          const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 6, 'text-anchor': 'middle' });
           label.textContent = item.word.length > 22 ? `${item.word.slice(0, 21)}…` : item.word;
           const title = svgElement('title');
           title.textContent = item.word;
@@ -4133,7 +4229,6 @@
         updateGraphHighlight();
         renderGraphCard(id);
         if (showPressure) pressureToastFor(id);
-        if (scrollCard) window.requestAnimationFrame(() => graphCard.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
       }
 
       function cardChip(text, options = {}) {
@@ -4162,21 +4257,19 @@
         if (!item) { graphCard.hidden = true; return; }
         graphCard.replaceChildren();
         graphCard.hidden = false;
-        const kicker = document.createElement('p');
-        kicker.className = 'graph-card-kicker';
-        kicker.textContent = 'Узел карты';
         const title = document.createElement('h2');
         title.textContent = item.word;
-        const shelvesSection = cardSection('Полки');
+        const shelves = document.createElement('div');
+        shelves.className = 'graph-card-chips graph-card-shelves';
         (item.shelves || ['custom']).forEach((shelfId) => {
           const shelf = SHELF_BY_ID.get(shelfId) || { emoji: '✨', title: 'Своё' };
-          shelvesSection.chips.append(cardChip(`${shelf.emoji} ${shelf.title}`));
+          shelves.append(cardChip(`${shelf.emoji} ${shelf.title}`));
         });
-        graphCard.append(kicker, title, shelvesSection.section);
+        graphCard.append(title, shelves);
 
+        const actions = document.createElement('div');
+        actions.className = 'graph-card-actions';
         if (WORD_BY_ID.has(item.id)) {
-          const worldActions = document.createElement('div');
-          worldActions.className = 'graph-card-actions';
           if (hasOwnWorldStory(item.id)) {
             const ownStoryLink = document.createElement('button');
             ownStoryLink.className = 'graph-card-own-story';
@@ -4184,19 +4277,44 @@
             ownStoryLink.dataset.openWordWorld = item.id;
             ownStoryLink.dataset.worldSource = 'graph';
             ownStoryLink.textContent = 'У этого слова есть твоя история →';
-            worldActions.append(ownStoryLink);
+            actions.append(ownStoryLink);
+          } else {
+            const worldButton = document.createElement('button');
+            worldButton.className = 'secondary-button';
+            worldButton.type = 'button';
+            worldButton.dataset.openWordWorld = item.id;
+            worldButton.dataset.worldSource = 'graph';
+            worldButton.textContent = 'Войти в мир слова';
+            actions.append(worldButton);
           }
-          const worldButton = document.createElement('button');
-          worldButton.className = 'secondary-button';
-          worldButton.type = 'button';
-          worldButton.dataset.openWordWorld = item.id;
-          worldButton.dataset.worldSource = 'graph';
-          worldButton.textContent = 'Войти в мир слова';
-          worldActions.append(worldButton);
-          graphCard.append(worldActions);
         }
 
+        if (item.id.startsWith('custom:')) {
+          const shelfButton = document.createElement('button');
+          shelfButton.className = 'secondary-button';
+          shelfButton.type = 'button';
+          shelfButton.dataset.chooseCustomShelf = item.id;
+          shelfButton.textContent = 'Выбрать полку';
+          actions.append(shelfButton);
+        }
+        if (actions.childElementCount) graphCard.append(actions);
+
+        const neighbors = (item.neighbors || []).map((neighborId) => WORD_BY_ID.get(neighborId)).filter(Boolean);
+        const shadow = item.antonym ? WORD_BY_ID.get(item.antonym) : null;
+        const activates = (item.activates || []).map((stoneId) => WORD_BY_ID.get(stoneId)).filter(Boolean);
         const interestParent = item.interest ? WORD_BY_ID.get(item.interest) : null;
+        const briefParts = [];
+        if (neighbors.length) briefParts.push(`${neighbors.length} ${neighbors.length === 1 ? 'сосед' : neighbors.length < 5 ? 'соседа' : 'соседей'}`);
+        if (shadow) briefParts.push(`теневая пара: ${shadow.word}`);
+        if (activates.length) briefParts.push(`${activates.length} ${activates.length === 1 ? 'камень' : activates.length < 5 ? 'камня' : 'камней'} может откликаться`);
+        if (interestParent) briefParts.push(`часть большего: ${interestParent.word}`);
+        const brief = document.createElement('p');
+        brief.className = 'graph-card-brief';
+        brief.textContent = briefParts.length ? briefParts.join(' · ') : 'Можно открыть мир слова или снять фокус повторным тапом.';
+        graphCard.append(brief);
+
+        const detailsContent = document.createElement('div');
+        detailsContent.className = 'graph-card-detail-content';
         if (interestParent) {
           const parentNote = document.createElement('p');
           parentNote.className = 'graph-parent-note';
@@ -4207,22 +4325,9 @@
             wordId: interestParent.id,
             unselected: !isGraphItemSelected(interestParent.id)
           }));
-          graphCard.append(parentNote);
+          detailsContent.append(parentNote);
         }
 
-        if (item.id.startsWith('custom:')) {
-          const shelfAction = document.createElement('div');
-          shelfAction.className = 'graph-card-actions';
-          const shelfButton = document.createElement('button');
-          shelfButton.className = 'secondary-button';
-          shelfButton.type = 'button';
-          shelfButton.dataset.chooseCustomShelf = item.id;
-          shelfButton.textContent = 'Выбрать полку';
-          shelfAction.append(shelfButton);
-          graphCard.append(shelfAction);
-        }
-
-        const neighbors = (item.neighbors || []).map((neighborId) => WORD_BY_ID.get(neighborId)).filter(Boolean);
         if (neighbors.length) {
           const explanation = document.createElement('p');
           explanation.className = 'graph-neighbor-note';
@@ -4231,10 +4336,9 @@
           neighbors.forEach((neighbor) => neighborsSection.chips.append(cardChip(neighbor.word, {
             button: true, wordId: neighbor.id, unselected: !isGraphItemSelected(neighbor.id)
           })));
-          graphCard.append(explanation, neighborsSection.section);
+          detailsContent.append(explanation, neighborsSection.section);
         }
 
-        const shadow = item.antonym ? WORD_BY_ID.get(item.antonym) : null;
         if (shadow) {
           const section = document.createElement('div');
           section.className = 'graph-card-section';
@@ -4251,10 +4355,9 @@
           button.disabled = isGraphItemSelected(shadow.id);
           button.textContent = button.disabled ? 'Уже в слепке' : 'И это про меня';
           section.append(label, copy, button);
-          graphCard.append(section);
+          detailsContent.append(section);
         }
 
-        const activates = (item.activates || []).map((stoneId) => WORD_BY_ID.get(stoneId)).filter(Boolean);
         if (activates.length) {
           const activatesSection = cardSection('Какие камни может будить');
           activates.forEach((stone) => activatesSection.chips.append(cardChip(stone.word, {
@@ -4264,7 +4367,16 @@
           copy.className = 'graph-card-copy';
           copy.textContent = 'Это связь словаря для исследования, не диагноз и не установленная реакция.';
           activatesSection.section.append(copy);
-          graphCard.append(activatesSection.section);
+          detailsContent.append(activatesSection.section);
+        }
+
+        if (detailsContent.childElementCount) {
+          const details = document.createElement('details');
+          details.className = 'graph-card-details';
+          const summary = document.createElement('summary');
+          summary.textContent = 'Подробнее';
+          details.append(summary, detailsContent);
+          graphCard.append(details);
         }
       }
 
@@ -4301,7 +4413,6 @@
         world.textContent = 'Войти в мир слова';
         actions.append(add, world, cancel);
         graphCard.append(kicker, title, copy, actions);
-        window.requestAnimationFrame(() => graphCard.scrollIntoView({ block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
       }
 
       function addGraphWord(id) {
@@ -4474,6 +4585,13 @@
         const ghost = target.closest('[data-ghost-id]');
         if (ghost) showGraphAddProposal(ghost.dataset.ghostId);
       }
+
+      graphSvg.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'mouse' || event.pointerType === 'touch') {
+          const target = event.target.closest('[data-graph-node-id], [data-ghost-id], [data-graph-edge]');
+          if (target) event.preventDefault();
+        }
+      });
 
       graphViewport.addEventListener('pointerdown', (event) => {
         if (event.pointerType !== 'touch') return;
