@@ -1098,21 +1098,15 @@
     .graph-legend-items .is-whisker::before { border-top-style: dashed; opacity: 0.62; }
 
     .graph-stage {
-      --graph-card-height: min(25svh, 190px);
-      display: grid;
-      grid-template-rows: minmax(0, 1fr) var(--graph-card-height);
-      gap: 8px;
       width: 100%;
       max-width: 1040px;
-      height: min(70svh, 720px);
-      min-height: 520px;
       margin: 0 auto;
     }
 
     .graph-viewport {
       width: 100%;
-      height: auto;
-      min-height: 0;
+      height: clamp(390px, 58svh, 660px);
+      min-height: 390px;
       margin: 0;
       overflow: auto;
       border: 1px solid rgba(83, 104, 96, 0.2);
@@ -1208,7 +1202,7 @@
     .graph-node-label {
       fill: #fffdf7;
       font-family: var(--sans);
-      font-size: 15px;
+      font-size: 23px;
       font-weight: 700;
       pointer-events: none;
     }
@@ -1250,39 +1244,21 @@
     }
 
     .graph-card-slot {
-      position: relative;
-      min-height: 0;
-      border: 1px solid rgba(83, 104, 96, 0.13);
+      margin-top: 12px;
       border-radius: 18px;
-      background: rgba(255, 253, 247, 0.48);
-      overflow: hidden;
     }
-    .graph-card-slot:has(.graph-card[hidden])::before {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 12px;
-      color: var(--ink-soft);
-      content: "Выбери слово — здесь появится короткая карточка.";
-      font-family: var(--sans);
-      font-size: 0.72rem;
-      text-align: center;
+    .graph-card-slot:has(.graph-card[hidden]) {
+      display: none;
     }
     .graph-card {
-      position: relative;
-      z-index: 1;
       width: 100%;
-      height: 100%;
       margin: 0;
-      padding: 12px;
+      padding: 14px;
       border: 1px solid rgba(83, 104, 96, 0.2);
       border-radius: 17px;
       background: rgba(255, 253, 247, 0.97);
       box-shadow: 0 8px 20px rgba(38, 54, 46, 0.08);
       font-family: var(--sans);
-      overflow: auto;
-      overscroll-behavior: contain;
     }
 
     .graph-card-kicker { margin: 0 0 3px; color: var(--rose); font-size: 0.62rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -1813,11 +1789,11 @@
       .graph-zoom-button { width: 34px; min-height: 34px; }
       .graph-legend { max-width: none; padding-inline: 3px; font-size: 0.62rem; }
       .graph-legend-items { gap: 4px 8px; }
-      .graph-stage { --graph-card-height: min(25svh, 176px); height: min(66svh, 600px); min-height: 478px; gap: 7px; }
-      .graph-viewport { height: auto; min-height: 0; border-radius: 18px; }
+      .graph-stage { min-height: 0; }
+      .graph-viewport { height: clamp(390px, 56svh, 590px); min-height: 390px; border-radius: 18px; }
       .graph-canvas { width: 3600px; height: 3600px; }
-      .graph-card-slot { border-radius: 15px; }
-      .graph-card { padding: 10px; border-radius: 15px; }
+      .graph-card-slot { margin-top: 9px; border-radius: 15px; }
+      .graph-card { padding: 12px; border-radius: 15px; }
       .graph-card h2 { font-size: 1.08rem; }
       .graph-card-copy { font-size: 0.72rem; }
       .graph-chip { min-height: 34px; padding: 6px 9px; font-size: 0.69rem; }
@@ -2128,8 +2104,8 @@
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const GRAPH_MIN_CANVAS_SIZE = 3600;
       const GRAPH_CANVAS_PADDING = 360;
-      const GRAPH_CLOUD_GAP = 175;
-      const GRAPH_NODE_GAP = 24;
+      const GRAPH_CLOUD_GAP = 112;
+      const GRAPH_NODE_GAP = 28;
       const GRAPH_LABEL_CLEAR_RADIUS = 118;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
@@ -3879,12 +3855,12 @@
       }
 
       function graphNodeWidth(item) {
-        return Math.min(216, Math.max(108, 40 + item.word.length * 8.2));
+        return Math.min(324, Math.max(162, 60 + item.word.length * 12.3));
       }
 
       function graphNodeHeight(item) {
         const shelf = primaryShelf(item);
-        return shelf === 'stones' || shelf === 'triggers' ? 66 : 56;
+        return shelf === 'stones' || shelf === 'triggers' ? 98 : 84;
       }
 
       function activeGraphShelves(items) {
@@ -3894,13 +3870,17 @@
         return shelves;
       }
 
-      function graphCloudRadius(items) {
+      function graphPackingRadius(items) {
         const requiredArea = items.reduce((total, item) => {
           const width = graphNodeWidth(item) + GRAPH_NODE_GAP * 2;
           const height = graphNodeHeight(item) + GRAPH_NODE_GAP * 2;
           return total + width * height;
         }, 0);
-        return Math.max(250, Math.sqrt(requiredArea / (Math.PI * 0.48)) + 56);
+        return Math.max(320, Math.sqrt(requiredArea / (Math.PI * 0.64)) + 64);
+      }
+
+      function graphCloudRadius(items) {
+        return Math.max(250, graphPackingRadius(items) * 0.6);
       }
 
       function buildGraphZones(items, expansion = 1) {
@@ -3908,6 +3888,10 @@
         const byShelf = new Map(shelves.map((shelf) => [shelf.id, []]));
         items.forEach((item) => byShelf.get(primaryShelf(item))?.push(item));
         const radii = new Map(shelves.map((shelf) => [shelf.id, graphCloudRadius(byShelf.get(shelf.id)) * expansion]));
+        const orbitRadii = new Map(shelves.map((shelf) => [shelf.id, Math.max(
+          radii.get(shelf.id) + 150 * expansion,
+          graphPackingRadius(byShelf.get(shelf.id)) * expansion
+        )]));
         const maximumRadius = Math.max(250, ...radii.values());
         const columns = shelves.length <= 3 ? Math.max(1, shelves.length) : shelves.length <= 4 ? 2 : 3;
         const rows = Math.ceil(shelves.length / columns);
@@ -3927,7 +3911,8 @@
           zones.set(shelf.id, {
             x: originX + cellWidth * (column + 0.5) + (xSeed - 0.5) * jitter * 2,
             y: originY + cellHeight * (row + 0.5) + (ySeed - 0.5) * jitter * 2,
-            radius: radii.get(shelf.id)
+            radius: radii.get(shelf.id),
+            orbitRadius: orbitRadii.get(shelf.id)
           });
         });
         return { zones, shelves, canvas: { width, height } };
@@ -3959,8 +3944,8 @@
         graphScale = Math.min(2.4, Math.max(minimum, value));
         graphSvg.style.width = `${graphCanvas.width * graphScale}px`;
         graphSvg.style.height = `${graphCanvas.height * graphScale}px`;
-        graphZoomOutButton.disabled = graphScale <= minimum + 0.005;
-        graphZoomInButton.disabled = graphScale >= 2.395;
+        if (graphZoomOutButton) graphZoomOutButton.disabled = graphScale <= minimum + 0.005;
+        if (graphZoomInButton) graphZoomInButton.disabled = graphScale >= 2.395;
       }
 
       function zoomGraphTo(value, anchorX = graphViewport.clientWidth / 2, anchorY = graphViewport.clientHeight / 2) {
@@ -4149,7 +4134,7 @@
           const width = graphNodeWidth(item);
           const height = graphNodeHeight(item);
           const pressureCount = (pressureSources.get(item.id) || new Set()).size;
-          const maximumRadius = Math.max(GRAPH_LABEL_CLEAR_RADIUS + 12, zone.radius - Math.max(width, height) / 2 - GRAPH_NODE_GAP);
+          const maximumRadius = Math.max(GRAPH_LABEL_CLEAR_RADIUS + 12, zone.orbitRadius - Math.max(width, height) / 2 - GRAPH_NODE_GAP);
           const minimumRadius = Math.min(maximumRadius - 8, GRAPH_LABEL_CLEAR_RADIUS + height / 3);
           const distribution = Math.sqrt((index + 0.6) / Math.max(1, shelfCounts.get(shelf)));
           const ordinaryRadius = minimumRadius + (maximumRadius - minimumRadius) * distribution * 0.84;
@@ -4373,7 +4358,7 @@
             class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
             width: position.width, height: position.height, rx: position.height / 2
           });
-          const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 6, 'text-anchor': 'middle' });
+          const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 8, 'text-anchor': 'middle' });
           label.textContent = item.word.length > 22 ? `${item.word.slice(0, 21)}…` : item.word;
           const title = svgElement('title');
           title.textContent = item.word;
