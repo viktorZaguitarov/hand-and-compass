@@ -16,8 +16,8 @@
       --forest: #315f52;
       --forest-dark: #1f463c;
       --forest-soft: #dce9df;
-      --gold: #bd8840;
-      --gold-soft: #ead7ae;
+      --gold: #c5aa76;
+      --gold-soft: #eadfbd;
       --rose: #985f63;
       --line: rgba(87, 86, 68, 0.2);
       --shadow: 0 20px 55px rgba(40, 52, 44, 0.14);
@@ -96,7 +96,7 @@
       z-index: 1;
       width: min(1180px, 100%);
       margin: 0 auto;
-      padding: max(16px, env(safe-area-inset-top)) 14px max(34px, env(safe-area-inset-bottom));
+      padding: max(16px, env(safe-area-inset-top)) 14px max(112px, env(safe-area-inset-bottom));
     }
 
     .topbar {
@@ -194,6 +194,50 @@
         inset 0 0 0 38px rgba(128, 145, 176, 0.025),
         inset 0 0 0 78px rgba(177, 136, 163, 0.025);
     }
+
+    .primary-nav {
+      position: fixed;
+      right: 12px;
+      bottom: max(12px, env(safe-area-inset-bottom));
+      left: 12px;
+      z-index: 120;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+      width: min(760px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 6px;
+      border: 1px solid rgba(49, 95, 82, 0.18);
+      border-radius: 18px;
+      background: rgba(251, 248, 239, 0.95);
+      box-shadow: 0 12px 32px rgba(29, 44, 38, 0.2);
+      backdrop-filter: blur(16px);
+    }
+
+    .primary-nav.has-back { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .primary-nav-button {
+      min-width: 0;
+      min-height: 42px;
+      padding: 7px 8px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: var(--ink-soft);
+      background: transparent;
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 750;
+      line-height: 1.12;
+    }
+    .primary-nav-button.is-active {
+      border-color: rgba(49, 95, 82, 0.18);
+      color: var(--forest-dark);
+      background: rgba(220, 233, 223, 0.72);
+    }
+    .primary-nav-back { color: var(--forest-dark); background: rgba(238, 230, 212, 0.68); }
+    body.wave-two .primary-nav { border-color: rgba(205, 216, 229, 0.22); background: rgba(25, 35, 49, 0.94); }
+    body.wave-two .primary-nav-button { color: #c8d1db; }
+    body.wave-two .primary-nav-button.is-active { border-color: rgba(216, 188, 218, 0.34); color: #f2e8f3; background: rgba(147, 105, 133, 0.34); }
+    body.wave-two .primary-nav-back { color: #f0d7a8; background: rgba(189, 136, 64, 0.18); }
 
     body.wave-two #scatterTitle {
       max-width: 820px;
@@ -676,7 +720,7 @@
     }
 
     .shelf-card.is-empty { opacity: 0.62; }
-    .shelf-values { --shelf-accent: #b9863f; }
+    .shelf-values { --shelf-accent: #c5aa76; }
     .shelf-goals { --shelf-accent: #4f7b70; }
     .shelf-action { --shelf-accent: #9a645b; }
     .shelf-foresight { --shelf-accent: #66718c; }
@@ -734,17 +778,15 @@
     }
 
     .shelf-deepen {
-      width: 36px;
-      height: 36px;
-      display: grid;
-      place-items: center;
-      padding: 0 0 2px;
+      min-height: 34px;
+      padding: 6px 9px;
       border: 1px solid rgba(83, 104, 96, 0.18);
-      border-radius: 50%;
+      border-radius: 999px;
       color: var(--forest);
       background: rgba(255, 255, 255, 0.52);
       font-family: var(--sans);
-      font-size: 1.15rem;
+      font-size: 0.7rem;
+      font-weight: 750;
       line-height: 1;
     }
 
@@ -912,6 +954,37 @@
       margin: 0 auto;
     }
 
+    .snapshot-tabs {
+      display: flex;
+      gap: 7px;
+      max-width: 1040px;
+      margin: 14px auto 12px;
+      padding: 3px 1px 7px;
+      overflow-x: auto;
+      scrollbar-width: thin;
+      scroll-snap-type: x proximity;
+    }
+    .snapshot-tab {
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding: 7px 10px;
+      border: 1px solid rgba(83, 104, 96, 0.16);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      background: rgba(255, 253, 247, 0.68);
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      font-weight: 750;
+      scroll-snap-align: start;
+      white-space: nowrap;
+    }
+    .snapshot-tab.is-active {
+      border-color: color-mix(in srgb, var(--shelf-accent) 54%, transparent);
+      color: color-mix(in srgb, var(--shelf-accent) 78%, #1f332d);
+      background: color-mix(in srgb, var(--shelf-accent) 17%, #fffdf7);
+      box-shadow: 0 4px 11px color-mix(in srgb, var(--shelf-accent) 14%, transparent);
+    }
+
     .future-note {
       display: block;
       margin-top: 3px;
@@ -943,7 +1016,7 @@
     .graph-toolbar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 8px;
       max-width: 1040px;
       margin: 0 auto 6px;
@@ -954,25 +1027,11 @@
       box-shadow: 0 7px 18px rgba(38, 54, 46, 0.06);
     }
 
-    .graph-toolbar-nav {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .graph-toolbar-nav .secondary-button { white-space: nowrap; }
-
     .graph-toolbar-actions {
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: 5px;
-    }
-
-    .graph-toolbar .secondary-button {
-      min-height: 36px;
-      padding: 7px 11px;
-      font-size: 0.76rem;
     }
 
     .graph-zoom-controls {
@@ -1039,16 +1098,21 @@
     .graph-legend-items .is-whisker::before { border-top-style: dashed; opacity: 0.62; }
 
     .graph-stage {
-      position: relative;
+      --graph-card-height: min(25svh, 190px);
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) var(--graph-card-height);
+      gap: 8px;
       width: 100%;
       max-width: 1040px;
+      height: min(70svh, 720px);
+      min-height: 520px;
       margin: 0 auto;
     }
 
     .graph-viewport {
       width: 100%;
-      height: min(58vh, 620px);
-      min-height: 380px;
+      height: auto;
+      min-height: 0;
       margin: 0;
       overflow: auto;
       border: 1px solid rgba(83, 104, 96, 0.2);
@@ -1185,20 +1249,37 @@
       text-align: right;
     }
 
-    .graph-card {
+    .graph-card-slot {
+      position: relative;
+      min-height: 0;
+      border: 1px solid rgba(83, 104, 96, 0.13);
+      border-radius: 18px;
+      background: rgba(255, 253, 247, 0.48);
+      overflow: hidden;
+    }
+    .graph-card-slot:has(.graph-card[hidden])::before {
       position: absolute;
-      right: 12px;
-      bottom: 12px;
-      left: 12px;
-      z-index: 3;
-      max-width: 720px;
-      max-height: calc(100% - 24px);
-      margin: 0 auto;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      color: var(--ink-soft);
+      content: "Выбери слово — здесь появится короткая карточка.";
+      font-family: var(--sans);
+      font-size: 0.72rem;
+      text-align: center;
+    }
+    .graph-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      margin: 0;
       padding: 12px;
       border: 1px solid rgba(83, 104, 96, 0.2);
-      border-radius: 18px;
+      border-radius: 17px;
       background: rgba(255, 253, 247, 0.97);
-      box-shadow: 0 13px 32px rgba(38, 54, 46, 0.12);
+      box-shadow: 0 8px 20px rgba(38, 54, 46, 0.08);
       font-family: var(--sans);
       overflow: auto;
       overscroll-behavior: contain;
@@ -1638,6 +1719,18 @@
     .world-form-actions .primary-button, .world-form-actions .secondary-button { min-height: 40px; padding: 8px 12px; font-size: 0.76rem; }
     .world-footer { margin: 17px 3px 0; text-align: center; }
 
+    .world-profile-kicker { margin: 0 0 4px; color: #d8bcda; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    .world-profile-name { margin: 0; color: #f2f4f7; font-family: var(--serif); font-size: clamp(2rem, 9vw, 3.4rem); font-weight: 500; line-height: 1; overflow-wrap: anywhere; }
+    .world-profile-copy { margin: 10px 0 0; color: #bbc5d0; font-size: 0.76rem; line-height: 1.45; }
+    .world-profile-shelves { display: grid; gap: 8px; margin-top: 11px; }
+    .world-profile-shelf { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.055); color: #dce3ea; font-size: 0.75rem; }
+    .world-profile-shelf strong { color: #f0d7a8; font-size: 0.72rem; }
+    .world-profile-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .world-profile-chip { --profile-color: #78935f; padding: 6px 9px; border: 1px solid color-mix(in srgb, var(--profile-color) 62%, #cfd9e6); border-radius: 999px; color: #f0f3f6; background: color-mix(in srgb, var(--profile-color) 28%, #263144); font-size: 0.71rem; font-weight: 750; }
+    .world-profile-match { margin: 12px 0 0; padding: 11px; border-radius: 13px; color: #e6ebf0; background: rgba(255, 255, 255, 0.055); font-size: 0.8rem; font-weight: 750; }
+    .world-profile-match strong { color: #f0d7a8; }
+    .world-profile-action { width: 100%; margin-top: 12px; }
+
     @keyframes graph-node-arrive {
       from { opacity: 0; transform: translate(var(--anchor-x), var(--anchor-y)) rotate(var(--node-tilt, 0deg)); }
       to { opacity: 1; transform: translate(var(--node-x), var(--node-y)) rotate(var(--node-tilt, 0deg)); }
@@ -1650,7 +1743,7 @@
     }
 
     @media (max-width: 639px) {
-      .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(20px, env(safe-area-inset-bottom)); }
+      .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(106px, env(safe-area-inset-bottom)); }
       .topbar { margin-bottom: 9px; padding-inline: 4px; }
       .brand { gap: 7px; font-size: 0.68rem; }
       .brand-mark { width: 30px; height: 30px; font-size: 0.85rem; }
@@ -1704,7 +1797,7 @@
       .shelf-card { min-height: 146px; padding: 13px; border-radius: 17px; }
       .shelf-title-row { margin-bottom: 10px; }
       .shelf-title { font-size: 0.98rem; }
-      .shelf-deepen { width: 32px; height: 32px; font-size: 1rem; }
+      .shelf-deepen { min-height: 32px; padding: 6px 8px; font-size: 0.66rem; }
       .shelf-words { gap: 5px; min-height: 48px; }
       .shelf-word { padding: 6px 9px; font-size: 0.71rem; }
       .shelf-word-enter { font-size: 0.6rem; }
@@ -1715,17 +1808,16 @@
       .graph-topbar { padding-inline: 3px; }
       .graph-head { width: 100%; padding-inline: 3px; }
       .graph-head h1 { font-size: 1.35rem; }
-      .graph-toolbar { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.28fr) auto; gap: 5px; padding: 5px; }
-      .graph-toolbar-nav,
-      .graph-toolbar-actions { display: contents; }
-      .graph-toolbar .secondary-button { width: 100%; min-height: 36px; padding: 6px 7px; font-size: 0.7rem; }
+      .graph-toolbar { width: 100%; padding: 4px 5px; }
       .graph-zoom-controls { justify-content: space-between; min-width: 0; padding: 2px; }
       .graph-zoom-button { width: 34px; min-height: 34px; }
       .graph-legend { max-width: none; padding-inline: 3px; font-size: 0.62rem; }
       .graph-legend-items { gap: 4px 8px; }
-      .graph-viewport { height: 54vh; min-height: 350px; border-radius: 18px; }
+      .graph-stage { --graph-card-height: min(25svh, 176px); height: min(66svh, 600px); min-height: 478px; gap: 7px; }
+      .graph-viewport { height: auto; min-height: 0; border-radius: 18px; }
       .graph-canvas { width: 3600px; height: 3600px; }
-      .graph-card { right: 8px; bottom: 8px; left: 8px; max-height: calc(100% - 16px); padding: 10px; border-radius: 15px; }
+      .graph-card-slot { border-radius: 15px; }
+      .graph-card { padding: 10px; border-radius: 15px; }
       .graph-card h2 { font-size: 1.08rem; }
       .graph-card-copy { font-size: 0.72rem; }
       .graph-chip { min-height: 34px; padding: 6px 9px; font-size: 0.69rem; }
@@ -1768,6 +1860,9 @@
       .world-story-copy { font-size: 0.92rem; }
       .world-recognize { min-height: 38px; font-size: 0.68rem; }
       .world-example-badge, .world-own-badge { font-size: 0.54rem; }
+      .world-profile-copy, .world-profile-shelf, .world-profile-chip, .world-profile-match { font-size: 0.7rem; }
+      .primary-nav { gap: 4px; padding: 5px; border-radius: 16px; }
+      .primary-nav-button { min-height: 40px; padding: 6px 5px; font-size: 0.62rem; }
       .entry-screen, .custom-shelf-screen { min-height: calc(100vh - 88px); padding-inline: 18px; }
       .entry-copy h1 { font-size: clamp(1.75rem, 8vw, 2.55rem); }
       .graph-intro-copy h1 { font-size: clamp(1.65rem, 7.5vw, 2.35rem); }
@@ -1898,12 +1993,11 @@
           <div class="snapshot-summary-content" id="snapshotSummaryContent"></div>
         </details>
 
+        <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
         <div class="shelf-grid" id="shelfGrid"></div>
 
         <div class="snapshot-actions">
           <button class="secondary-button" id="editButton" type="button">Дополнить</button>
-          <button class="secondary-button" id="graphButton" type="button">Смотреть граф</button>
-          <button class="primary-button" id="intersectionsButton" type="button">С кем я пересекаюсь</button>
         </div>
       </section>
 
@@ -1927,10 +2021,6 @@
         </div>
 
         <div class="graph-toolbar" aria-label="Управление графом">
-          <div class="graph-toolbar-nav">
-            <button class="secondary-button" id="graphBackButton" type="button">К слепку</button>
-            <button class="secondary-button" id="graphIntersectionsButton" type="button">К пересечениям</button>
-          </div>
           <div class="graph-toolbar-actions">
             <div class="graph-zoom-controls" aria-label="Масштаб графа">
               <button class="graph-zoom-button" id="graphZoomOutButton" type="button" aria-label="Уменьшить граф">−</button>
@@ -1951,7 +2041,9 @@
           <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
             <svg class="graph-canvas" id="graphSvg" viewBox="0 0 3600 3600" role="img" aria-label="Связи между выбранными словами"></svg>
           </div>
-          <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
+          <div class="graph-card-slot">
+            <article class="graph-card" id="graphCard" aria-live="polite" hidden></article>
+          </div>
         </div>
         <p class="graph-status" id="graphStatus" aria-live="polite"></p>
         <div class="graph-toast" id="graphToast" role="status" aria-live="polite" hidden></div>
@@ -1979,15 +2071,18 @@
         </div>
         <article class="intersection-map" id="intersectionMap" aria-live="polite" hidden></article>
 
-        <div class="intersections-actions">
-          <button class="secondary-button" id="intersectionsBackButton" type="button">К слепку</button>
-        </div>
       </section>
 
       <section class="screen world-screen" id="wordWorldScreen" aria-labelledby="worldTitle" hidden>
         <div class="world-layout" id="wordWorldContent" aria-live="polite"></div>
       </section>
     </main>
+    <nav class="primary-nav" id="primaryNav" aria-label="Основная навигация" hidden>
+      <button class="primary-nav-button" type="button" data-primary-view="snapshot">Слепок</button>
+      <button class="primary-nav-button" type="button" data-primary-view="graph">Граф</button>
+      <button class="primary-nav-button" type="button" data-primary-view="intersections">Пересечения</button>
+      <button class="primary-nav-button primary-nav-back" id="primaryNavBack" type="button" hidden>Назад</button>
+    </nav>
   </div>
 
   <script id="wordsData" type="application/json">{"meta":{"name":"Hand & Compass 2.0 — words.json v2","shelves":{"values":"💎 Ценности — что для меня по-настоящему важно","goals":"🧭 Цели — куда я хочу прийти","action":"✋ Действие — как я двигаюсь","foresight":"🔭 Предвидение — как я просчитываю и мечтаю","stones":"🌑 Камни — что во мне мешает","supports":"🌿 Опоры — что меня питает","triggers":"⚡ Триггеры — что снаружи меня выбивает"},"note":"shelves у слова — веса, не папка. neighbors — смежные слова для цепочек. antonym — теневая пара. activates — какие камни будит триггер. | v3: +21 слово action/foresight, +30 интересов (поле interest = привязка вверх по лестнице конкретности, раздел 5.3)","free_words":"Пользователь может добавить своё слово (аниме, красный цвет, запах дерева). Система относит его к полкам через словарь или ИИ, с подтверждения пользователя."},"words":[{"id":"spravedlivost","word":"справедливость","shelves":["values"],"neighbors":["chestnost","granicy","dobrota"],"antonym":"nespravedlivost"},{"id":"dobrota","word":"доброта","shelves":["values"],"neighbors":["zabota","prinyatie","schedrost"],"antonym":"zhestokost"},{"id":"lyubov","word":"любовь","shelves":["values"],"neighbors":["blizost","prinyatie","zabota"],"antonym":null},{"id":"otkrytost","word":"открытость","shelves":["values"],"neighbors":["chestnost","obshchenie","doverie"],"antonym":"zamknutost"},{"id":"obshchenie","word":"общение","shelves":["values"],"neighbors":["otkrytost","blizost","yumor"],"antonym":"zamknutost"},{"id":"energiya","word":"энергия","shelves":["values","action"],"neighbors":["dvizhenie","vdohnovenie","tonus"],"antonym":"apathy"},{"id":"dvizhenie","word":"движение","shelves":["values","action"],"neighbors":["energiya","preodolenie","novoe"],"antonym":"otkladyvanie"},{"id":"chestnost","word":"честность","shelves":["values"],"neighbors":["spravedlivost","otkrytost","yasnost"],"antonym":"lzhyvost"},{"id":"svoboda","word":"свобода","shelves":["values"],"neighbors":["novoe","granicy","tvorchestvo"],"antonym":null},{"id":"blizost","word":"близость","shelves":["values"],"neighbors":["lyubov","doverie","obshchenie"],"antonym":"kholodnoe_molchanie"},{"id":"yasnost","word":"ясность","shelves":["values","foresight"],"neighbors":["chestnost","plan","analiz"],"antonym":"khaos"},{"id":"prinyatie","word":"принятие","shelves":["values"],"neighbors":["dobrota","blizost","pokoy"],"antonym":"osuzhdenie"},{"id":"doverie","word":"доверие","shelves":["values"],"neighbors":["blizost","otkrytost","nadezhnost"],"antonym":"ugrozy"},{"id":"tvorchestvo","word":"творчество","shelves":["values","action"],"neighbors":["muzyka","idei","novoe"],"antonym":null},{"id":"fin_nezavisimost","word":"финансовая независимость","shelves":["goals","supports"],"neighbors":["effektivnost","strategiya","pokoy"],"antonym":null},{"id":"struktura","word":"структурированность","shelves":["goals","foresight"],"neighbors":["plan","effektivnost","distsiplina"],"antonym":"khaos"},{"id":"gotovo","word":"только подумать — уже готово","shelves":["goals","action"],"neighbors":["effektivnost","reshitelnost","realizatsiya"],"antonym":"otkladyvanie"},{"id":"zdorovie","word":"здоровье","shelves":["goals"],"neighbors":["tonus","pokoy","energiya"],"antonym":null},{"id":"tonus","word":"всегда в тонусе","shelves":["goals"],"neighbors":["zdorovie","energiya","distsiplina"],"antonym":"apathy"},{"id":"delo","word":"дело жизни","shelves":["goals"],"neighbors":["realizatsiya","priznanie","idei"],"antonym":null},{"id":"priznanie","word":"признание","shelves":["goals","supports"],"neighbors":["otsenka_usiliy","delo","samootsenka"],"antonym":"obestsenivanie"},{"id":"pokoy","word":"душевное спокойствие","shelves":["goals","supports"],"neighbors":["prinyatie","zdorovie","fin_nezavisimost"],"antonym":"khaos"},{"id":"realizatsiya","word":"реализовывать идеи","shelves":["action"],"neighbors":["idei","gotovo","preodolenie"],"antonym":"otkladyvanie"},{"id":"pomogat","word":"помогать","shelves":["action","values"],"neighbors":["zabota","dobrota","schedrost"],"antonym":null},{"id":"zabota","word":"забота","shelves":["action","values"],"neighbors":["pomogat","lyubov","dobrota"],"antonym":"zhestokost"},{"id":"preodolenie","word":"преодоление трудностей","shelves":["action"],"neighbors":["vyzovy","distsiplina","dvizhenie"],"antonym":"obrushenie_planov"},{"id":"vyzovy","word":"вызовы","shelves":["action"],"neighbors":["preodolenie","risk","novoe"],"antonym":null},{"id":"reshitelnost","word":"решительность","shelves":["action"],"neighbors":["gotovo","risk","dvizhenie"],"antonym":"strakh_konflikta"},{"id":"distsiplina","word":"дисциплина","shelves":["action","foresight"],"neighbors":["struktura","tonus","plan"],"antonym":"nesderzhannost"},{"id":"praktika","word":"пробовать руками","shelves":["action"],"neighbors":["realizatsiya","vyzovy","novoe"],"antonym":"razdumya"},{"id":"mechty","word":"мечты","shelves":["foresight","goals"],"neighbors":["fantazii","vdohnovenie","plan"],"antonym":null},{"id":"plan","word":"построение планов","shelves":["foresight"],"neighbors":["struktura","strategiya","raschet"],"antonym":"obrushenie_planov"},{"id":"idei","word":"идеи","shelves":["foresight","action"],"neighbors":["fantazii","realizatsiya","novye_idei"],"antonym":null},{"id":"fantazii","word":"фантазии о том, как должно быть","shelves":["foresight"],"neighbors":["mechty","idei","razdumya"],"antonym":null},{"id":"raschet","word":"расчёт","shelves":["foresight"],"neighbors":["analiz","plan","ostorozhnost"],"antonym":"naporistost"},{"id":"analiz","word":"аналитика","shelves":["foresight"],"neighbors":["raschet","razdumya","yasnost"],"antonym":null},{"id":"strategiya","word":"стратегия","shelves":["foresight","goals"],"neighbors":["plan","fin_nezavisimost","raschet"],"antonym":null},{"id":"ostorozhnost","word":"осторожность","shelves":["foresight"],"neighbors":["raschet","razdumya","granicy"],"antonym":"naporistost"},{"id":"razdumya","word":"раздумья","shelves":["foresight"],"neighbors":["analiz","fantazii","pokoy"],"antonym":"praktika"},{"id":"lzhyvost","word":"отмолчаться вместо правды","shelves":["stones"],"neighbors":["strakh_konflikta","zamknutost","nedovolstvo_soboy"],"antonym":"chestnost"},{"id":"nesderzhannost","word":"несдержанность","shelves":["stones"],"neighbors":["vspylchivost","razdrazhitelnost","nedovolstvo_soboy"],"antonym":"distsiplina"},{"id":"razdrazhitelnost","word":"раздражительность, когда мешают","shelves":["stones"],"neighbors":["vspylchivost","nesderzhannost","naporistost"],"antonym":null},{"id":"obrushenie_planov","word":"обрушение планов","shelves":["stones"],"neighbors":["plan","apathy","nedovolstvo_soboy"],"antonym":"preodolenie"},{"id":"ne_priznavat_oshibki","word":"нежелание признавать ошибки","shelves":["stones"],"neighbors":["samootsenka","osuzhdenie","zamknutost"],"antonym":"otkrytost"},{"id":"zamknutost","word":"замкнутость","shelves":["stones"],"neighbors":["lzhyvost","strakh_konflikta","odinochestvo"],"antonym":"obshchenie"},{"id":"samootsenka","word":"низкая самооценка","shelves":["stones"],"neighbors":["nedovolstvo_soboy","ne_priznavat_oshibki","zavisimost_ot_mneniya"],"antonym":"priznanie"},{"id":"otkladyvanie","word":"откладывание","shelves":["stones"],"neighbors":["razdumya","apathy","obrushenie_planov"],"antonym":"gotovo"},{"id":"zavisimost_ot_mneniya","word":"зависимость от чужого мнения","shelves":["stones"],"neighbors":["samootsenka","otsenka_usiliy","strakh_konflikta"],"antonym":"svoboda"},{"id":"strakh_konflikta","word":"страх конфликта","shelves":["stones"],"neighbors":["lzhyvost","kriki","zamknutost"],"antonym":"reshitelnost"},{"id":"vspylchivost","word":"вспыльчивость","shelves":["stones"],"neighbors":["nesderzhannost","razdrazhitelnost","kriki"],"antonym":"pokoy"},{"id":"zhestokost","word":"жестокость","shelves":["stones"],"neighbors":["vspylchivost","nasilie","nedovolstvo_soboy"],"antonym":"dobrota"},{"id":"nedovolstvo_soboy","word":"недовольство собой","shelves":["stones"],"neighbors":["samootsenka","obrushenie_planov","lzhyvost"],"antonym":"prinyatie"},{"id":"apathy","word":"падение мотивации","shelves":["stones"],"neighbors":["otkladyvanie","obrushenie_planov","energiya"],"antonym":"vdohnovenie"},{"id":"naporistost","word":"излишняя напористость","shelves":["stones","action"],"neighbors":["razdrazhitelnost","davlenie","reshitelnost"],"antonym":"ostorozhnost"},{"id":"odinochestvo","word":"одиночество","shelves":["stones"],"neighbors":["zamknutost","blizost","pokoy"],"antonym":"obshchenie"},{"id":"fin_blagopoluchie","word":"финансовое благополучие","shelves":["supports"],"neighbors":["fin_nezavisimost","pokoy","stabilnost"],"antonym":null},{"id":"podderzhka","word":"поддержка со стороны","shelves":["supports"],"neighbors":["otsenka_usiliy","prinyatie","blizost"],"antonym":"osuzhdenie"},{"id":"otsenka_usiliy","word":"оценка усилий","shelves":["supports"],"neighbors":["priznanie","podderzhka","zavisimost_ot_mneniya"],"antonym":"obestsenivanie"},{"id":"novye_idei","word":"новые идеи извне","shelves":["supports"],"neighbors":["vdohnovenie","idei","novoe"],"antonym":null},{"id":"fiz_udovletvorenie","word":"физическое удовлетворение","shelves":["supports"],"neighbors":["zdorovie","tonus","pokoy"],"antonym":null},{"id":"zhivotnye","word":"животные","shelves":["supports"],"neighbors":["zabota","pokoy","prinyatie"],"antonym":null},{"id":"rasteniya","word":"комнатные растения","shelves":["supports"],"neighbors":["pokoy","zhivotnye","dom"],"antonym":null,"interest":"zabota"},{"id":"muzyka","word":"музыка","shelves":["supports","values"],"neighbors":["tvorchestvo","vdohnovenie","yumor"],"antonym":null,"interest":"vdohnovenie"},{"id":"yumor","word":"сарказм и юмор","shelves":["supports"],"neighbors":["obshchenie","muzyka","legkost"],"antonym":null},{"id":"vdohnovenie","word":"вдохновение","shelves":["supports","action"],"neighbors":["mechty","novye_idei","energiya"],"antonym":"apathy"},{"id":"novoe","word":"новое","shelves":["supports","values"],"neighbors":["vyzovy","idei","dvizhenie"],"antonym":null},{"id":"stabilnost","word":"стабильность","shelves":["supports"],"neighbors":["fin_blagopoluchie","pokoy","struktura"],"antonym":"khaos"},{"id":"dom","word":"дом","shelves":["supports"],"neighbors":["rasteniya","pokoy","stabilnost"],"antonym":null},{"id":"legkost","word":"лёгкость","shelves":["supports"],"neighbors":["yumor","pokoy","svoboda"],"antonym":"davlenie"},{"id":"nespravedlivost","word":"несправедливость","shelves":["triggers"],"neighbors":["spravedlivost","kriki","osuzhdenie"],"activates":["vspylchivost","zhestokost"]},{"id":"nasilie","word":"насилие","shelves":["triggers"],"neighbors":["ugrozy","kriki","nespravedlivost"],"activates":["zhestokost","zamknutost"]},{"id":"ugrozy","word":"угрозы","shelves":["triggers"],"neighbors":["nasilie","davlenie","strakh_konflikta"],"activates":["zamknutost","lzhyvost"]},{"id":"kriki","word":"крики и повышенные тона","shelves":["triggers"],"neighbors":["osuzhdenie","nasilie","davlenie"],"activates":["vspylchivost","razdrazhitelnost"]},{"id":"osuzhdenie","word":"осуждение","shelves":["triggers"],"neighbors":["obestsenivanie","kriki","otsenka_usiliy"],"activates":["samootsenka","zamknutost","nedovolstvo_soboy"]},{"id":"davlenie","word":"давление и спешка","shelves":["triggers"],"neighbors":["ugrozy","kriki","plan"],"activates":["obrushenie_planov","nesderzhannost"]},{"id":"khaos","word":"хаос и непредсказуемость","shelves":["triggers"],"neighbors":["davlenie","struktura","stabilnost"],"activates":["otkladyvanie","apathy"]},{"id":"kholodnoe_molchanie","word":"холодное молчание","shelves":["triggers"],"neighbors":["odinochestvo","blizost","zamknutost"],"activates":["odinochestvo","samootsenka"]},{"id":"obestsenivanie","word":"обесценивание","shelves":["triggers"],"neighbors":["osuzhdenie","otsenka_usiliy","priznanie"],"activates":["apathy","samootsenka","razdrazhitelnost"]},{"id":"granicy","word":"границы","shelves":["values"],"neighbors":["svoboda","yasnost","strakh_konflikta"],"antonym":"davlenie"},{"id":"schedrost","word":"щедрость","shelves":["values","action"],"neighbors":["dobrota","pomogat","fin_blagopoluchie"],"antonym":null},{"id":"nadezhnost","word":"надёжность","shelves":["values"],"neighbors":["doverie","distsiplina","stabilnost"],"antonym":null},{"id":"effektivnost","word":"эффективность усилий","shelves":["goals","foresight"],"neighbors":["struktura","gotovo","raschet"],"antonym":"khaos"},{"id":"risk","word":"риск","shelves":["action"],"neighbors":["vyzovy","reshitelnost","ostorozhnost"],"antonym":null},{"id":"krasota","word":"красота","shelves":["goals","values"],"neighbors":["tvorchestvo","delo","pokoy"],"antonym":null},{"id":"uvazhenie_vseh","word":"всеобщее уважение","shelves":["goals","values"],"neighbors":["priznanie","spravedlivost","granicy"],"antonym":"obestsenivanie"},{"id":"stat_masterom","word":"стать мастером своего дела","shelves":["goals"],"neighbors":["delo","distsiplina","priznanie"],"antonym":null},{"id":"svoe_delo","word":"своё дело","shelves":["goals","action"],"neighbors":["fin_nezavisimost","realizatsiya","svoboda"],"antonym":null},{"id":"semiya","word":"семья","shelves":["goals","values"],"neighbors":["lyubov","zabota","dom"],"antonym":null},{"id":"puteshestviya","word":"путешествия","shelves":["goals","supports"],"neighbors":["novoe","svoboda","vdohnovenie"],"antonym":null,"interest":"novoe"},{"id":"scenarii","word":"прокручивать сценарии","shelves":["foresight"],"neighbors":["fantazii","analiz","ostorozhnost"],"antonym":null},{"id":"uroki","word":"извлекать уроки","shelves":["foresight","action"],"neighbors":["analiz","ne_priznavat_oshibki","uroki"],"antonym":"ne_priznavat_oshibki"},{"id":"podborka_lyudey","word":"чувствовать людей","shelves":["foresight"],"neighbors":["analiz","doverie","obshchenie"],"antonym":null},{"id":"predatelstvo","word":"предательство","shelves":["triggers"],"neighbors":["doverie","nespravedlivost","kholodnoe_molchanie"],"activates":["zamknutost","zhestokost"]},{"id":"neopredelennost","word":"долгая неопределённость","shelves":["triggers"],"neighbors":["khaos","razdumya","plan"],"activates":["apathy","otkladyvanie"]},{"id":"publichnost","word":"публичная критика","shelves":["triggers"],"neighbors":["osuzhdenie","obestsenivanie","priznanie"],"activates":["samootsenka","lzhyvost"]},{"id":"ravnodushie","word":"равнодушие близких","shelves":["triggers"],"neighbors":["kholodnoe_molchanie","odinochestvo","podderzhka"],"activates":["odinochestvo","apathy"]},{"id":"pereebivat","word":"перебивать других","shelves":["stones"],"neighbors":["naporistost","razdrazhitelnost","obshchenie"],"antonym":"prinyatie"},{"id":"izbeganie","word":"избегание неприятного","shelves":["stones"],"neighbors":["strakh_konflikta","otkladyvanie","lzhyvost"],"antonym":"reshitelnost"},{"id":"priroda","word":"природа","shelves":["supports"],"neighbors":["pokoy","zhivotnye","rasteniya"],"antonym":null},{"id":"knigi","word":"книги","shelves":["supports"],"neighbors":["razdumya","idei","yumor"],"antonym":null,"interest":"razdumya"},{"id":"lyubopytstvo","word":"любопытство","shelves":["supports","values"],"neighbors":["novoe","idei","puteshestviya"],"antonym":null},{"id":"dovedenie","word":"доведение до конца","shelves":["action"],"neighbors":["distsiplina"],"antonym":"otkladyvanie"},{"id":"nastoychivost","word":"настойчивость","shelves":["action"],"neighbors":["reshitelnost","preodolenie"]},{"id":"bystryy_start","word":"быстрый старт","shelves":["action"],"neighbors":["reshitelnost","energiya"]},{"id":"organizovannost","word":"организованность","shelves":["action","foresight"],"neighbors":["distsiplina","struktura"]},{"id":"samostoyatelnost","word":"самостоятельность","shelves":["action","values"],"neighbors":["svoboda","reshitelnost"]},{"id":"uporstvo","word":"упорство","shelves":["action"],"neighbors":["nastoychivost","preodolenie"]},{"id":"iniciativa","word":"инициатива","shelves":["action"],"neighbors":["reshitelnost","vyzovy"]},{"id":"masterstvo_ruk","word":"работа руками","shelves":["action"],"neighbors":["praktika"]},{"id":"komanda","word":"командная работа","shelves":["action"],"neighbors":["obshchenie","pomogat"]},{"id":"liderstvo","word":"лидерство","shelves":["action","goals"],"neighbors":["iniciativa","reshitelnost"]},{"id":"umorenny_temp","word":"умеренный темп","shelves":["action"],"neighbors":["distsiplina","stabilnost"],"antonym":"bystryy_start"},{"id":"videnie","word":"долгосрочное видение","shelves":["foresight"],"neighbors":["strategiya","plan"]},{"id":"voobrazhenie","word":"воображение","shelves":["foresight"],"neighbors":["mechty"]},{"id":"lyuboznatelnost","word":"любознательность","shelves":["foresight","values"],"neighbors":["idei","novoe"]},{"id":"sistemnost","word":"системное мышление","shelves":["foresight"],"neighbors":["struktura","analiz"]},{"id":"intuiciya","word":"интуиция","shelves":["foresight"],"neighbors":["razdumya"]},{"id":"refleksiya","word":"рефлексия","shelves":["foresight"],"neighbors":["razdumya","uroki"]},{"id":"kritmyshl","word":"критическое мышление","shelves":["foresight"],"neighbors":["analiz","raschet"]},{"id":"proschet_riskov","word":"просчёт рисков","shelves":["foresight"],"neighbors":["ostorozhnost","strategiya"],"antonym":"risk"},{"id":"obuchenie","word":"обучение новому","shelves":["foresight","goals"],"neighbors":["novoe","lyuboznatelnost"]},{"id":"voprosy_sebe","word":"вопросы себе","shelves":["foresight"],"neighbors":["refleksiya","razdumya"]},{"id":"int_tyazhelaya_muzyka","word":"тяжёлая музыка","shelves":["supports"],"interest":"muzyka"},{"id":"int_anime","word":"аниме","shelves":["supports"],"interest":"voobrazhenie"},{"id":"int_igry","word":"игры","shelves":["supports"],"interest":"voobrazhenie"},{"id":"int_kino","word":"кино","shelves":["supports"],"interest":"mechty"},{"id":"int_gotovka","word":"готовка","shelves":["supports"],"interest":"zabota"},{"id":"int_zhivotnye_dom","word":"питомцы","shelves":["supports"],"interest":"lyubov"},{"id":"int_sport","word":"спорт","shelves":["supports"],"interest":"energiya"},{"id":"int_beg","word":"бег","shelves":["supports"],"interest":"energiya"},{"id":"int_pohody","word":"походы","shelves":["supports"],"interest":"svoboda"},{"id":"int_foto","word":"фотография","shelves":["supports"],"interest":"tvorchestvo"},{"id":"int_risovanie","word":"рисование","shelves":["supports"],"interest":"tvorchestvo"},{"id":"int_remont","word":"починка вещей","shelves":["supports"],"interest":"praktika"},{"id":"int_avto","word":"машины и техника","shelves":["supports"],"interest":"praktika"},{"id":"int_progulki","word":"прогулки","shelves":["supports"],"interest":"odinochestvo"},{"id":"int_meditaciya","word":"медитация","shelves":["supports"]},{"id":"int_volonterstvo","word":"волонтёрство","shelves":["supports"],"interest":"pomogat"},{"id":"int_nauka","word":"наука","shelves":["supports"],"interest":"analiz"},{"id":"int_istoriya","word":"история","shelves":["supports"],"interest":"razdumya"},{"id":"int_yazyki","word":"иностранные языки","shelves":["supports"],"interest":"obuchenie"},{"id":"int_tanec","word":"танцы","shelves":["supports"],"interest":"energiya"},{"id":"int_banya","word":"баня","shelves":["supports"]},{"id":"int_rybalka","word":"рыбалка","shelves":["supports"]},{"id":"int_sad_ogorod","word":"сад и огород","shelves":["supports"],"interest":"stabilnost"},{"id":"int_nastolki","word":"настольные игры","shelves":["supports"],"interest":"obshchenie"},{"id":"int_kolekcii","word":"коллекционирование","shelves":["supports"],"interest":"strategiya"},{"id":"int_blogi","word":"вести блог","shelves":["supports"],"interest":"priznanie"}],"name":"words_v3"}</script>
@@ -2000,6 +2095,7 @@
 
       const STORAGE_KEY = 'hand_compass_snapshot_v2_draft';
       const WORLD_STORAGE_KEY = 'hand_compass_word_worlds_v1';
+      const GRAPH_INTRO_SESSION_KEY = 'hand_compass_graph_intro_seen_v1';
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
       const WORDS = Array.isArray(DATA.words) ? DATA.words : [];
@@ -2037,7 +2133,7 @@
       const GRAPH_LABEL_CLEAR_RADIUS = 118;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
-        values: '#b88a43', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
+        values: '#c5aa76', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
         stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#7d827d'
       };
       const BOT_ARCHETYPE_STORY_SEEDS = Object.freeze([
@@ -2078,6 +2174,7 @@
       const customWordInput = document.getElementById('customWordInput');
       const scatterStatus = document.getElementById('scatterStatus');
       const shelfGrid = document.getElementById('shelfGrid');
+      const snapshotTabs = document.getElementById('snapshotTabs');
       const snapshotSmallNote = document.getElementById('snapshotSmallNote');
       const snapshotSummaryContent = document.getElementById('snapshotSummaryContent');
       const graphViewport = document.getElementById('graphViewport');
@@ -2096,6 +2193,8 @@
       const wordWorldScreen = document.getElementById('wordWorldScreen');
       const wordWorldContent = document.getElementById('wordWorldContent');
       const storageNotice = document.getElementById('storageNotice');
+      const primaryNav = document.getElementById('primaryNav');
+      const primaryNavBack = document.getElementById('primaryNavBack');
 
       let storageWasBroken = false;
       let state = restoreState();
@@ -2129,11 +2228,12 @@
 
       function emptyState() {
         return {
-          version: 4, selectedIds: [], customWords: [], selectionWaves: {},
+          version: 5, selectedIds: [], customWords: [], selectionWaves: {},
           waveOneIds: [], waveOneCustomIds: [], wave: 1, view: 'light-intro',
           pendingCustomId: null, pickerReturnView: 'scatter', matchTarget: 50,
           matchVisibleCount: 3, activeProfileId: null,
-          worldWordId: null, worldHistory: [], worldReturn: null, intersectionReturn: null,
+          worldWordId: null, worldHistory: [], worldReturn: null, worldProfileId: null, intersectionReturn: null,
+          snapshotShelfId: 'values',
           updatedAt: null
         };
       }
@@ -2179,6 +2279,8 @@
           const worldHistory = Array.isArray(parsed.worldHistory)
             ? parsed.worldHistory.filter((id) => typeof id === 'string' && WORD_BY_ID.has(id)).slice(-12)
             : [];
+          const worldProfileId = typeof parsed.worldProfileId === 'string' && FAKE_PROFILES.some((profile) => profile.id === parsed.worldProfileId)
+            ? parsed.worldProfileId : null;
           const worldReturn = ['graph', 'snapshot', 'intersections'].includes(parsed.worldReturn?.view)
             ? {
                 view: parsed.worldReturn.view,
@@ -2206,7 +2308,7 @@
             : selectionCount ? 'scatter' : 'light-intro';
           const pendingCustomId = customIds.has(parsed.pendingCustomId) ? parsed.pendingCustomId : null;
           return {
-            version: 4,
+            version: 5,
             selectedIds,
             customWords,
             selectionWaves,
@@ -2226,7 +2328,10 @@
             worldWordId,
             worldHistory,
             worldReturn,
+            worldProfileId,
             intersectionReturn,
+            snapshotShelfId: [...SHELVES.map((shelf) => shelf.id), 'custom'].includes(parsed.snapshotShelfId)
+              ? parsed.snapshotShelfId : 'values',
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -2393,19 +2498,10 @@
       }
 
       function worldBotsForWord(wordId, limit = 5) {
-        const matches = profilesForWord(wordId).slice().sort((left, right) => left.id.localeCompare(right.id));
-        const picked = [];
-        const archetypes = new Set();
-        matches.forEach((profile) => {
-          if (picked.length >= limit || archetypes.has(profile.archetype)) return;
-          picked.push(profile);
-          archetypes.add(profile.archetype);
-        });
-        matches.forEach((profile) => {
-          if (picked.length >= limit || picked.some((item) => item.id === profile.id)) return;
-          picked.push(profile);
-        });
-        return picked;
+        return profilesForWord(wordId)
+          .slice()
+          .sort((left, right) => (right.words?.length || 0) - (left.words?.length || 0) || left.id.localeCompare(right.id))
+          .slice(0, limit);
       }
 
       function wordLabel(id) {
@@ -2509,6 +2605,10 @@
             text,
             baseRecognition: 3 + Math.abs(hashValue(id)) % 38
           };
+        }).sort((left, right) => {
+          const leftRecognition = left.baseRecognition + (worldData.recognitions[left.id] ? 1 : 0);
+          const rightRecognition = right.baseRecognition + (worldData.recognitions[right.id] ? 1 : 0);
+          return rightRecognition - leftRecognition || left.id.localeCompare(right.id);
         });
       }
 
@@ -2517,7 +2617,7 @@
         card.className = 'world-bot-card';
         card.type = 'button';
         card.dataset.worldProfileId = profile.id;
-        card.setAttribute('aria-label', `Открыть пересечение с примером профиля «${profile.name}»`);
+        card.setAttribute('aria-label', `Открыть пример профиля «${profile.name}»`);
         const name = document.createElement('span');
         name.className = 'world-bot-name';
         name.textContent = profile.name;
@@ -2554,7 +2654,7 @@
         recognize.type = 'button';
         recognize.dataset.toggleRecognition = story.id;
         recognize.setAttribute('aria-pressed', String(recognized));
-        recognize.textContent = `Узнаю себя · ${story.baseRecognition + (recognized ? 1 : 0)}`;
+        recognize.textContent = `🤝 Узнаю себя · ${story.baseRecognition + (recognized ? 1 : 0)}`;
         const note = document.createElement('span');
         note.className = 'world-story-note';
         note.textContent = 'Это статистика слова, не лайк.';
@@ -2590,10 +2690,113 @@
         return card;
       }
 
+      function profileShelfCounts(profile) {
+        const counts = new Map(SHELVES.map((shelf) => [shelf.id, 0]));
+        (profile.words || []).forEach((id) => {
+          const word = WORD_BY_ID.get(id);
+          if (!word) return;
+          const shelfId = primaryShelf(word);
+          if (counts.has(shelfId)) counts.set(shelfId, counts.get(shelfId) + 1);
+        });
+        return [...counts.entries()]
+          .filter(([, count]) => count > 0)
+          .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]));
+      }
+
+      function profileKeyWords(profile, limit = 7) {
+        const shelfOrder = new Map(profileShelfCounts(profile).map(([shelfId], index) => [shelfId, index]));
+        return (profile.words || [])
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean)
+          .sort((left, right) => (shelfOrder.get(primaryShelf(left)) || 99) - (shelfOrder.get(primaryShelf(right)) || 99)
+            || left.word.localeCompare(right.word, 'ru'))
+          .slice(0, limit);
+      }
+
+      function profileSharedPercent(profile) {
+        const ownIds = new Set([...state.selectedIds, ...state.customWords.map((item) => item.id)]);
+        const profileIds = new Set((profile.words || []).filter((id) => WORD_BY_ID.has(id)));
+        const shared = [...profileIds].filter((id) => ownIds.has(id)).length;
+        const union = new Set([...ownIds, ...profileIds]).size;
+        return Math.round(shared / Math.max(1, union) * 100);
+      }
+
+      function renderWorldProfile(word, profile) {
+        wordWorldContent.replaceChildren();
+        const header = document.createElement('header');
+        header.className = 'world-header';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'world-eyebrow';
+        eyebrow.textContent = 'Мир слова · пример профиля';
+        const title = document.createElement('h1');
+        title.className = 'world-profile-name';
+        title.id = 'worldTitle';
+        title.tabIndex = -1;
+        title.textContent = profile.name;
+        const copy = document.createElement('p');
+        copy.className = 'world-profile-copy';
+        copy.textContent = `У этого примера отмечено ${shelfCountLabel((profile.words || []).length)}. Это не описание человека, а набор слов в демонстрационных данных.`;
+        header.append(eyebrow, title, copy);
+
+        const shelvesPanel = document.createElement('section');
+        shelvesPanel.className = 'world-panel';
+        const shelvesTitle = document.createElement('h2');
+        shelvesTitle.textContent = 'Топ-полки';
+        const shelves = document.createElement('div');
+        shelves.className = 'world-profile-shelves';
+        profileShelfCounts(profile).slice(0, 3).forEach(([shelfId, count]) => {
+          const shelf = SHELF_BY_ID.get(shelfId);
+          const row = document.createElement('div');
+          row.className = 'world-profile-shelf';
+          const label = document.createElement('span');
+          label.textContent = `${shelf.emoji} ${shelf.title}`;
+          const value = document.createElement('strong');
+          value.textContent = shelfCountLabel(count);
+          row.append(label, value);
+          shelves.append(row);
+        });
+        shelvesPanel.append(shelvesTitle, shelves);
+
+        const wordsPanel = document.createElement('section');
+        wordsPanel.className = 'world-panel';
+        const wordsTitle = document.createElement('h2');
+        wordsTitle.textContent = 'Ключевые слова';
+        const chips = document.createElement('div');
+        chips.className = 'world-profile-chips';
+        profileKeyWords(profile).forEach((item) => {
+          const chip = document.createElement('span');
+          chip.className = 'world-profile-chip';
+          chip.style.setProperty('--profile-color', GRAPH_COLORS[primaryShelf(item)] || GRAPH_COLORS.custom);
+          chip.textContent = item.word;
+          chips.append(chip);
+        });
+        wordsPanel.append(wordsTitle, chips);
+
+        const overlap = document.createElement('p');
+        overlap.className = 'world-profile-match';
+        overlap.append('Общего: ');
+        const percentage = document.createElement('strong');
+        percentage.textContent = `${profileSharedPercent(profile)}%`;
+        overlap.append(percentage, ' в текущем наборе слов.');
+        const openMap = document.createElement('button');
+        openMap.className = 'primary-button world-profile-action';
+        openMap.type = 'button';
+        openMap.dataset.openIntersectionProfile = profile.id;
+        openMap.textContent = 'Карта пересечения';
+        wordsPanel.append(overlap, openMap);
+
+        wordWorldContent.append(header, shelvesPanel, wordsPanel);
+      }
+
       function renderWordWorld() {
         const word = WORD_BY_ID.get(state.worldWordId);
         if (!word) {
           wordWorldContent.replaceChildren();
+          return;
+        }
+        const activeProfile = state.worldProfileId && FAKE_PROFILES.find((profile) => profile.id === state.worldProfileId);
+        if (activeProfile) {
+          renderWorldProfile(word, activeProfile);
           return;
         }
         const profiles = worldBotsForWord(word.id);
@@ -2603,11 +2806,6 @@
 
         const header = document.createElement('header');
         header.className = 'world-header';
-        const back = document.createElement('button');
-        back.className = 'secondary-button world-back';
-        back.type = 'button';
-        back.dataset.worldBack = 'true';
-        back.textContent = '← Назад';
         const eyebrow = document.createElement('p');
         eyebrow.className = 'world-eyebrow';
         eyebrow.textContent = 'Мир слова · экран 5';
@@ -2625,7 +2823,7 @@
           chip.textContent = `${shelf.emoji} ${shelf.title}`;
           chips.append(chip);
         });
-        header.append(back, eyebrow, title, chips);
+        header.append(eyebrow, title, chips);
 
         const statPanel = document.createElement('section');
         statPanel.className = 'world-panel';
@@ -2739,13 +2937,14 @@
         const footer = document.createElement('p');
         footer.className = 'world-footer';
         footer.textContent = 'Когда подключатся живые люди, здесь появятся их истории — анонимно, по их выбору.';
-        wordWorldContent.append(header, statPanel, botPanel, storiesPanel, footer);
+        wordWorldContent.append(header, statPanel, storiesPanel, botPanel, footer);
       }
 
       function openWordWorld(wordId, sourceView = state.view, profileId = state.activeProfileId) {
         if (!WORD_BY_ID.has(wordId)) return;
         state.worldWordId = wordId;
         state.worldHistory = [];
+        state.worldProfileId = null;
         state.worldReturn = {
           view: ['graph', 'snapshot', 'intersections'].includes(sourceView) ? sourceView : 'graph',
           wordId,
@@ -2761,12 +2960,20 @@
         if (!WORD_BY_ID.has(wordId) || wordId === state.worldWordId) return;
         if (state.worldWordId) state.worldHistory = [...state.worldHistory, state.worldWordId].slice(-12);
         state.worldWordId = wordId;
+        state.worldProfileId = null;
         worldStoryComposerOpen = false;
         worldFormMessage = '';
         showView('word-world');
       }
 
       function returnFromWordWorld() {
+        if (state.worldProfileId) {
+          state.worldProfileId = null;
+          renderWordWorld();
+          updatePrimaryNavigation('word-world');
+          persistState();
+          return;
+        }
         if (state.worldHistory.length) {
           state.worldWordId = state.worldHistory.pop();
           worldStoryComposerOpen = false;
@@ -2778,15 +2985,11 @@
         const wordId = returnTo.wordId || state.worldWordId;
         state.worldWordId = null;
         state.worldReturn = null;
+        state.worldProfileId = null;
         worldStoryComposerOpen = false;
         worldFormMessage = '';
         if (returnTo.view === 'snapshot') {
           showView('snapshot');
-          window.requestAnimationFrame(() => {
-            shelfGrid.querySelector(`[data-open-word-world="${CSS.escape(wordId || '')}"]`)?.scrollIntoView({
-              block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-            });
-          });
           return;
         }
         if (returnTo.view === 'intersections') {
@@ -2794,7 +2997,7 @@
           showView('intersections', true, true, { preserveIntersection: true });
           return;
         }
-        showView('graph');
+        showView('graph', true, true, { preserveGraph: true });
         window.requestAnimationFrame(() => {
           if (wordId && isGraphItemSelected(wordId)) selectGraphNode(wordId, true, true, false);
           else if (wordId) showGraphAddProposal(wordId);
@@ -2803,7 +3006,19 @@
 
       function openWorldProfile(profileId) {
         if (!FAKE_PROFILES.some((profile) => profile.id === profileId) || !state.worldWordId) return;
+        state.worldProfileId = profileId;
+        worldStoryComposerOpen = false;
+        worldFormMessage = '';
+        renderWordWorld();
+        updatePrimaryNavigation('word-world');
+        persistState();
+      }
+
+      function openWorldProfileIntersection() {
+        const profileId = state.worldProfileId;
+        if (!profileId || !state.worldWordId) return;
         state.activeProfileId = profileId;
+        state.worldProfileId = null;
         state.intersectionReturn = { view: 'word-world', wordId: state.worldWordId };
         showView('intersections', true, true, { preserveIntersection: true });
       }
@@ -2811,6 +3026,7 @@
       function returnFromIntersections() {
         if (state.intersectionReturn?.view === 'word-world' && WORD_BY_ID.has(state.intersectionReturn.wordId)) {
           state.worldWordId = state.intersectionReturn.wordId;
+          state.worldProfileId = null;
           state.intersectionReturn = null;
           showView('word-world');
           return;
@@ -3526,26 +3742,34 @@
 
       function renderSnapshot() {
         shelfGrid.replaceChildren();
+        snapshotTabs.replaceChildren();
         snapshotSmallNote.hidden = totalSelected() >= 5;
         const selectedWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
         renderSnapshotSummary(selectedWords);
-
-        SHELVES.forEach((shelf) => {
-          const assignedCustomWords = state.customWords
-            .filter((item) => item.shelfId === shelf.id)
-            .map((item) => ({ ...item, shelves: [shelf.id] }));
-          const words = [
-            ...selectedWords.filter((item) => item.shelves.includes(shelf.id)),
-            ...assignedCustomWords
-          ];
-          shelfGrid.append(createShelfCard(shelf, words));
+        const shelfIds = [...SHELVES.map((shelf) => shelf.id), ...(state.customWords.length ? ['custom'] : [])];
+        if (!shelfIds.includes(state.snapshotShelfId)) state.snapshotShelfId = shelfIds[0];
+        shelfIds.forEach((shelfId) => {
+          const shelf = SHELF_BY_ID.get(shelfId) || CUSTOM_SHELF;
+          const tab = document.createElement('button');
+          tab.className = `snapshot-tab shelf-${shelf.id}${state.snapshotShelfId === shelf.id ? ' is-active' : ''}`;
+          tab.type = 'button';
+          tab.role = 'tab';
+          tab.dataset.snapshotShelf = shelf.id;
+          tab.setAttribute('aria-selected', String(state.snapshotShelfId === shelf.id));
+          tab.textContent = `${shelf.emoji} ${shelf.title}`;
+          snapshotTabs.append(tab);
         });
 
-        const unassignedCustomWords = state.customWords.filter((item) => item.shelfId === 'custom');
-        if (unassignedCustomWords.length) {
-          const card = createShelfCard(CUSTOM_SHELF, unassignedCustomWords.map((item) => ({ ...item, shelves: ['custom'] })));
-          shelfGrid.append(card);
-        }
+        const shelf = SHELF_BY_ID.get(state.snapshotShelfId) || CUSTOM_SHELF;
+        const words = shelf.id === 'custom'
+          ? state.customWords.map((item) => ({ ...item, shelves: ['custom'] }))
+          : [
+              ...selectedWords.filter((item) => item.shelves.includes(shelf.id)),
+              ...state.customWords
+                .filter((item) => item.shelfId === shelf.id)
+                .map((item) => ({ ...item, shelves: [shelf.id] }))
+            ];
+        shelfGrid.append(createShelfCard(shelf, words));
       }
 
       function createShelfCard(shelf, words) {
@@ -3568,8 +3792,8 @@
         deepen.className = 'shelf-deepen';
         deepen.type = 'button';
         deepen.dataset.deepenShelf = shelf.id;
-        deepen.textContent = '+';
-        deepen.setAttribute('aria-label', `Углубить полку «${shelf.title}»`);
+        deepen.textContent = 'Дополнить';
+        deepen.setAttribute('aria-label', `Дополнить полку «${shelf.title}» словами этой волны`);
         if (shelf.id !== 'custom') actions.append(deepen);
         actions.append(count);
         titleRow.append(title, actions);
@@ -3697,9 +3921,12 @@
         shelves.forEach((shelf, index) => {
           const column = index % columns;
           const row = Math.floor(index / columns);
+          const xSeed = Math.abs(hashValue(`graph-zone-x:${shelf.id}`)) % 1000 / 999;
+          const ySeed = Math.abs(hashValue(`graph-zone-y:${shelf.id}`)) % 1000 / 999;
+          const jitter = maximumRadius * 0.12;
           zones.set(shelf.id, {
-            x: originX + cellWidth * (column + 0.5),
-            y: originY + cellHeight * (row + 0.5),
+            x: originX + cellWidth * (column + 0.5) + (xSeed - 0.5) * jitter * 2,
+            y: originY + cellHeight * (row + 0.5) + (ySeed - 0.5) * jitter * 2,
             radius: radii.get(shelf.id)
           });
         });
@@ -4228,7 +4455,7 @@
         graphChainIds = graphChainFrom(id);
         updateGraphHighlight();
         renderGraphCard(id);
-        if (showPressure) pressureToastFor(id);
+        if (showPressure && graphCard.hidden) pressureToastFor(id);
       }
 
       function cardChip(text, options = {}) {
@@ -4302,8 +4529,15 @@
         const neighbors = (item.neighbors || []).map((neighborId) => WORD_BY_ID.get(neighborId)).filter(Boolean);
         const shadow = item.antonym ? WORD_BY_ID.get(item.antonym) : null;
         const activates = (item.activates || []).map((stoneId) => WORD_BY_ID.get(stoneId)).filter(Boolean);
+        const pressureSources = (item.shelves || []).includes('stones')
+          ? [...(graphPressureSources.get(item.id) || new Set())]
+              .map((sourceId) => graphItemById(sourceId))
+              .filter(Boolean)
+              .sort((left, right) => left.word.localeCompare(right.word, 'ru'))
+          : [];
         const interestParent = item.interest ? WORD_BY_ID.get(item.interest) : null;
         const briefParts = [];
+        if (pressureSources.length) briefParts.push(`Давление: ${pressureSources.map((source) => source.word).join(', ')}`);
         if (neighbors.length) briefParts.push(`${neighbors.length} ${neighbors.length === 1 ? 'сосед' : neighbors.length < 5 ? 'соседа' : 'соседей'}`);
         if (shadow) briefParts.push(`теневая пара: ${shadow.word}`);
         if (activates.length) briefParts.push(`${activates.length} ${activates.length === 1 ? 'камень' : activates.length < 5 ? 'камня' : 'камней'} может откликаться`);
@@ -4427,6 +4661,52 @@
         selectGraphNode(id);
       }
 
+      function hasSeenGraphIntroThisSession() {
+        try { return sessionStorage.getItem(GRAPH_INTRO_SESSION_KEY) === 'true'; }
+        catch { return false; }
+      }
+
+      function markGraphIntroSeenThisSession() {
+        try { sessionStorage.setItem(GRAPH_INTRO_SESSION_KEY, 'true'); }
+        catch { /* Session storage is an optional convenience only. */ }
+      }
+
+      function openGraphScreen() {
+        if (!totalSelected()) return;
+        if (!hasSeenGraphIntroThisSession()) {
+          showView('graph-intro');
+          return;
+        }
+        showView('graph');
+      }
+
+      function updatePrimaryNavigation(view) {
+        const isMainView = ['snapshot', 'graph', 'intersections', 'word-world'].includes(view);
+        primaryNav.hidden = !isMainView;
+        if (!isMainView) return;
+        const hasBack = ['graph', 'intersections', 'word-world'].includes(view);
+        primaryNav.classList.toggle('has-back', hasBack);
+        primaryNavBack.hidden = !hasBack;
+        primaryNavBack.textContent = view === 'word-world' && state.worldProfileId ? 'К миру слова' : 'Назад';
+        primaryNav.querySelectorAll('[data-primary-view]').forEach((button) => {
+          const active = button.dataset.primaryView === view;
+          button.classList.toggle('is-active', active);
+          button.setAttribute('aria-current', active ? 'page' : 'false');
+        });
+      }
+
+      function navigatePrimaryBack() {
+        if (state.view === 'word-world') {
+          returnFromWordWorld();
+          return;
+        }
+        if (state.view === 'intersections') {
+          returnFromIntersections();
+          return;
+        }
+        if (state.view === 'graph') showView('snapshot');
+      }
+
       function showView(view, focus = true, shouldPersist = true, options = {}) {
         const previousView = state.view;
         const isLightIntro = view === 'light-intro';
@@ -4438,6 +4718,7 @@
         const isGraph = view === 'graph';
         const isIntersections = view === 'intersections';
         const isWordWorld = view === 'word-world';
+        if (isGraph) markGraphIntroSeenThisSession();
         if (isIntersections && previousView !== 'intersections' && !options.preserveIntersection) state.activeProfileId = null;
         if (isGraph) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
         if (!isGraph) {
@@ -4466,16 +4747,15 @@
         if (isScatter) renderWaveUI();
         if (isCustomShelf) renderCustomShelfPicker();
         if (isSnapshot) renderSnapshot();
-        if (isGraph) renderGraph();
+        if (isGraph && !options.preserveGraph) renderGraph();
         if (isIntersections) {
-          document.getElementById('intersectionsBackButton').textContent = state.intersectionReturn ? 'Назад к миру слова' : 'К слепку';
           renderProfileMatches();
         }
         if (isWordWorld) renderWordWorld();
+        updatePrimaryNavigation(state.view);
         if (shouldPersist) persistState();
         if (focus) {
-          const pageScrollBehavior = isGraph || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-          window.scrollTo({ top: 0, left: 0, behavior: pageScrollBehavior });
+          window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
           const titleId = isIntersections ? 'intersectionsTitle'
             : isGraph ? 'graphTitle'
             : isGraphIntro ? 'graphIntroTitle'
@@ -4487,10 +4767,8 @@
             : 'lightIntroTitle';
           window.requestAnimationFrame(() => {
             document.getElementById(titleId).focus?.({ preventScroll: isGraph });
-            if (isGraph) {
+            if (isGraph && !options.preserveGraph) {
               window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-              graphViewport.scrollLeft = Math.max(0, (graphViewport.scrollWidth - graphViewport.clientWidth) / 2);
-              graphViewport.scrollTop = Math.max(0, (graphViewport.scrollHeight - graphViewport.clientHeight) / 2);
             }
           });
         } else if (isGraph) {
@@ -4561,9 +4839,17 @@
         const button = event.target.closest('[data-deepen-shelf]');
         if (!button) return;
         focusedShelfId = button.dataset.deepenShelf;
-        state.wave = 1;
+        state.wave = ['stones', 'triggers'].includes(focusedShelfId) ? 2 : 1;
         showView('scatter');
         renderScatter();
+      });
+
+      snapshotTabs.addEventListener('click', (event) => {
+        const tab = event.target.closest('[data-snapshot-shelf]');
+        if (!tab || tab.dataset.snapshotShelf === state.snapshotShelfId) return;
+        state.snapshotShelfId = tab.dataset.snapshotShelf;
+        renderSnapshot();
+        persistState();
       });
 
       snapshotSummaryContent.addEventListener('click', (event) => {
@@ -4687,10 +4973,6 @@
       });
 
       wordWorldContent.addEventListener('click', (event) => {
-        if (event.target.closest('[data-world-back]')) {
-          returnFromWordWorld();
-          return;
-        }
         const parent = event.target.closest('[data-open-world-parent]');
         if (parent) {
           openWorldParent(parent.dataset.openWorldParent);
@@ -4699,6 +4981,10 @@
         const profile = event.target.closest('[data-world-profile-id]');
         if (profile) {
           openWorldProfile(profile.dataset.worldProfileId);
+          return;
+        }
+        if (event.target.closest('[data-open-intersection-profile]')) {
+          openWorldProfileIntersection();
           return;
         }
         const recognition = event.target.closest('[data-toggle-recognition]');
@@ -4744,12 +5030,21 @@
         updateSelectionUI();
       });
 
-      document.getElementById('graphButton').addEventListener('click', () => showView('graph-intro'));
-      document.getElementById('graphIntroNextButton').addEventListener('click', () => showView('graph'));
-      document.getElementById('intersectionsButton').addEventListener('click', () => showView('intersections'));
-      document.getElementById('graphBackButton').addEventListener('click', () => showView('snapshot'));
-      document.getElementById('graphIntersectionsButton').addEventListener('click', () => showView('intersections'));
-      document.getElementById('intersectionsBackButton').addEventListener('click', returnFromIntersections);
+      document.getElementById('graphIntroNextButton').addEventListener('click', () => {
+        markGraphIntroSeenThisSession();
+        showView('graph');
+      });
+      primaryNav.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-primary-view]');
+        if (target) {
+          const view = target.dataset.primaryView;
+          if (view === 'snapshot') showView('snapshot');
+          else if (view === 'graph') openGraphScreen();
+          else if (view === 'intersections') showView('intersections');
+          return;
+        }
+        if (event.target.closest('#primaryNavBack')) navigatePrimaryBack();
+      });
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
       profileList.addEventListener('click', (event) => {
