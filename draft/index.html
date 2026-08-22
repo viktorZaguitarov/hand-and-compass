@@ -1131,6 +1131,15 @@
       pointer-events: none;
     }
 
+    .graph-node-popularity {
+      fill: rgba(255, 253, 247, 0.74);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      pointer-events: none;
+    }
+
     .graph-node.is-heavy .graph-node-plate {
       stroke-width: 1.8;
       filter: drop-shadow(0 6px 9px rgba(18, 25, 29, 0.3));
@@ -1543,7 +1552,6 @@
     .world-panel h2 { margin: 0 0 10px; color: #f0f3f6; font-family: var(--serif); font-size: 1.2rem; font-weight: 600; }
     .world-panel-copy, .world-empty, .world-footer, .world-story-note, .world-form-status { margin: 0; color: #bbc5d0; font-size: 0.76rem; line-height: 1.45; }
     .world-stat { color: #e6ebf0; font-size: 0.88rem; font-weight: 650; }
-    .world-stat.is-rare { color: #f0d7a8; }
     .world-parent-row { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; margin-top: 10px; color: #bbc5d0; font-size: 0.75rem; }
     .world-parent-button { min-height: 34px; padding: 6px 10px; border-color: rgba(216, 188, 218, 0.44); color: #f0e8f3; background: rgba(147, 105, 133, 0.27); font-size: 0.72rem; }
 
@@ -2735,10 +2743,8 @@
         statPanel.className = 'world-panel';
         const count = profilesForWord(word.id).length;
         const stat = document.createElement('p');
-        stat.className = `world-stat${count <= 5 ? ' is-rare' : ''}`;
-        stat.textContent = count <= 5
-          ? `Редкое слово: его выбрали всего ${count} из ${FAKE_PROFILES.length} примеров.`
-          : `Это слово выбрали ${count} из ${FAKE_PROFILES.length} примеров.`;
+        stat.className = 'world-stat';
+        stat.textContent = `Выбрали ${count} из ${FAKE_PROFILES.length} примеров.`;
         const statNote = document.createElement('p');
         statNote.className = 'world-panel-copy';
         statNote.textContent = 'Статистика среди примеров профилей.';
@@ -4387,11 +4393,12 @@
 
         items.forEach((item, index) => {
           const position = positions.get(item.id);
+          const profileCount = profilesForWord(item.id).length;
           const group = svgElement('g', {
             class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}${hasOwnWorldStory(item.id) ? ' has-own-story' : ''}`,
             tabindex: 0,
             role: 'button',
-            'aria-label': `Открыть слово «${item.word}»${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
+            'aria-label': `Открыть слово «${item.word}». Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
             'data-graph-node-id': item.id,
             'data-pressure-index': position.pressureCount,
             style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
@@ -4402,9 +4409,14 @@
           });
           const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 8, 'text-anchor': 'middle' });
           label.textContent = item.word.length > 22 ? `${item.word.slice(0, 21)}…` : item.word;
+          const popularity = svgElement('text', {
+            class: 'graph-node-popularity', x: position.width / 2 - 12, y: -position.height / 2 + 18,
+            'text-anchor': 'end', 'aria-hidden': 'true'
+          });
+          popularity.textContent = String(profileCount);
           const title = svgElement('title');
-          title.textContent = item.word;
-          group.append(plate, label, title);
+          title.textContent = `${item.word}. Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров.`;
+          group.append(plate, label, popularity, title);
           graphSvg.append(group);
         });
 
