@@ -1880,12 +1880,11 @@
           <p class="snapshot-small-note" id="snapshotSmallNote" hidden>Слепок получился маленьким — можно вернуться и добавить слова в любой момент.</p>
         </header>
 
-        <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
-
         <details class="snapshot-summary" id="snapshotSummary" open>
           <summary>Сводка</summary>
           <div class="snapshot-summary-content" id="snapshotSummaryContent"></div>
         </details>
+        <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
         <div class="shelf-grid" id="shelfGrid"></div>
       </section>
 
@@ -2075,6 +2074,8 @@
       let graphCanvas = { width: GRAPH_MIN_CANVAS_SIZE, height: GRAPH_MIN_CANVAS_SIZE };
       let graphBounds = { minX: 0, minY: 0, maxX: GRAPH_MIN_CANVAS_SIZE, maxY: GRAPH_MIN_CANVAS_SIZE };
       let graphScale = 1;
+      let graphViewportWidthAtFit = 0;
+      let graphResizeFrame = 0;
       let graphGesture = null;
       let graphSuppressClickUntil = 0;
       let graphLastTap = null;
@@ -3947,6 +3948,11 @@
       function fitGraphToViewport() {
         setGraphScaleValue(graphInitialScale());
         centerGraphViewport();
+        graphViewportWidthAtFit = graphViewport.clientWidth;
+      }
+
+      function graphViewportWidthChanged() {
+        return Math.abs(graphViewport.clientWidth - graphViewportWidthAtFit) > 1;
       }
 
       function graphTouchPoint(event) {
@@ -5029,7 +5035,15 @@
       });
       intersectionsBackButton.addEventListener('click', returnFromIntersections);
       window.addEventListener('resize', () => {
-        if (!graphScreen.hidden) window.requestAnimationFrame(fitGraphToViewport);
+        // Safari changes visual-viewport height while the page scrolls. Re-fitting
+        // on that event would erase a deliberate pinch/pan, so only re-fit after a
+        // genuine width change (for example, an orientation change).
+        if (graphScreen.hidden || !graphViewportWidthChanged()) return;
+        window.cancelAnimationFrame(graphResizeFrame);
+        graphResizeFrame = window.requestAnimationFrame(() => {
+          graphResizeFrame = 0;
+          if (!graphScreen.hidden && graphViewportWidthChanged()) fitGraphToViewport();
+        });
       });
 
       renderScatter();
