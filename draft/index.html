@@ -943,14 +943,6 @@
       line-height: 1.42;
     }
 
-    .snapshot-actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 9px;
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
     .snapshot-tabs {
       display: flex;
       gap: 7px;
@@ -1692,8 +1684,6 @@
       .shelf-word { padding: 6px 9px; font-size: 0.71rem; }
       .shelf-word-enter { font-size: 0.6rem; }
       .shelf-summary { margin-top: 10px; padding-top: 9px; font-size: 0.69rem; }
-      .snapshot-actions { gap: 7px; }
-      .snapshot-actions button { min-height: 40px; font-size: 0.8rem; }
       .graph-screen { padding-inline: 9px; }
       .graph-topbar { padding-inline: 3px; }
       .graph-head { width: 100%; padding-inline: 3px; }
@@ -1763,7 +1753,6 @@
       .word-field { gap: 11px 10px; padding-inline: 18px; }
       .word-token { min-height: 44px; padding: 10px 15px; }
       .shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .snapshot-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .profile-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .complement-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -1872,17 +1861,13 @@
           <p class="snapshot-small-note" id="snapshotSmallNote" hidden>Слепок получился маленьким — можно вернуться и добавить слова в любой момент.</p>
         </header>
 
+        <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
+
         <details class="snapshot-summary" id="snapshotSummary" open>
           <summary>Сводка</summary>
           <div class="snapshot-summary-content" id="snapshotSummaryContent"></div>
         </details>
-
-        <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
         <div class="shelf-grid" id="shelfGrid"></div>
-
-        <div class="snapshot-actions">
-          <button class="secondary-button" id="editButton" type="button">Дополнить</button>
-        </div>
       </section>
 
       <section class="screen entry-screen" id="graphIntroScreen" aria-labelledby="graphIntroTitle" hidden>
@@ -3573,7 +3558,10 @@
         const rareContent = document.createElement('span');
         rareContent.className = 'snapshot-summary-words';
         if (rareWords.length) rareWords.forEach(({ word, profileCount }) => {
-          rareContent.append(snapshotSummaryWord(word, ` · N ${profileCount}`));
+          const countLabel = profileCount === 0
+            ? ` · никто из ${FAKE_PROFILES.length} примеров не выбрал`
+            : ` · выбрали ${profileCount} из ${FAKE_PROFILES.length}`;
+          rareContent.append(snapshotSummaryWord(word, countLabel));
         });
         else rareContent.textContent = 'пока нет отмеченных слов';
         appendSnapshotSummaryRow('Самые редкие твои слова (среди примеров)', rareContent);
@@ -3595,14 +3583,6 @@
         });
         else pressureContent.textContent = 'пока нет выбранных камней, на которые указывают триггеры';
         appendSnapshotSummaryRow('Больше всего давления на', pressureContent);
-
-        const pairContent = document.createElement('span');
-        pairContent.className = 'snapshot-summary-words';
-        if (pressurePairs.length) pressurePairs.forEach(({ trigger, stone }) => {
-          pairContent.append(snapshotSummaryWord(trigger, ` → ${stone.word}`));
-        });
-        else pairContent.textContent = 'пока нет выбранных пар';
-        appendSnapshotSummaryRow('Твои триггеры связаны с камнями', pairContent);
 
         const note = document.createElement('p');
         note.className = 'snapshot-summary-note';
@@ -4886,14 +4866,6 @@
         if (state.wave !== 2) return;
         state.wave = 1;
         showView('scatter');
-      });
-
-      document.getElementById('editButton').addEventListener('click', () => {
-        focusedShelfId = null;
-        state.wave = 1;
-        showView('scatter');
-        renderWaveUI();
-        updateSelectionUI();
       });
 
       document.getElementById('graphIntroNextButton').addEventListener('click', () => {
