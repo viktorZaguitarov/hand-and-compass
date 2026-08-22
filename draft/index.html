@@ -96,7 +96,7 @@
       z-index: 1;
       width: min(1180px, 100%);
       margin: 0 auto;
-      padding: max(16px, env(safe-area-inset-top)) 14px max(112px, env(safe-area-inset-bottom));
+      padding: max(16px, env(safe-area-inset-top)) 14px max(84px, env(safe-area-inset-bottom));
     }
 
     .topbar {
@@ -197,24 +197,23 @@
 
     .primary-nav {
       position: fixed;
-      right: 12px;
-      bottom: max(12px, env(safe-area-inset-bottom));
-      left: 12px;
+      right: 0;
+      bottom: 0;
+      left: 0;
       z-index: 120;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 5px;
-      width: min(760px, calc(100vw - 24px));
+      width: min(760px, 100vw);
       margin: 0 auto;
-      padding: 6px;
+      padding: 6px 6px max(6px, env(safe-area-inset-bottom));
       border: 1px solid rgba(49, 95, 82, 0.18);
-      border-radius: 18px;
+      border-radius: 18px 18px 0 0;
       background: rgba(251, 248, 239, 0.95);
       box-shadow: 0 12px 32px rgba(29, 44, 38, 0.2);
       backdrop-filter: blur(16px);
     }
 
-    .primary-nav.has-back { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .primary-nav-button {
       min-width: 0;
       min-height: 42px;
@@ -233,11 +232,9 @@
       color: var(--forest-dark);
       background: rgba(220, 233, 223, 0.72);
     }
-    .primary-nav-back { color: var(--forest-dark); background: rgba(238, 230, 212, 0.68); }
     body.wave-two .primary-nav { border-color: rgba(205, 216, 229, 0.22); background: rgba(25, 35, 49, 0.94); }
     body.wave-two .primary-nav-button { color: #c8d1db; }
     body.wave-two .primary-nav-button.is-active { border-color: rgba(216, 188, 218, 0.34); color: #f2e8f3; background: rgba(147, 105, 133, 0.34); }
-    body.wave-two .primary-nav-back { color: #f0d7a8; background: rgba(189, 136, 64, 0.18); }
 
     body.wave-two #scatterTitle {
       max-width: 820px;
@@ -946,14 +943,6 @@
       line-height: 1.42;
     }
 
-    .snapshot-actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 9px;
-      max-width: 720px;
-      margin: 0 auto;
-    }
-
     .snapshot-tabs {
       display: flex;
       gap: 7px;
@@ -1013,106 +1002,16 @@
     .graph-head .eyebrow { margin: 0; font-size: 0.58rem; white-space: nowrap; }
     .graph-head h1 { margin: 0; font-size: clamp(1.45rem, 4vw, 2.35rem); line-height: 1; }
 
-    .graph-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-      max-width: 1040px;
-      margin: 0 auto 6px;
-      padding: 5px 6px;
-      border: 1px solid rgba(49, 95, 82, 0.14);
-      border-radius: 15px;
-      background: rgba(251, 248, 239, 0.74);
-      box-shadow: 0 7px 18px rgba(38, 54, 46, 0.06);
-    }
-
-    .graph-toolbar-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 5px;
-    }
-
-    .graph-zoom-controls {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px;
-      border: 1px solid rgba(49, 95, 82, 0.16);
-      border-radius: 999px;
-      background: rgba(251, 248, 239, 0.78);
-    }
-
-    .graph-zoom-button {
-      display: inline-grid;
-      place-items: center;
-      width: 36px;
-      min-height: 36px;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      color: var(--forest-dark);
-      background: rgba(220, 233, 223, 0.6);
-      font-size: 1.15rem;
-      line-height: 1;
-    }
-
-    .graph-legend {
-      max-width: 1040px;
-      margin: 0 auto 7px;
-      color: var(--ink-soft);
-      font-family: var(--sans);
-      font-size: 0.7rem;
-    }
-
-    .graph-legend summary {
-      width: fit-content;
-      margin-left: auto;
-      cursor: pointer;
-      list-style: none;
-      text-decoration: underline;
-      text-decoration-color: rgba(49, 95, 82, 0.24);
-      text-underline-offset: 3px;
-    }
-
-    .graph-legend summary::-webkit-details-marker { display: none; }
-
-    .graph-legend-items {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 7px 12px;
-      margin-top: 6px;
-    }
-
-    .graph-legend-items span::before {
-      display: inline-block;
-      width: 18px;
-      margin-right: 6px;
-      border-top: 2px solid rgba(49, 95, 82, 0.55);
-      content: "";
-      vertical-align: middle;
-    }
-
-    .graph-legend-items .is-whisker::before { border-top-style: dashed; opacity: 0.62; }
-
     .graph-stage {
-      --graph-card-height: min(25svh, 190px);
-      display: grid;
-      grid-template-rows: minmax(0, 1fr) var(--graph-card-height);
-      gap: 8px;
       width: 100%;
       max-width: 1040px;
-      height: min(70svh, 720px);
-      min-height: 520px;
       margin: 0 auto;
     }
 
     .graph-viewport {
       width: 100%;
-      height: auto;
-      min-height: 0;
+      height: clamp(390px, 58svh, 660px);
+      min-height: 390px;
       margin: 0;
       overflow: auto;
       border: 1px solid rgba(83, 104, 96, 0.2);
@@ -1208,7 +1107,7 @@
     .graph-node-label {
       fill: #fffdf7;
       font-family: var(--sans);
-      font-size: 15px;
+      font-size: 23px;
       font-weight: 700;
       pointer-events: none;
     }
@@ -1250,39 +1149,21 @@
     }
 
     .graph-card-slot {
-      position: relative;
-      min-height: 0;
-      border: 1px solid rgba(83, 104, 96, 0.13);
+      margin-top: 12px;
       border-radius: 18px;
-      background: rgba(255, 253, 247, 0.48);
-      overflow: hidden;
     }
-    .graph-card-slot:has(.graph-card[hidden])::before {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 12px;
-      color: var(--ink-soft);
-      content: "Выбери слово — здесь появится короткая карточка.";
-      font-family: var(--sans);
-      font-size: 0.72rem;
-      text-align: center;
+    .graph-card-slot:has(.graph-card[hidden]) {
+      display: none;
     }
     .graph-card {
-      position: relative;
-      z-index: 1;
       width: 100%;
-      height: 100%;
       margin: 0;
-      padding: 12px;
+      padding: 14px;
       border: 1px solid rgba(83, 104, 96, 0.2);
       border-radius: 17px;
       background: rgba(255, 253, 247, 0.97);
       box-shadow: 0 8px 20px rgba(38, 54, 46, 0.08);
       font-family: var(--sans);
-      overflow: auto;
-      overscroll-behavior: contain;
     }
 
     .graph-card-kicker { margin: 0 0 3px; color: var(--rose); font-size: 0.62rem; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; }
@@ -1458,6 +1339,7 @@
 
     .profile-more-row { display: flex; justify-content: center; max-width: 940px; margin: 0 auto; }
     .profile-more-row .secondary-button { min-width: 150px; }
+    .intersections-context-back { display: block; width: fit-content; margin: 14px auto 0; }
 
     .profile-card {
       width: 100%;
@@ -1743,7 +1625,7 @@
     }
 
     @media (max-width: 639px) {
-      .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(106px, env(safe-area-inset-bottom)); }
+      .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(82px, env(safe-area-inset-bottom)); }
       .topbar { margin-bottom: 9px; padding-inline: 4px; }
       .brand { gap: 7px; font-size: 0.68rem; }
       .brand-mark { width: 30px; height: 30px; font-size: 0.85rem; }
@@ -1802,22 +1684,15 @@
       .shelf-word { padding: 6px 9px; font-size: 0.71rem; }
       .shelf-word-enter { font-size: 0.6rem; }
       .shelf-summary { margin-top: 10px; padding-top: 9px; font-size: 0.69rem; }
-      .snapshot-actions { gap: 7px; }
-      .snapshot-actions button { min-height: 40px; font-size: 0.8rem; }
       .graph-screen { padding-inline: 9px; }
       .graph-topbar { padding-inline: 3px; }
       .graph-head { width: 100%; padding-inline: 3px; }
       .graph-head h1 { font-size: 1.35rem; }
-      .graph-toolbar { width: 100%; padding: 4px 5px; }
-      .graph-zoom-controls { justify-content: space-between; min-width: 0; padding: 2px; }
-      .graph-zoom-button { width: 34px; min-height: 34px; }
-      .graph-legend { max-width: none; padding-inline: 3px; font-size: 0.62rem; }
-      .graph-legend-items { gap: 4px 8px; }
-      .graph-stage { --graph-card-height: min(25svh, 176px); height: min(66svh, 600px); min-height: 478px; gap: 7px; }
-      .graph-viewport { height: auto; min-height: 0; border-radius: 18px; }
+      .graph-stage { min-height: 0; }
+      .graph-viewport { height: clamp(390px, 56svh, 590px); min-height: 390px; border-radius: 18px; }
       .graph-canvas { width: 3600px; height: 3600px; }
-      .graph-card-slot { border-radius: 15px; }
-      .graph-card { padding: 10px; border-radius: 15px; }
+      .graph-card-slot { margin-top: 9px; border-radius: 15px; }
+      .graph-card { padding: 12px; border-radius: 15px; }
       .graph-card h2 { font-size: 1.08rem; }
       .graph-card-copy { font-size: 0.72rem; }
       .graph-chip { min-height: 34px; padding: 6px 9px; font-size: 0.69rem; }
@@ -1878,7 +1753,6 @@
       .word-field { gap: 11px 10px; padding-inline: 18px; }
       .word-token { min-height: 44px; padding: 10px 15px; }
       .shelf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .snapshot-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .profile-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .complement-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -1978,7 +1852,6 @@
 
       <section class="screen" id="snapshotScreen" aria-labelledby="snapshotTitle" hidden>
         <header class="screen-head snapshot-head">
-          <p class="eyebrow">Слепок · шаг 2 из 2</p>
           <h1 id="snapshotTitle" tabindex="-1">Вот что откликнулось</h1>
           <p class="lead">Одно слово может жить сразу в нескольких местах.</p>
           <div class="honesty-note">
@@ -1988,17 +1861,13 @@
           <p class="snapshot-small-note" id="snapshotSmallNote" hidden>Слепок получился маленьким — можно вернуться и добавить слова в любой момент.</p>
         </header>
 
+        <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
+
         <details class="snapshot-summary" id="snapshotSummary" open>
           <summary>Сводка</summary>
           <div class="snapshot-summary-content" id="snapshotSummaryContent"></div>
         </details>
-
-        <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
         <div class="shelf-grid" id="shelfGrid"></div>
-
-        <div class="snapshot-actions">
-          <button class="secondary-button" id="editButton" type="button">Дополнить</button>
-        </div>
       </section>
 
       <section class="screen entry-screen" id="graphIntroScreen" aria-labelledby="graphIntroTitle" hidden>
@@ -2015,27 +1884,9 @@
       <section class="screen graph-screen" id="graphScreen" aria-labelledby="graphTitle" hidden>
         <div class="graph-topbar">
           <header class="screen-head graph-head">
-            <p class="eyebrow">Экран 3</p>
             <h1 id="graphTitle" tabindex="-1">Связи откликов</h1>
           </header>
         </div>
-
-        <div class="graph-toolbar" aria-label="Управление графом">
-          <div class="graph-toolbar-actions">
-            <div class="graph-zoom-controls" aria-label="Масштаб графа">
-              <button class="graph-zoom-button" id="graphZoomOutButton" type="button" aria-label="Уменьшить граф">−</button>
-              <button class="graph-zoom-button" id="graphZoomInButton" type="button" aria-label="Увеличить граф">+</button>
-            </div>
-          </div>
-        </div>
-
-        <details class="graph-legend">
-          <summary>Что означают линии?</summary>
-          <div class="graph-legend-items" aria-label="Обозначения графа">
-            <span>выбранная связь</span>
-            <span class="is-whisker">слово рядом</span>
-          </div>
-        </details>
 
         <div class="graph-stage">
           <div class="graph-viewport" id="graphViewport" tabindex="0" aria-label="Граф выбранных слов. Поле можно прокручивать в разные стороны.">
@@ -2051,7 +1902,6 @@
 
       <section class="screen intersections-screen" id="intersectionsScreen" aria-labelledby="intersectionsTitle" hidden>
         <header class="screen-head">
-          <p class="eyebrow">Слепок · экран 4</p>
           <h1 id="intersectionsTitle" tabindex="-1">Пересечения</h1>
           <p class="lead">Выбери близость слепков. Здесь только примеры профилей, не живые люди.</p>
         </header>
@@ -2070,6 +1920,7 @@
           <button class="secondary-button" id="moreProfilesButton" type="button">Ещё три</button>
         </div>
         <article class="intersection-map" id="intersectionMap" aria-live="polite" hidden></article>
+        <button class="secondary-button intersections-context-back" id="intersectionsBackButton" type="button" hidden>← К миру слова</button>
 
       </section>
 
@@ -2081,7 +1932,6 @@
       <button class="primary-nav-button" type="button" data-primary-view="snapshot">Слепок</button>
       <button class="primary-nav-button" type="button" data-primary-view="graph">Граф</button>
       <button class="primary-nav-button" type="button" data-primary-view="intersections">Пересечения</button>
-      <button class="primary-nav-button primary-nav-back" id="primaryNavBack" type="button" hidden>Назад</button>
     </nav>
   </div>
 
@@ -2128,8 +1978,8 @@
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const GRAPH_MIN_CANVAS_SIZE = 3600;
       const GRAPH_CANVAS_PADDING = 360;
-      const GRAPH_CLOUD_GAP = 175;
-      const GRAPH_NODE_GAP = 24;
+      const GRAPH_CLOUD_GAP = 112;
+      const GRAPH_NODE_GAP = 38;
       const GRAPH_LABEL_CLEAR_RADIUS = 118;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
@@ -2181,8 +2031,6 @@
       const graphSvg = document.getElementById('graphSvg');
       const graphStatus = document.getElementById('graphStatus');
       const graphCard = document.getElementById('graphCard');
-      const graphZoomOutButton = document.getElementById('graphZoomOutButton');
-      const graphZoomInButton = document.getElementById('graphZoomInButton');
       const graphToast = document.getElementById('graphToast');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
       const matchRange = document.getElementById('matchRange');
@@ -2194,7 +2042,7 @@
       const wordWorldContent = document.getElementById('wordWorldContent');
       const storageNotice = document.getElementById('storageNotice');
       const primaryNav = document.getElementById('primaryNav');
-      const primaryNavBack = document.getElementById('primaryNavBack');
+      const intersectionsBackButton = document.getElementById('intersectionsBackButton');
 
       let storageWasBroken = false;
       let state = restoreState();
@@ -2725,9 +2573,14 @@
         wordWorldContent.replaceChildren();
         const header = document.createElement('header');
         header.className = 'world-header';
+        const back = document.createElement('button');
+        back.className = 'secondary-button world-back';
+        back.type = 'button';
+        back.dataset.worldBack = 'true';
+        back.textContent = '← К миру слова';
         const eyebrow = document.createElement('p');
         eyebrow.className = 'world-eyebrow';
-        eyebrow.textContent = 'Мир слова · пример профиля';
+        eyebrow.textContent = 'пример профиля';
         const title = document.createElement('h1');
         title.className = 'world-profile-name';
         title.id = 'worldTitle';
@@ -2736,7 +2589,7 @@
         const copy = document.createElement('p');
         copy.className = 'world-profile-copy';
         copy.textContent = `У этого примера отмечено ${shelfCountLabel((profile.words || []).length)}. Это не описание человека, а набор слов в демонстрационных данных.`;
-        header.append(eyebrow, title, copy);
+        header.append(back, eyebrow, title, copy);
 
         const shelvesPanel = document.createElement('section');
         shelvesPanel.className = 'world-panel';
@@ -2806,9 +2659,11 @@
 
         const header = document.createElement('header');
         header.className = 'world-header';
-        const eyebrow = document.createElement('p');
-        eyebrow.className = 'world-eyebrow';
-        eyebrow.textContent = 'Мир слова · экран 5';
+        const back = document.createElement('button');
+        back.className = 'secondary-button world-back';
+        back.type = 'button';
+        back.dataset.worldBack = 'true';
+        back.textContent = '← Назад';
         const title = document.createElement('h1');
         title.className = 'world-title';
         title.id = 'worldTitle';
@@ -2823,7 +2678,7 @@
           chip.textContent = `${shelf.emoji} ${shelf.title}`;
           chips.append(chip);
         });
-        header.append(eyebrow, title, chips);
+        header.append(back, title, chips);
 
         const statPanel = document.createElement('section');
         statPanel.className = 'world-panel';
@@ -3703,7 +3558,10 @@
         const rareContent = document.createElement('span');
         rareContent.className = 'snapshot-summary-words';
         if (rareWords.length) rareWords.forEach(({ word, profileCount }) => {
-          rareContent.append(snapshotSummaryWord(word, ` · N ${profileCount}`));
+          const countLabel = profileCount === 0
+            ? ` · никто из ${FAKE_PROFILES.length} примеров не выбрал`
+            : ` · выбрали ${profileCount} из ${FAKE_PROFILES.length}`;
+          rareContent.append(snapshotSummaryWord(word, countLabel));
         });
         else rareContent.textContent = 'пока нет отмеченных слов';
         appendSnapshotSummaryRow('Самые редкие твои слова (среди примеров)', rareContent);
@@ -3725,14 +3583,6 @@
         });
         else pressureContent.textContent = 'пока нет выбранных камней, на которые указывают триггеры';
         appendSnapshotSummaryRow('Больше всего давления на', pressureContent);
-
-        const pairContent = document.createElement('span');
-        pairContent.className = 'snapshot-summary-words';
-        if (pressurePairs.length) pressurePairs.forEach(({ trigger, stone }) => {
-          pairContent.append(snapshotSummaryWord(trigger, ` → ${stone.word}`));
-        });
-        else pairContent.textContent = 'пока нет выбранных пар';
-        appendSnapshotSummaryRow('Твои триггеры связаны с камнями', pairContent);
 
         const note = document.createElement('p');
         note.className = 'snapshot-summary-note';
@@ -3879,12 +3729,12 @@
       }
 
       function graphNodeWidth(item) {
-        return Math.min(216, Math.max(108, 40 + item.word.length * 8.2));
+        return Math.min(324, Math.max(162, 60 + item.word.length * 12.3));
       }
 
       function graphNodeHeight(item) {
         const shelf = primaryShelf(item);
-        return shelf === 'stones' || shelf === 'triggers' ? 66 : 56;
+        return shelf === 'stones' || shelf === 'triggers' ? 98 : 84;
       }
 
       function activeGraphShelves(items) {
@@ -3894,13 +3744,17 @@
         return shelves;
       }
 
-      function graphCloudRadius(items) {
+      function graphPackingRadius(items) {
         const requiredArea = items.reduce((total, item) => {
           const width = graphNodeWidth(item) + GRAPH_NODE_GAP * 2;
           const height = graphNodeHeight(item) + GRAPH_NODE_GAP * 2;
           return total + width * height;
         }, 0);
-        return Math.max(250, Math.sqrt(requiredArea / (Math.PI * 0.48)) + 56);
+        return Math.max(320, Math.sqrt(requiredArea / (Math.PI * 0.64)) + 64);
+      }
+
+      function graphCloudRadius(items) {
+        return Math.max(250, graphPackingRadius(items) * 0.6);
       }
 
       function buildGraphZones(items, expansion = 1) {
@@ -3908,6 +3762,10 @@
         const byShelf = new Map(shelves.map((shelf) => [shelf.id, []]));
         items.forEach((item) => byShelf.get(primaryShelf(item))?.push(item));
         const radii = new Map(shelves.map((shelf) => [shelf.id, graphCloudRadius(byShelf.get(shelf.id)) * expansion]));
+        const orbitRadii = new Map(shelves.map((shelf) => [shelf.id, Math.max(
+          radii.get(shelf.id) + 150 * expansion,
+          graphPackingRadius(byShelf.get(shelf.id)) * expansion
+        )]));
         const maximumRadius = Math.max(250, ...radii.values());
         const columns = shelves.length <= 3 ? Math.max(1, shelves.length) : shelves.length <= 4 ? 2 : 3;
         const rows = Math.ceil(shelves.length / columns);
@@ -3927,7 +3785,8 @@
           zones.set(shelf.id, {
             x: originX + cellWidth * (column + 0.5) + (xSeed - 0.5) * jitter * 2,
             y: originY + cellHeight * (row + 0.5) + (ySeed - 0.5) * jitter * 2,
-            radius: radii.get(shelf.id)
+            radius: radii.get(shelf.id),
+            orbitRadius: orbitRadii.get(shelf.id)
           });
         });
         return { zones, shelves, canvas: { width, height } };
@@ -3959,8 +3818,6 @@
         graphScale = Math.min(2.4, Math.max(minimum, value));
         graphSvg.style.width = `${graphCanvas.width * graphScale}px`;
         graphSvg.style.height = `${graphCanvas.height * graphScale}px`;
-        graphZoomOutButton.disabled = graphScale <= minimum + 0.005;
-        graphZoomInButton.disabled = graphScale >= 2.395;
       }
 
       function zoomGraphTo(value, anchorX = graphViewport.clientWidth / 2, anchorY = graphViewport.clientHeight / 2) {
@@ -4149,7 +4006,7 @@
           const width = graphNodeWidth(item);
           const height = graphNodeHeight(item);
           const pressureCount = (pressureSources.get(item.id) || new Set()).size;
-          const maximumRadius = Math.max(GRAPH_LABEL_CLEAR_RADIUS + 12, zone.radius - Math.max(width, height) / 2 - GRAPH_NODE_GAP);
+          const maximumRadius = Math.max(GRAPH_LABEL_CLEAR_RADIUS + 12, zone.orbitRadius - Math.max(width, height) / 2 - GRAPH_NODE_GAP);
           const minimumRadius = Math.min(maximumRadius - 8, GRAPH_LABEL_CLEAR_RADIUS + height / 3);
           const distribution = Math.sqrt((index + 0.6) / Math.max(1, shelfCounts.get(shelf)));
           const ordinaryRadius = minimumRadius + (maximumRadius - minimumRadius) * distribution * 0.84;
@@ -4373,7 +4230,7 @@
             class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
             width: position.width, height: position.height, rx: position.height / 2
           });
-          const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 6, 'text-anchor': 'middle' });
+          const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 8, 'text-anchor': 'middle' });
           label.textContent = item.word.length > 22 ? `${item.word.slice(0, 21)}…` : item.word;
           const title = svgElement('title');
           title.textContent = item.word;
@@ -4683,28 +4540,13 @@
       function updatePrimaryNavigation(view) {
         const isMainView = ['snapshot', 'graph', 'intersections', 'word-world'].includes(view);
         primaryNav.hidden = !isMainView;
+        intersectionsBackButton.hidden = !(view === 'intersections' && state.intersectionReturn?.view === 'word-world');
         if (!isMainView) return;
-        const hasBack = ['graph', 'intersections', 'word-world'].includes(view);
-        primaryNav.classList.toggle('has-back', hasBack);
-        primaryNavBack.hidden = !hasBack;
-        primaryNavBack.textContent = view === 'word-world' && state.worldProfileId ? 'К миру слова' : 'Назад';
         primaryNav.querySelectorAll('[data-primary-view]').forEach((button) => {
           const active = button.dataset.primaryView === view;
           button.classList.toggle('is-active', active);
           button.setAttribute('aria-current', active ? 'page' : 'false');
         });
-      }
-
-      function navigatePrimaryBack() {
-        if (state.view === 'word-world') {
-          returnFromWordWorld();
-          return;
-        }
-        if (state.view === 'intersections') {
-          returnFromIntersections();
-          return;
-        }
-        if (state.view === 'graph') showView('snapshot');
       }
 
       function showView(view, focus = true, shouldPersist = true, options = {}) {
@@ -4973,6 +4815,10 @@
       });
 
       wordWorldContent.addEventListener('click', (event) => {
+        if (event.target.closest('[data-world-back]')) {
+          returnFromWordWorld();
+          return;
+        }
         const parent = event.target.closest('[data-open-world-parent]');
         if (parent) {
           openWorldParent(parent.dataset.openWorldParent);
@@ -5022,14 +4868,6 @@
         showView('scatter');
       });
 
-      document.getElementById('editButton').addEventListener('click', () => {
-        focusedShelfId = null;
-        state.wave = 1;
-        showView('scatter');
-        renderWaveUI();
-        updateSelectionUI();
-      });
-
       document.getElementById('graphIntroNextButton').addEventListener('click', () => {
         markGraphIntroSeenThisSession();
         showView('graph');
@@ -5043,7 +4881,6 @@
           else if (view === 'intersections') showView('intersections');
           return;
         }
-        if (event.target.closest('#primaryNavBack')) navigatePrimaryBack();
       });
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
@@ -5075,8 +4912,7 @@
           block: 'nearest', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
         }));
       });
-      graphZoomOutButton.addEventListener('click', () => zoomGraphTo(graphScale / 1.3));
-      graphZoomInButton.addEventListener('click', () => zoomGraphTo(graphScale * 1.3));
+      intersectionsBackButton.addEventListener('click', returnFromIntersections);
       window.addEventListener('resize', () => {
         if (!graphScreen.hidden) window.requestAnimationFrame(fitGraphToViewport);
       });
