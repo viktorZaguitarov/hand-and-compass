@@ -2065,7 +2065,7 @@
       let storageWasBroken = false;
       let state = restoreState();
       let worldData = restoreWorldData();
-      let focusedShelfId = null;
+      let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
       let graphAdjacency = new Map();
@@ -2098,7 +2098,7 @@
         return {
           version: 5, selectedIds: [], customWords: [], selectionWaves: {},
           waveOneIds: [], waveOneCustomIds: [], wave: 1, view: 'light-intro',
-          pendingCustomId: null, pickerReturnView: 'scatter', matchTarget: 50,
+          pendingCustomId: null, pickerReturnView: 'scatter', supplementShelfId: null, matchTarget: 50,
           matchVisibleCount: 3, activeProfileId: null,
           worldWordId: null, worldHistory: [], worldReturn: null, worldProfileId: null, intersectionReturn: null,
           snapshotShelfId: 'values',
@@ -2175,6 +2175,8 @@
             ? parsed.view
             : selectionCount ? 'scatter' : 'light-intro';
           const pendingCustomId = customIds.has(parsed.pendingCustomId) ? parsed.pendingCustomId : null;
+          const supplementShelfId = restoredView === 'scatter' && SHELF_BY_ID.has(parsed.supplementShelfId)
+            ? parsed.supplementShelfId : null;
           return {
             version: 5,
             selectedIds,
@@ -2186,6 +2188,7 @@
             view: restoredView === 'custom-shelf' && !pendingCustomId ? 'scatter' : restoredView,
             pendingCustomId,
             pickerReturnView: ['scatter', 'graph', 'snapshot'].includes(parsed.pickerReturnView) ? parsed.pickerReturnView : 'scatter',
+            supplementShelfId,
             matchTarget: Number.isFinite(Number(parsed.matchTarget))
               ? Math.max(0, Math.min(100, Math.round(Number(parsed.matchTarget))))
               : 50,
@@ -2333,6 +2336,34 @@
       function lightSelectionCount() {
         return [...state.selectedIds, ...state.customWords.map((item) => item.id)]
           .filter((id) => selectionWave(id) === 1).length;
+      }
+
+      function activeSupplementShelf() {
+        return SHELF_BY_ID.get(state.supplementShelfId) || null;
+      }
+
+      function isSupplementingShelf() {
+        return Boolean(activeSupplementShelf());
+      }
+
+      function openShelfSupplement(shelfId) {
+        const shelf = SHELF_BY_ID.get(shelfId);
+        if (!shelf) return;
+        state.supplementShelfId = shelf.id;
+        state.snapshotShelfId = shelf.id;
+        focusedShelfId = shelf.id;
+        state.wave = ['stones', 'triggers'].includes(shelf.id) ? 2 : 1;
+        showView('scatter');
+        renderScatter();
+      }
+
+      function finishShelfSupplement() {
+        const shelf = activeSupplementShelf();
+        if (!shelf) return;
+        state.snapshotShelfId = shelf.id;
+        state.supplementShelfId = null;
+        focusedShelfId = null;
+        showView('snapshot');
       }
 
       function wordCountLabel(count) {
@@ -3339,8 +3370,13 @@
 
       function renderScatter() {
         wordField.replaceChildren();
-        wordField.classList.toggle('has-shelf-focus', Boolean(focusedShelfId));
-        scatterOrder.forEach((item) => {
+        const supplementShelf = activeSupplementShelf();
+        const scatterItems = supplementShelf
+          ? scatterOrder.filter((item) => item.shelves.includes(supplementShelf.id))
+          : scatterOrder;
+        wordField.classList.toggle('has-shelf-focus', Boolean(supplementShelf));
+        wordField.setAttribute('aria-label', supplementShelf ? `Слова полки «${supplementShelf.title}»` : 'Россыпь слов');
+        scatterItems.forEach((item) => {
           const hash = Math.abs(hashValue(item.id));
           const button = document.createElement('button');
           button.className = 'word-token';
@@ -3357,7 +3393,7 @@
           button.style.setProperty('--token-size', `${0.8 + (hash % 5) * 0.035}rem`);
           wordField.append(button);
         });
-        state.customWords.forEach((item) => {
+        state.customWords.filter((item) => !supplementShelf || item.shelfId === supplementShelf.id).forEach((item) => {
           const hash = Math.abs(hashValue(item.id));
           const button = document.createElement('button');
           button.className = 'word-token is-custom';
@@ -3379,23 +3415,29 @@
 
       function renderWaveUI() {
         const isSecondWave = state.wave === 2;
+        const supplementShelf = activeSupplementShelf();
         document.body.classList.toggle('wave-two', isSecondWave && state.view === 'scatter');
-        scatterStep.textContent = `${isSecondWave ? 2 : 1} из 2`;
-        scatterTitle.textContent = isSecondWave
+        scatterStep.textContent = supplementShelf ? 'ДОПОЛНИТЬ ПОЛКУ' : `${isSecondWave ? 2 : 1} из 2`;
+        scatterTitle.textContent = supplementShelf
+          ? `Выбери слова, которые хочешь добавить в «${supplementShelf.emoji} ${supplementShelf.title}».`
+          : isSecondWave
           ? 'Камни и триггеры — тоже часть личности. Без них слепок нечестный.'
           : 'Ценности, цели, опоры — светлые составляющие твоего мироощущения.';
-        backWaveButton.hidden = !isSecondWave;
-        skipButton.hidden = !isSecondWave;
-        doneButton.textContent = isSecondWave ? 'Готово' : 'Дальше';
+        backWaveButton.hidden = supplementShelf || !isSecondWave;
+        skipButton.hidden = supplementShelf || !isSecondWave;
+        doneButton.textContent = supplementShelf ? 'К слепку' : isSecondWave ? 'Готово' : 'Дальше';
       }
 
       function updateSelectionUI() {
         const count = totalSelected();
         const lightCount = lightSelectionCount();
+        const supplementShelf = activeSupplementShelf();
         selectedCount.textContent = String(count);
         selectedCountLabel.textContent = wordCountLabel(count);
-        doneButton.disabled = state.wave === 1 && lightCount < 5;
-        selectionHint.textContent = state.wave === 2
+        doneButton.disabled = !supplementShelf && state.wave === 1 && lightCount < 5;
+        selectionHint.textContent = supplementShelf
+          ? 'Можно вернуться в слепок'
+          : state.wave === 2
           ? 'Можно закончить или выбрать ещё'
           : lightCount < 5 ? `Ещё ${5 - lightCount} до следующей волны`
             : lightCount < 10 ? 'Уже можно продолжить' : lightCount <= 15 ? 'Хороший объём' : 'Можно остановиться';
@@ -3434,6 +3476,11 @@
         if (!normalized) return;
 
         const dictionaryMatch = WORDS.find((item) => normalizeWord(item.word) === normalized);
+        const supplementShelf = activeSupplementShelf();
+        if (dictionaryMatch && supplementShelf && !dictionaryMatch.shelves.includes(supplementShelf.id)) {
+          scatterStatus.textContent = `Это слово живёт в другой полке; здесь — «${supplementShelf.title}».`;
+          return;
+        }
         if (dictionaryMatch) {
           if (!state.selectedIds.includes(dictionaryMatch.id)) {
             state.selectedIds.push(dictionaryMatch.id);
@@ -3447,10 +3494,12 @@
         } else {
           const randomPart = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
           const customId = `custom:${randomPart}`;
-          state.customWords.push({ id: customId, word: clean, shelfId: 'custom' });
+          state.customWords.push({ id: customId, word: clean, shelfId: supplementShelf?.id || 'custom' });
           setSelectionWave(customId);
-          state.pendingCustomId = customId;
-          state.pickerReturnView = 'scatter';
+          if (!supplementShelf) {
+            state.pendingCustomId = customId;
+            state.pickerReturnView = 'scatter';
+          }
           scatterStatus.textContent = '';
         }
 
@@ -4780,6 +4829,10 @@
       });
 
       doneButton.addEventListener('click', () => {
+        if (isSupplementingShelf()) {
+          finishShelfSupplement();
+          return;
+        }
         if (state.wave === 1) {
           if (lightSelectionCount() < 5) return;
           state.wave = 2;
@@ -4801,10 +4854,7 @@
         }
         const button = event.target.closest('[data-deepen-shelf]');
         if (!button) return;
-        focusedShelfId = button.dataset.deepenShelf;
-        state.wave = ['stones', 'triggers'].includes(focusedShelfId) ? 2 : 1;
-        showView('scatter');
-        renderScatter();
+        openShelfSupplement(button.dataset.deepenShelf);
       });
 
       snapshotTabs.addEventListener('click', (event) => {
