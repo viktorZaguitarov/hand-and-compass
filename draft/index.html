@@ -898,8 +898,27 @@
 
     .snapshot-summary-content {
       display: grid;
-      gap: 9px;
+      gap: 14px;
       padding: 0 0 14px;
+    }
+
+    .snapshot-summary-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .snapshot-summary-group + .snapshot-summary-group {
+      padding-top: 14px;
+      border-top: 1px solid rgba(83, 104, 96, 0.13);
+    }
+
+    .snapshot-summary-group-title {
+      margin: 0;
+      color: var(--forest-dark);
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 500;
+      line-height: 1.1;
     }
 
     .snapshot-summary-row {
@@ -3521,15 +3540,66 @@
         return button;
       }
 
-      function appendSnapshotSummaryRow(label, content) {
+      function createSnapshotSummaryGroup(title) {
+        const group = document.createElement('section');
+        group.className = 'snapshot-summary-group';
+        const heading = document.createElement('h2');
+        heading.className = 'snapshot-summary-group-title';
+        heading.textContent = title;
+        group.append(heading);
+        return group;
+      }
+
+      function appendSnapshotSummarySentence(group, parts) {
         const row = document.createElement('p');
         row.className = 'snapshot-summary-row';
-        const lead = document.createElement('strong');
-        lead.textContent = `${label}: `;
-        row.append(lead);
-        if (typeof content === 'string') row.append(content);
-        else row.append(content);
-        snapshotSummaryContent.append(row);
+        parts.forEach((part) => row.append(part));
+        group.append(row);
+      }
+
+      function appendSummaryWordList(parts, words) {
+        words.forEach((word, index) => {
+          if (index > 0) parts.push(index === words.length - 1 ? ' и ' : ', ');
+          parts.push('«', snapshotSummaryWord(word), '»');
+        });
+      }
+
+      function selectedNeighborPairs(selectedWords) {
+        const selectedIds = new Set(selectedWords.map((word) => word.id));
+        const pairs = new Map();
+        selectedWords.forEach((source) => {
+          (source.neighbors || []).forEach((targetId) => {
+            if (!selectedIds.has(targetId) || !WORD_BY_ID.has(targetId)) return;
+            const [leftId, rightId] = [source.id, targetId].sort();
+            const key = `${leftId}:${rightId}`;
+            const pair = pairs.get(key) || { left: WORD_BY_ID.get(leftId), right: WORD_BY_ID.get(rightId), strength: 0 };
+            pair.strength += 1;
+            pairs.set(key, pair);
+          });
+        });
+        return [...pairs.values()]
+          .sort((left, right) => right.strength - left.strength
+            || left.left.word.localeCompare(right.left.word, 'ru')
+            || left.right.word.localeCompare(right.right.word, 'ru'));
+      }
+
+      function selectedShadowPairs(selectedWords) {
+        const selectedIds = new Set(selectedWords.map((word) => word.id));
+        return selectedWords
+          .filter((word) => word.antonym && selectedIds.has(word.antonym) && word.id < word.antonym)
+          .map((word) => ({ left: word, right: WORD_BY_ID.get(word.antonym) }))
+          .filter(({ right }) => Boolean(right))
+          .sort((left, right) => left.left.word.localeCompare(right.left.word, 'ru'));
+      }
+
+      function markedTopValueWords(selectedWords) {
+        const markedIds = Array.isArray(state.valueTopIds) ? state.valueTopIds : [];
+        const selectedIds = new Set(selectedWords.map((word) => word.id));
+        return markedIds
+          .filter((id) => selectedIds.has(id))
+          .map((id) => WORD_BY_ID.get(id))
+          .filter((word) => word?.shelves?.includes('values'))
+          .slice(0, 3);
       }
 
       function renderSnapshotSummary(selectedWords) {
@@ -3544,27 +3614,46 @@
           .filter((item) => item.count > 0)
           .sort((left, right) => right.count - left.count || left.index - right.index)
           .slice(0, 2);
-        appendSnapshotSummaryRow(
-          'Сильнее всего представлены',
-          strongest.length
-            ? strongest.map(({ shelf, count }) => `${shelf.emoji} ${shelf.title} (${count})`).join(' и ')
-            : 'пока нет отмеченных слов'
-        );
+        const shelfMeaning = {
+          values: { topic: 'о ценностях', meaning: 'возможно, тебе особенно важно, что ты чувствуешь и во что веришь' },
+          goals: { topic: 'о целях', meaning: 'возможно, тебе важно, куда ты идёшь и кем хочешь стать' },
+          action: { topic: 'о том, как ты действуешь', meaning: 'возможно, тебе важно, как ты двигаешься и воплощаешь задуманное' },
+          foresight: { topic: 'о том, как ты представляешь и продумываешь будущее', meaning: 'возможно, тебе важно заранее видеть возможные пути' },
+          stones: { topic: 'о том, что может тебе мешать', meaning: 'возможно, тебе важно замечать свои сложные места' },
+          supports: { topic: 'о том, что тебя поддерживает', meaning: 'возможно, тебе особенно важно то, что возвращает тебе силы' },
+          triggers: { topic: 'о том, что тебя выбивает', meaning: 'возможно, тебе важно замечать внешние ситуации, которые на тебя влияют' }
+        };
 
-        const rareWords = selectedWords
+        const aboutYou = createSnapshotSummaryGroup('Какой я');
+        if (strongest.length === 1) {
+          const lead = shelfMeaning[strongest[0].shelf.id];
+          appendSnapshotSummarySentence(aboutYou, [`Похоже, в твоём выборе больше всего слов ${lead.topic} — ${lead.meaning}.`]);
+        } else if (strongest.length > 1) {
+          const topics = strongest.map(({ shelf }) => shelfMeaning[shelf.id].topic).join(' и ');
+          appendSnapshotSummarySentence(aboutYou, [`Похоже, в твоём выборе особенно заметны темы ${topics}; возможно, обе эти стороны сейчас важны для тебя.`]);
+        }
+
+        const topValues = markedTopValueWords(selectedWords);
+        if (topValues.length === 3) {
+          const parts = ['Похоже, без этих слов тебе трудно быть собой: '];
+          appendSummaryWordList(parts, topValues);
+          parts.push('.');
+          appendSnapshotSummarySentence(aboutYou, parts);
+        }
+
+        selectedNeighborPairs(selectedWords).slice(0, 2).forEach(({ left, right }) => {
+          appendSnapshotSummarySentence(aboutYou, [
+            'Похоже, «', snapshotSummaryWord(left), '» рядом с «', snapshotSummaryWord(right), '»',
+            ' — возможно, для тебя это одно целое.'
+          ]);
+        });
+        if (aboutYou.childElementCount > 1) snapshotSummaryContent.append(aboutYou);
+
+        const lookAt = createSnapshotSummaryGroup('На что посмотреть');
+        const rareWord = selectedWords
           .map((word) => ({ word, profileCount: profilesForWord(word.id).length }))
           .sort((left, right) => left.profileCount - right.profileCount || left.word.word.localeCompare(right.word.word, 'ru'))
-          .slice(0, 3);
-        const rareContent = document.createElement('span');
-        rareContent.className = 'snapshot-summary-words';
-        if (rareWords.length) rareWords.forEach(({ word, profileCount }) => {
-          const countLabel = profileCount === 0
-            ? ` · никто из ${FAKE_PROFILES.length} примеров не выбрал`
-            : ` · выбрали ${profileCount} из ${FAKE_PROFILES.length}`;
-          rareContent.append(snapshotSummaryWord(word, countLabel));
-        });
-        else rareContent.textContent = 'пока нет отмеченных слов';
-        appendSnapshotSummaryRow('Самые редкие твои слова (среди примеров)', rareContent);
+          [0];
 
         const pressurePairs = selectedPressurePairs(selectedWords);
         const pressureByStone = new Map();
@@ -3575,19 +3664,45 @@
         const maxPressure = Math.max(0, ...[...pressureByStone.values()].map(({ triggers }) => triggers.size));
         const mostPressured = [...pressureByStone.values()]
           .filter(({ triggers }) => triggers.size === maxPressure && maxPressure > 0)
-          .sort((left, right) => left.stone.word.localeCompare(right.stone.word, 'ru'));
-        const pressureContent = document.createElement('span');
-        pressureContent.className = 'snapshot-summary-words';
-        if (mostPressured.length) mostPressured.forEach(({ stone, triggers }) => {
-          pressureContent.append(snapshotSummaryWord(stone, ` · ${triggers.size}`));
-        });
-        else pressureContent.textContent = 'пока нет выбранных камней, на которые указывают триггеры';
-        appendSnapshotSummaryRow('Больше всего давления на', pressureContent);
+          .sort((left, right) => left.stone.word.localeCompare(right.stone.word, 'ru'))
+          .slice(0, 2);
+        if (mostPressured.length) {
+          const parts = [mostPressured.length === 1 ? 'Похоже, на выбранное тобой ' : 'Похоже, на выбранные тобой '];
+          appendSummaryWordList(parts, mostPressured.map(({ stone }) => stone));
+          const hasSeveralTriggers = mostPressured.some(({ triggers }) => triggers.size > 1);
+          if (mostPressured.length > 1) {
+            parts.push(hasSeveralTriggers
+              ? ' влияют сразу несколько отмеченных внешних ситуаций — возможно, эти места чувствительнее, чем кажутся.'
+              : ' влияют отмеченные внешние ситуации — возможно, эти связки для тебя важны.');
+          } else {
+            parts.push(hasSeveralTriggers
+              ? ' влияют сразу несколько отмеченных внешних ситуаций — возможно, это чувствительнее, чем кажется.'
+              : ' влияет отмеченная внешняя ситуация — возможно, эта связка для тебя важна.');
+          }
+          appendSnapshotSummarySentence(lookAt, parts);
+        }
 
-        const note = document.createElement('p');
-        note.className = 'snapshot-summary-note';
-        note.textContent = 'Это навигация по твоему слепку, а не вывод о тебе.';
-        snapshotSummaryContent.append(note);
+        if (rareWord) {
+          appendSnapshotSummarySentence(lookAt, rareWord.profileCount === 0
+            ? ['Похоже, «', snapshotSummaryWord(rareWord.word), '» — редкое слово: среди примеров его не выбрал никто; возможно, его смысл для тебя особенно личный.']
+            : ['Похоже, «', snapshotSummaryWord(rareWord.word), '» — редкое слово: среди примеров его выбрали немногие; возможно, для тебя оно звучит по-особому.']);
+        }
+
+        const shadowPair = selectedShadowPairs(selectedWords)[0];
+        if (shadowPair) {
+          appendSnapshotSummarySentence(lookAt, [
+            'Похоже, ты выбрал и «', snapshotSummaryWord(shadowPair.left), '» и «', snapshotSummaryWord(shadowPair.right), '»',
+            ': это противоположные слова, возможно, обе стороны тебе знакомы.'
+          ]);
+        }
+
+        const plusMinusWord = selectedWords.find((word) => word.shelves.includes('stones') && word.shelves.some((shelfId) => shelfId !== 'stones'));
+        if (plusMinusWord) {
+          appendSnapshotSummarySentence(lookAt, [
+            'Похоже, «', snapshotSummaryWord(plusMinusWord), '» для тебя и ресурс, и препятствие одновременно — возможно, его роль меняется от ситуации к ситуации.'
+          ]);
+        }
+        if (lookAt.childElementCount > 1) snapshotSummaryContent.append(lookAt);
       }
 
       function renderSnapshot() {
