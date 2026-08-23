@@ -1021,6 +1021,30 @@
     .graph-head .eyebrow { margin: 0; font-size: 0.58rem; white-space: nowrap; }
     .graph-head h1 { margin: 0; font-size: clamp(1.45rem, 4vw, 2.35rem); line-height: 1; }
 
+    .graph-walk-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .graph-walk-button {
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid rgba(49, 95, 82, 0.28);
+      border-radius: 999px;
+      color: var(--forest-dark);
+      background: rgba(255, 253, 247, 0.74);
+      font: 750 0.7rem/1 var(--sans);
+      white-space: nowrap;
+    }
+
+    .graph-walk-button--clear {
+      border-color: rgba(118, 75, 63, 0.2);
+      color: #765247;
+      background: rgba(255, 248, 243, 0.72);
+    }
+
     .graph-stage {
       width: 100%;
       max-width: 1040px;
@@ -1158,6 +1182,18 @@
     .graph-node.is-pressured .graph-node-plate {
       stroke: rgba(246, 221, 170, 0.9);
       stroke-width: 3;
+    }
+
+    .graph-node.is-trail .graph-node-plate {
+      stroke: rgba(246, 221, 170, 0.94);
+      stroke-width: 2.7;
+      filter: drop-shadow(0 0 8px rgba(203, 165, 83, 0.42)) drop-shadow(0 4px 7px rgba(32, 51, 45, 0.16));
+    }
+
+    .graph-node.is-walk-target .graph-node-plate {
+      stroke: rgba(255, 253, 247, 0.94);
+      stroke-dasharray: 8 6;
+      stroke-width: 2.2;
     }
 
     .graph-node.is-active .graph-node-plate { stroke: #f1cd82; stroke-width: 4; }
@@ -1841,8 +1877,10 @@
       .shelf-summary { margin-top: 10px; padding-top: 9px; font-size: 0.69rem; }
       .graph-screen { padding-inline: 9px; }
       .graph-topbar { padding-inline: 3px; }
-      .graph-head { width: 100%; padding-inline: 3px; }
+      .graph-head { width: 100%; padding-inline: 3px; flex-wrap: wrap; }
       .graph-head h1 { font-size: 1.35rem; }
+      .graph-walk-actions { width: 100%; margin-left: 0; }
+      .graph-walk-button { min-height: 33px; padding: 7px 9px; font-size: 0.66rem; }
       .graph-stage { min-height: 0; }
       .graph-viewport { height: clamp(390px, 56svh, 590px); min-height: 390px; border-radius: 18px; }
       .graph-canvas { width: 3600px; height: 3600px; }
@@ -2056,6 +2094,10 @@
         <div class="graph-topbar">
           <header class="screen-head graph-head">
             <h1 id="graphTitle" tabindex="-1">Связи откликов</h1>
+            <div class="graph-walk-actions" aria-label="Прогулка по графу">
+              <button class="graph-walk-button" id="graphJumpButton" type="button">Дальний прыжок</button>
+              <button class="graph-walk-button graph-walk-button--clear" id="clearGraphTrailButton" type="button" hidden>Очистить след</button>
+            </div>
           </header>
         </div>
 
@@ -2227,6 +2269,8 @@
       const graphStatus = document.getElementById('graphStatus');
       const graphCard = document.getElementById('graphCard');
       const graphToast = document.getElementById('graphToast');
+      const graphJumpButton = document.getElementById('graphJumpButton');
+      const clearGraphTrailButton = document.getElementById('clearGraphTrailButton');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
@@ -2254,6 +2298,8 @@
       let graphZones = new Map();
       let graphCanvas = { width: GRAPH_MIN_CANVAS_SIZE, height: GRAPH_MIN_CANVAS_SIZE };
       let graphBounds = { minX: 0, minY: 0, maxX: GRAPH_MIN_CANVAS_SIZE, maxY: GRAPH_MIN_CANVAS_SIZE };
+      let graphPositions = new Map();
+      let graphWalkTargetId = null;
       let graphScale = 1;
       let graphViewportWidthAtFit = 0;
       let graphResizeFrame = 0;
@@ -2283,6 +2329,7 @@
           matchVisibleCount: 3, activeProfileId: null,
           worldWordId: null, worldHistory: [], worldReturn: null, worldProfileId: null, intersectionReturn: null,
           snapshotShelfId: 'values',
+          graphTrailIds: [],
           updatedAt: null
         };
       }
@@ -2307,6 +2354,9 @@
             : [];
           const selectionCount = selectedIds.length + customWords.length;
           const customIds = new Set(customWords.map((item) => item.id));
+          const graphTrailIds = Array.isArray(parsed.graphTrailIds)
+            ? [...new Set(parsed.graphTrailIds.map(canonicalWordId).filter((id) => WORD_BY_ID.has(id) || customIds.has(id)))]
+            : [];
           const waveOneIds = Array.isArray(parsed.waveOneIds)
             ? [...new Set(parsed.waveOneIds.map(canonicalWordId).filter((id) => selectedIds.includes(id)))]
             : [...selectedIds];
@@ -2384,6 +2434,7 @@
             intersectionReturn,
             snapshotShelfId: [...SHELVES.map((shelf) => shelf.id), 'custom'].includes(parsed.snapshotShelfId)
               ? parsed.snapshotShelfId : 'values',
+            graphTrailIds,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -3135,7 +3186,7 @@
         }
         showView('graph', true, true, { preserveGraph: true });
         window.requestAnimationFrame(() => {
-          if (wordId && isGraphItemSelected(wordId)) selectGraphNode(wordId, true, true, false);
+          if (wordId && isGraphItemVisible(wordId)) selectGraphNode(wordId, true, true, false);
           else if (wordId) showGraphAddProposal(wordId);
         });
       }
@@ -4320,13 +4371,20 @@
 
       function graphItems() {
         const dictionaryWords = state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const trailWords = state.graphTrailIds
+          .filter((id) => !state.selectedIds.includes(id))
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean);
+        const walkTarget = graphWalkTargetId && !state.selectedIds.includes(graphWalkTargetId) && !state.graphTrailIds.includes(graphWalkTargetId)
+          ? WORD_BY_ID.get(graphWalkTargetId)
+          : null;
         const customWords = state.customWords.map((item) => ({
           ...item,
           shelves: [SHELF_BY_ID.has(item.shelfId) ? item.shelfId : 'custom'],
           neighbors: [],
           antonym: null
         }));
-        return [...dictionaryWords, ...customWords];
+        return [...dictionaryWords, ...trailWords, ...(walkTarget ? [walkTarget] : []), ...customWords];
       }
 
       function graphItemById(id) {
@@ -4343,6 +4401,10 @@
 
       function isGraphItemSelected(id) {
         return state.selectedIds.includes(id) || state.customWords.some((item) => item.id === id);
+      }
+
+      function isGraphItemVisible(id) {
+        return isGraphItemSelected(id) || state.graphTrailIds.includes(id) || graphWalkTargetId === id;
       }
 
       function primaryShelf(item) {
@@ -4454,6 +4516,77 @@
         setGraphScaleValue(graphInitialScale());
         centerGraphViewport();
         graphViewportWidthAtFit = graphViewport.clientWidth;
+      }
+
+      function centerGraphOnNode(id, smooth = false) {
+        const position = graphPositions.get(id);
+        if (!position) return;
+        const left = Math.max(0, position.x * graphScale - graphViewport.clientWidth / 2);
+        const top = Math.max(0, position.y * graphScale - graphViewport.clientHeight / 2);
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        graphViewport.scrollTo({ left, top, behavior: smooth && !reducedMotion ? 'smooth' : 'auto' });
+      }
+
+      function graphWalkNetwork() {
+        const network = new Map(WORDS.map((word) => [word.id, new Set()]));
+        WORDS.forEach((word) => {
+          const relatedIds = [...graphNeighborIds(word), word.antonym, ...(word.activates || [])]
+            .filter((id) => typeof id === 'string' && WORD_BY_ID.has(id));
+          relatedIds.forEach((relatedId) => {
+            network.get(word.id).add(relatedId);
+            network.get(relatedId).add(word.id);
+          });
+        });
+        return network;
+      }
+
+      function graphWalkDistances(origins) {
+        const network = graphWalkNetwork();
+        const distances = new Map();
+        const queue = origins.filter((id) => network.has(id));
+        queue.forEach((id) => distances.set(id, 0));
+        for (let index = 0; index < queue.length; index += 1) {
+          const id = queue[index];
+          const distance = distances.get(id);
+          (network.get(id) || new Set()).forEach((neighborId) => {
+            if (distances.has(neighborId)) return;
+            distances.set(neighborId, distance + 1);
+            queue.push(neighborId);
+          });
+        }
+        return distances;
+      }
+
+      function chooseDistantWalkWord() {
+        const excludedIds = new Set([...state.selectedIds, ...state.graphTrailIds, graphWalkTargetId].filter(Boolean));
+        const candidates = WORDS.filter((word) => !excludedIds.has(word.id));
+        if (!candidates.length) return null;
+        const origins = state.graphTrailIds.length ? state.graphTrailIds : state.selectedIds;
+        if (!origins.length) return candidates[Math.floor(Math.random() * candidates.length)];
+        const originShelves = new Set(origins
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean)
+          .map((word) => primaryShelf(word)));
+        const candidatesInOtherAreas = candidates.filter((word) => !originShelves.has(primaryShelf(word)));
+        const distantAreaCandidates = candidatesInOtherAreas.length ? candidatesInOtherAreas : candidates;
+        const distances = graphWalkDistances(origins);
+        const distanceFor = (word) => distances.get(word.id) ?? Number.POSITIVE_INFINITY;
+        const maximumDistance = Math.max(...distantAreaCandidates.map(distanceFor));
+        const farCandidates = distantAreaCandidates.filter((word) => distanceFor(word) === maximumDistance);
+        return farCandidates[Math.floor(Math.random() * farCandidates.length)];
+      }
+
+      function jumpToDistantGraphWord() {
+        const target = chooseDistantWalkWord();
+        if (!target) {
+          showGraphToast('Другого слова для прогулки пока нет.');
+          return;
+        }
+        graphWalkTargetId = target.id;
+        activeGraphNodeId = null;
+        graphChainIds = new Set();
+        renderGraph();
+        window.requestAnimationFrame(() => centerGraphOnNode(target.id, true));
       }
 
       function graphViewportWidthChanged() {
@@ -4740,6 +4873,7 @@
         graphPressureSources = buildGraphPressure(items);
         const layout = computeGraphLayout(items, graphAdjacency, graphPressureSources);
         const positions = layout.positions;
+        graphPositions = positions;
         const graphShelves = layout.shelves;
         graphSvg.setAttribute('viewBox', `0 0 ${graphCanvas.width} ${graphCanvas.height}`);
         graphSvg.replaceChildren();
@@ -4845,7 +4979,7 @@
           const position = positions.get(item.id);
           const profileCount = profilesForWord(item.id).length;
           const group = svgElement('g', {
-            class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}${hasOwnWorldStory(item.id) ? ' has-own-story' : ''}`,
+            class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}${state.graphTrailIds.includes(item.id) ? ' is-trail' : ''}${graphWalkTargetId === item.id && !isGraphItemSelected(item.id) ? ' is-walk-target' : ''}${hasOwnWorldStory(item.id) ? ' has-own-story' : ''}`,
             tabindex: 0,
             role: 'button',
             'aria-label': `Открыть слово «${item.word}». Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
@@ -4891,12 +5025,37 @@
         const direct = new Set([id]);
         (graphAdjacency.get(id) || new Set()).forEach((neighborId) => direct.add(neighborId));
         const item = graphItemById(id);
-        if (item?.antonym && isGraphItemSelected(item.antonym)) direct.add(item.antonym);
+        if (item?.antonym && isGraphItemVisible(item.antonym)) direct.add(item.antonym);
         (item?.activates || []).forEach((stoneId) => {
-          if (isGraphItemSelected(stoneId)) direct.add(stoneId);
+          if (isGraphItemVisible(stoneId)) direct.add(stoneId);
         });
         (graphPressureSources.get(id) || new Set()).forEach((relatedId) => direct.add(relatedId));
         return direct;
+      }
+
+      function updateGraphTrailVisual() {
+        const trailIds = new Set(state.graphTrailIds);
+        graphSvg.querySelectorAll('[data-graph-node-id]').forEach((node) => {
+          node.classList.toggle('is-trail', trailIds.has(node.dataset.graphNodeId));
+        });
+        clearGraphTrailButton.hidden = !trailIds.size;
+      }
+
+      function recordGraphTrail(id) {
+        if (!graphItemById(id) || state.graphTrailIds.includes(id)) return;
+        state.graphTrailIds.push(id);
+        persistState();
+        updateGraphTrailVisual();
+      }
+
+      function clearGraphTrail() {
+        if (!state.graphTrailIds.length && !graphWalkTargetId) return;
+        state.graphTrailIds = [];
+        graphWalkTargetId = null;
+        activeGraphNodeId = null;
+        graphChainIds = new Set();
+        persistState();
+        renderGraph();
       }
 
       function updateGraphHighlight() {
@@ -4915,6 +5074,7 @@
         graphSvg.querySelectorAll('.graph-whisker, .graph-ghost').forEach((element) => {
           element.classList.toggle('is-dimmed', hasActive && element.dataset.source !== activeGraphNodeId);
         });
+        updateGraphTrailVisual();
       }
 
       function showGraphToast(message, duration = 5200) {
@@ -4941,7 +5101,7 @@
       }
 
       function selectGraphNode(id, scrollCard = true, showPressure = true, allowToggle = true) {
-        if (!isGraphItemSelected(id)) return;
+        if (!isGraphItemVisible(id)) return;
         if (allowToggle && activeGraphNodeId === id) {
           clearGraphFocus();
           return;
@@ -4992,6 +5152,14 @@
         const actions = document.createElement('div');
         actions.className = 'graph-card-actions';
         if (WORD_BY_ID.has(item.id)) {
+          if (!isGraphItemSelected(item.id)) {
+            const addToSnapshot = document.createElement('button');
+            addToSnapshot.className = 'primary-button';
+            addToSnapshot.type = 'button';
+            addToSnapshot.dataset.proposeAdd = item.id;
+            addToSnapshot.textContent = 'Добавить в слепок';
+            actions.append(addToSnapshot);
+          }
           if (hasOwnWorldStory(item.id)) {
             const ownStoryLink = document.createElement('button');
             ownStoryLink.className = 'graph-card-own-story';
@@ -5150,6 +5318,7 @@
           state.selectedIds.push(id);
           setSelectionWave(id);
         }
+        if (graphWalkTargetId === id) graphWalkTargetId = null;
         state.view = 'graph';
         persistState();
         renderGraph();
@@ -5351,6 +5520,7 @@
         }
         const node = target.closest('[data-graph-node-id]');
         if (node) {
+          recordGraphTrail(node.dataset.graphNodeId);
           selectGraphNode(node.dataset.graphNodeId);
           return;
         }
@@ -5443,6 +5613,8 @@
         if (chooseShelf) { openCustomShelfPicker(chooseShelf.dataset.chooseCustomShelf, 'graph'); return; }
         const worldButton = event.target.closest('[data-open-word-world]');
         if (worldButton) { openWordWorld(worldButton.dataset.openWordWorld, 'graph'); return; }
+        const proposeAdd = event.target.closest('[data-propose-add]');
+        if (proposeAdd) { showGraphAddProposal(proposeAdd.dataset.proposeAdd); return; }
         const directAdd = event.target.closest('[data-add-word]');
         if (directAdd) { addGraphWord(directAdd.dataset.addWord); return; }
         const confirmAdd = event.target.closest('[data-confirm-add]');
@@ -5454,9 +5626,12 @@
         }
         const neighbor = event.target.closest('[data-card-word]');
         if (!neighbor) return;
-        if (isGraphItemSelected(neighbor.dataset.cardWord)) selectGraphNode(neighbor.dataset.cardWord);
+        if (isGraphItemVisible(neighbor.dataset.cardWord)) selectGraphNode(neighbor.dataset.cardWord);
         else showGraphAddProposal(neighbor.dataset.cardWord);
       });
+
+      graphJumpButton.addEventListener('click', jumpToDistantGraphWord);
+      clearGraphTrailButton.addEventListener('click', clearGraphTrail);
 
       wordWorldContent.addEventListener('click', (event) => {
         if (event.target.closest('[data-world-back]')) {
