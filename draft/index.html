@@ -1176,7 +1176,7 @@
     }
 
     .graph-node-label {
-      fill: #fffdf7;
+      fill: var(--node-label-color, #fffdf7);
       font-family: var(--sans);
       font-size: 23px;
       font-weight: 700;
@@ -1192,12 +1192,12 @@
     }
 
     .graph-node-popularity {
-      fill: #fffdf7;
+      fill: var(--node-label-color, #fffdf7);
       font-family: var(--sans);
       font-size: 13px;
       font-weight: 700;
       paint-order: stroke fill;
-      stroke: rgba(29, 43, 38, 0.5);
+      stroke: var(--node-label-stroke, rgba(14, 24, 21, 0.86));
       stroke-width: 1.6;
       pointer-events: none;
     }
@@ -2259,8 +2259,18 @@
       const GRAPH_LABEL_CLEAR_RADIUS = 118;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
-        values: '#c5aa76', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
-        stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#7d827d'
+        values: '#c5aa76', goals: '#4b7c70', action: '#9e5f59', foresight: '#626e91',
+        stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#707670'
+      };
+      const GRAPH_LABEL_COLORS = {
+        values: '#172722', supports: '#172722',
+        goals: '#fffdf7', action: '#fffdf7', foresight: '#fffdf7', stones: '#fffdf7',
+        triggers: '#fffdf7', custom: '#fffdf7'
+      };
+      const GRAPH_LABEL_STROKES = {
+        values: 'rgba(255, 253, 247, 0.9)', supports: 'rgba(255, 253, 247, 0.9)',
+        goals: 'rgba(14, 24, 21, 0.86)', action: 'rgba(14, 24, 21, 0.86)', foresight: 'rgba(14, 24, 21, 0.86)',
+        stones: 'rgba(14, 24, 21, 0.86)', triggers: 'rgba(14, 24, 21, 0.86)', custom: 'rgba(14, 24, 21, 0.86)'
       };
       const BOT_ARCHETYPE_STORY_SEEDS = Object.freeze([
         { id: 'dreamer', keyWords: ['mechty', 'fantazii', 'otkladyvanie'] },
@@ -5213,7 +5223,7 @@
             'aria-label': `Открыть слово «${item.word}». Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
             'data-graph-node-id': item.id,
             'data-pressure-index': position.pressureCount,
-            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
+            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--node-label-color:${GRAPH_LABEL_COLORS[position.shelf] || GRAPH_LABEL_COLORS.custom};--node-label-stroke:${GRAPH_LABEL_STROKES[position.shelf] || GRAPH_LABEL_STROKES.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
           });
           const plate = svgElement('rect', {
             class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
