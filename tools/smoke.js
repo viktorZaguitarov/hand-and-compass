@@ -7,7 +7,7 @@
  * so the draft stays network-free and the repository needs no node_modules.
  */
 
-const { createServer, get: httpGet, request: httpRequest } = require('node:http');
+const { createServer, request: httpRequest } = require('node:http');
 const net = require('node:net');
 const { randomBytes } = require('node:crypto');
 const { existsSync } = require('node:fs');

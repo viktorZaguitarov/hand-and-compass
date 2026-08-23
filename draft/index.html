@@ -585,7 +585,7 @@
 
     .custom-input::placeholder { color: #87958f; }
 
-    .small-button, .primary-button, .secondary-button, .future-button {
+    .small-button, .primary-button, .secondary-button {
       min-height: 46px;
       border-radius: 13px;
       font-family: var(--sans);
@@ -613,15 +613,6 @@
       border: 1px solid rgba(49, 95, 82, 0.24);
       color: var(--forest-dark);
       background: rgba(255, 255, 255, 0.58);
-    }
-
-    .future-button {
-      position: relative;
-      padding: 12px 17px;
-      border: 1px dashed rgba(49, 95, 82, 0.24);
-      color: #788780;
-      background: rgba(241, 236, 223, 0.52);
-      cursor: not-allowed;
     }
 
     button:disabled { opacity: 0.44; cursor: not-allowed; transform: none; }
@@ -3424,7 +3415,7 @@
         }
         showView('graph', true, true, { preserveGraph: true });
         window.requestAnimationFrame(() => {
-          if (wordId && isGraphItemVisible(wordId)) selectGraphNode(wordId, true, true, false);
+          if (wordId && isGraphItemVisible(wordId)) selectGraphNode(wordId, true, false);
           else if (wordId) showGraphAddProposal(wordId);
         });
       }
@@ -4299,7 +4290,7 @@
         persistState();
         if (returnView === 'scatter') renderScatter();
         showView(returnView);
-        if (returnView === 'graph') window.requestAnimationFrame(() => selectGraphNode(itemId, false, false, false));
+        if (returnView === 'graph') window.requestAnimationFrame(() => selectGraphNode(itemId, false, false));
       }
 
       function animateWordToken(button) {
@@ -5249,7 +5240,7 @@
         });
 
         graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
-        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false, false);
+        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
         else {
           activeGraphNodeId = null;
           graphChainIds = new Set();
@@ -5338,7 +5329,7 @@
         updateGraphHighlight();
       }
 
-      function selectGraphNode(id, scrollCard = true, showPressure = true, allowToggle = true) {
+      function selectGraphNode(id, showPressure = true, allowToggle = true) {
         if (!isGraphItemVisible(id)) return;
         if (allowToggle && activeGraphNodeId === id) {
           clearGraphFocus();
