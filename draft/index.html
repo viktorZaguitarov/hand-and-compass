@@ -1972,6 +1972,7 @@
       <button class="primary-nav-button" type="button" data-primary-view="snapshot">Слепок</button>
       <button class="primary-nav-button" type="button" data-primary-view="graph">Граф</button>
       <button class="primary-nav-button" type="button" data-primary-view="intersections">Пересечения</button>
+      <button class="primary-nav-button" type="button" data-primary-view="forks">Развилки</button>
     </nav>
   </div>
 
@@ -3671,6 +3672,21 @@
         honesty.className = 'intersection-honesty';
         honesty.textContent = 'Совпадение не значит совместимость. Это карта, а не приговор.';
         intersectionMap.append(head, common, complement, friction, honesty);
+        if (!forksData.inviteSeen && !hasUsedForkThisSession() && chooseForkDilemma()) {
+          const invite = document.createElement('section');
+          invite.className = 'fork-invite';
+          const inviteText = document.createElement('p');
+          inviteText.textContent = 'Хочешь проверить, как ты понимаешь двойника?';
+          const inviteButton = document.createElement('button');
+          inviteButton.type = 'button';
+          inviteButton.className = 'secondary-button';
+          inviteButton.dataset.openForksFromIntersections = 'true';
+          inviteButton.textContent = 'Открыть развилку';
+          invite.append(inviteText, inviteButton);
+          intersectionMap.append(invite);
+          forksData.inviteSeen = true;
+          persistForksData();
+        }
       }
 
       function renderScatter() {
@@ -5025,7 +5041,7 @@
       }
 
       function updatePrimaryNavigation(view) {
-        const isMainView = ['snapshot', 'graph', 'intersections', 'word-world'].includes(view);
+        const isMainView = ['snapshot', 'graph', 'intersections', 'word-world', 'forks'].includes(view);
         primaryNav.hidden = !isMainView;
         intersectionsBackButton.hidden = !(view === 'intersections' && state.intersectionReturn?.view === 'word-world');
         if (!isMainView) return;
@@ -5372,6 +5388,7 @@
           if (view === 'snapshot') showView('snapshot');
           else if (view === 'graph') openGraphScreen();
           else if (view === 'intersections') showView('intersections');
+          else if (view === 'forks') showView('forks');
           return;
         }
       });
@@ -5392,6 +5409,11 @@
         }
       });
       intersectionMap.addEventListener('click', (event) => {
+        const forkInvite = event.target.closest('[data-open-forks-from-intersections]');
+        if (forkInvite) {
+          showView('forks');
+          return;
+        }
         const word = event.target.closest('[data-open-world-from-intersection]');
         if (!word) return;
         openWordWorld(word.dataset.openWorldFromIntersection, 'intersections', state.activeProfileId);
