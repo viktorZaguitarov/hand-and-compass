@@ -585,7 +585,7 @@
 
     .custom-input::placeholder { color: #87958f; }
 
-    .small-button, .primary-button, .secondary-button, .future-button {
+    .small-button, .primary-button, .secondary-button {
       min-height: 46px;
       border-radius: 13px;
       font-family: var(--sans);
@@ -613,15 +613,6 @@
       border: 1px solid rgba(49, 95, 82, 0.24);
       color: var(--forest-dark);
       background: rgba(255, 255, 255, 0.58);
-    }
-
-    .future-button {
-      position: relative;
-      padding: 12px 17px;
-      border: 1px dashed rgba(49, 95, 82, 0.24);
-      color: #788780;
-      background: rgba(241, 236, 223, 0.52);
-      cursor: not-allowed;
     }
 
     button:disabled { opacity: 0.44; cursor: not-allowed; transform: none; }
@@ -683,6 +674,34 @@
       font-size: 0.82rem;
       line-height: 1.45;
       text-align: left;
+    }
+
+    .snapshot-transfer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px 9px;
+      margin: 18px auto 0;
+      color: var(--ink-soft);
+      font-family: var(--sans);
+    }
+
+    .snapshot-transfer-button {
+      min-height: 34px;
+      padding: 7px 9px;
+      border: 1px solid rgba(83, 104, 96, 0.2);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      background: rgba(255, 253, 247, 0.48);
+      font: 700 0.68rem/1 var(--sans);
+    }
+
+    .snapshot-transfer-status {
+      flex: 1 0 100%;
+      min-height: 1.2em;
+      margin: 0;
+      font-size: 0.68rem;
+      line-height: 1.35;
     }
 
     .honesty-note strong { color: var(--forest-dark); }
@@ -1148,7 +1167,7 @@
     }
 
     .graph-node-label {
-      fill: #fffdf7;
+      fill: var(--node-label-color, #fffdf7);
       font-family: var(--sans);
       font-size: 23px;
       font-weight: 700;
@@ -1164,12 +1183,12 @@
     }
 
     .graph-node-popularity {
-      fill: #fffdf7;
+      fill: var(--node-label-color, #fffdf7);
       font-family: var(--sans);
       font-size: 13px;
       font-weight: 700;
       paint-order: stroke fill;
-      stroke: rgba(29, 43, 38, 0.5);
+      stroke: var(--node-label-stroke, rgba(14, 24, 21, 0.86));
       stroke-width: 1.6;
       pointer-events: none;
     }
@@ -1866,6 +1885,9 @@
       .snapshot-head { margin-bottom: 16px; }
       .honesty-note { gap: 8px; margin-top: 12px; padding: 10px 11px; font-size: 0.72rem; }
       .snapshot-small-note { font-size: 0.7rem; }
+      .snapshot-transfer { margin-top: 14px; }
+      .snapshot-transfer-button { min-height: 32px; padding: 7px 8px; font-size: 0.64rem; }
+      .snapshot-transfer-status { font-size: 0.64rem; }
       .shelf-grid { gap: 9px; margin-bottom: 16px; }
       .shelf-card { min-height: 146px; padding: 13px; border-radius: 17px; }
       .shelf-title-row { margin-bottom: 10px; }
@@ -2077,6 +2099,12 @@
         </details>
         <div class="snapshot-tabs" id="snapshotTabs" role="tablist" aria-label="Полки слепка"></div>
         <div class="shelf-grid" id="shelfGrid"></div>
+        <div class="snapshot-transfer" aria-label="Резервная копия слепка">
+          <button class="snapshot-transfer-button" id="exportSnapshotButton" type="button">Скачать слепок</button>
+          <button class="snapshot-transfer-button" id="importSnapshotButton" type="button">Загрузить слепок</button>
+          <input id="snapshotImportInput" type="file" accept="application/json,.json" hidden>
+          <p class="snapshot-transfer-status" id="snapshotTransferStatus" role="status" aria-live="polite"></p>
+        </div>
       </section>
 
       <section class="screen entry-screen" id="graphIntroScreen" aria-labelledby="graphIntroTitle" hidden>
@@ -2168,6 +2196,8 @@
       const FORKS_STORAGE_KEY = 'hand_compass_forks_v1';
       const FORKS_SESSION_KEY = 'hand_compass_fork_seen_v1';
       const FORKS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+      const SNAPSHOT_EXPORT_VERSION = 1;
+      const SNAPSHOT_STORAGE_KEYS = [STORAGE_KEY, WORLD_STORAGE_KEY, FORKS_STORAGE_KEY];
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
       const DILEMMAS = JSON.parse(document.getElementById('dilemmasData').textContent);
@@ -2220,8 +2250,18 @@
       const GRAPH_LABEL_CLEAR_RADIUS = 118;
       const NEIGHBOR_EXPLANATION = 'Словарь считает эти слова соседями: они часто идут рядом. Это соседство, а не причина и не вывод о тебе.';
       const GRAPH_COLORS = {
-        values: '#c5aa76', goals: '#4f8074', action: '#a86660', foresight: '#6f7898',
-        stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#7d827d'
+        values: '#c5aa76', goals: '#4b7c70', action: '#9e5f59', foresight: '#626e91',
+        stones: '#353b43', supports: '#78935f', triggers: '#74464e', custom: '#707670'
+      };
+      const GRAPH_LABEL_COLORS = {
+        values: '#172722', supports: '#172722',
+        goals: '#fffdf7', action: '#fffdf7', foresight: '#fffdf7', stones: '#fffdf7',
+        triggers: '#fffdf7', custom: '#fffdf7'
+      };
+      const GRAPH_LABEL_STROKES = {
+        values: 'rgba(255, 253, 247, 0.9)', supports: 'rgba(255, 253, 247, 0.9)',
+        goals: 'rgba(14, 24, 21, 0.86)', action: 'rgba(14, 24, 21, 0.86)', foresight: 'rgba(14, 24, 21, 0.86)',
+        stones: 'rgba(14, 24, 21, 0.86)', triggers: 'rgba(14, 24, 21, 0.86)', custom: 'rgba(14, 24, 21, 0.86)'
       };
       const BOT_ARCHETYPE_STORY_SEEDS = Object.freeze([
         { id: 'dreamer', keyWords: ['mechty', 'fantazii', 'otkladyvanie'] },
@@ -2264,6 +2304,10 @@
       const snapshotTabs = document.getElementById('snapshotTabs');
       const snapshotSmallNote = document.getElementById('snapshotSmallNote');
       const snapshotSummaryContent = document.getElementById('snapshotSummaryContent');
+      const exportSnapshotButton = document.getElementById('exportSnapshotButton');
+      const importSnapshotButton = document.getElementById('importSnapshotButton');
+      const snapshotImportInput = document.getElementById('snapshotImportInput');
+      const snapshotTransferStatus = document.getElementById('snapshotTransferStatus');
       const graphViewport = document.getElementById('graphViewport');
       const graphSvg = document.getElementById('graphSvg');
       const graphStatus = document.getElementById('graphStatus');
@@ -2329,6 +2373,7 @@
           matchVisibleCount: 3, activeProfileId: null,
           worldWordId: null, worldHistory: [], worldReturn: null, worldProfileId: null, intersectionReturn: null,
           snapshotShelfId: 'values',
+          wordSigns: {}, privacyByWord: {}, topThreeValues: [],
           graphTrailIds: [],
           updatedAt: null
         };
@@ -2364,6 +2409,22 @@
             ? [...new Set(parsed.waveOneCustomIds.filter((id) => customIds.has(id)))]
             : [...customIds];
           const knownIds = new Set([...selectedIds, ...customIds]);
+          const restoreWordMetadata = (source, maximumLength) => {
+            const result = {};
+            if (!source || typeof source !== 'object') return result;
+            Object.entries(source).forEach(([id, value]) => {
+              const canonicalId = canonicalWordId(id);
+              if (knownIds.has(canonicalId) && typeof value === 'string' && value.trim() && value.length <= maximumLength) {
+                result[canonicalId] = value;
+              }
+            });
+            return result;
+          };
+          const wordSigns = restoreWordMetadata(parsed.wordSigns, 12);
+          const privacyByWord = restoreWordMetadata(parsed.privacyByWord, 32);
+          const topThreeValues = Array.isArray(parsed.topThreeValues)
+            ? [...new Set(parsed.topThreeValues.map(canonicalWordId).filter((id) => selectedIds.includes(id) && WORD_BY_ID.get(id)?.shelves?.includes('values')))].slice(0, 3)
+            : [];
           const selectionWaves = {};
           knownIds.forEach((id) => {
             const legacyId = LEGACY_WORD_ID_BY_CURRENT.get(id);
@@ -2434,6 +2495,9 @@
             intersectionReturn,
             snapshotShelfId: [...SHELVES.map((shelf) => shelf.id), 'custom'].includes(parsed.snapshotShelfId)
               ? parsed.snapshotShelfId : 'values',
+            wordSigns,
+            privacyByWord,
+            topThreeValues,
             graphTrailIds,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
@@ -2542,6 +2606,171 @@
           localStorage.setItem(FORKS_STORAGE_KEY, JSON.stringify(forksData));
         } catch {
           showStorageNotice('Браузер не дал сохранить развилку. Пока она останется только на этом экране.');
+        }
+      }
+
+      function isPlainObject(value) {
+        return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+      }
+
+      function snapshotTransferMessage(message) {
+        snapshotTransferStatus.textContent = message;
+      }
+
+      function snapshotPrivacyFor(item) {
+        return (item.shelves || []).some((shelfId) => shelfId === 'stones' || shelfId === 'triggers')
+          ? 'only-me'
+          : 'on-match';
+      }
+
+      function snapshotWordRecord(id) {
+        const item = graphItemById(id);
+        if (!item) return null;
+        return {
+          id: item.id,
+          word: item.word,
+          shelves: item.shelves || [],
+          wave: selectionWave(item.id),
+          sign: state.wordSigns?.[item.id] ?? item.sign ?? null,
+          privacy: state.privacyByWord?.[item.id] ?? snapshotPrivacyFor(item)
+        };
+      }
+
+      function storedSnapshotValue(key, fallback) {
+        try {
+          const raw = localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : fallback;
+        } catch {
+          return fallback;
+        }
+      }
+
+      function buildSnapshotExport() {
+        persistState();
+        persistWorldData();
+        persistForksData();
+        const localStorageDump = {
+          [STORAGE_KEY]: storedSnapshotValue(STORAGE_KEY, state),
+          [WORLD_STORAGE_KEY]: storedSnapshotValue(WORLD_STORAGE_KEY, worldData),
+          [FORKS_STORAGE_KEY]: storedSnapshotValue(FORKS_STORAGE_KEY, forksData)
+        };
+        const words = [...state.selectedIds, ...state.customWords.map((item) => item.id)]
+          .map(snapshotWordRecord)
+          .filter(Boolean);
+        return {
+          format: 'hand-compass-snapshot',
+          version: SNAPSHOT_EXPORT_VERSION,
+          exportedAt: new Date().toISOString(),
+          snapshot: {
+            words,
+            signs: state.wordSigns || {},
+            privacyByWord: state.privacyByWord || {},
+            topThreeValues: state.topThreeValues || [],
+            userStories: worldData.storiesByWord || {},
+            graphTrailIds: [...state.graphTrailIds]
+          },
+          localStorage: localStorageDump
+        };
+      }
+
+      function downloadSnapshotExport() {
+        try {
+          const exportData = buildSnapshotExport();
+          const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `hand-compass-snapshot-${new Date().toISOString().slice(0, 10)}.json`;
+          document.body.append(link);
+          link.click();
+          link.remove();
+          window.setTimeout(() => URL.revokeObjectURL(url), 0);
+          snapshotTransferMessage('Слепок сохранён в JSON-файл.');
+        } catch {
+          snapshotTransferMessage('Не удалось собрать файл слепка. Попробуй ещё раз.');
+        }
+      }
+
+      function validateSnapshotStorage(storage) {
+        if (!isPlainObject(storage)) throw new Error('В файле нет данных слепка.');
+        const values = {};
+        SNAPSHOT_STORAGE_KEYS.forEach((key) => {
+          const value = storage[key];
+          if (!isPlainObject(value)) throw new Error('Файл слепка неполный или повреждён.');
+          values[key] = value;
+        });
+        const snapshotState = values[STORAGE_KEY];
+        if (snapshotState.version !== undefined && !Number.isFinite(Number(snapshotState.version))) {
+          throw new Error('Версия состояния в файле не распознана.');
+        }
+        const customWords = Array.isArray(snapshotState.customWords) ? snapshotState.customWords : [];
+        if (!customWords.every((item) => isPlainObject(item) && typeof item.id === 'string' && typeof item.word === 'string')) {
+          throw new Error('Свои слова в файле имеют неверный формат.');
+        }
+        const customIds = new Set(customWords.map((item) => item.id));
+        const canonicalWordId = (id) => WORD_ID_ALIASES[id] || id;
+        const knownWord = (id) => typeof id === 'string' && (WORD_BY_ID.has(canonicalWordId(id)) || customIds.has(id));
+        const selectedIds = Array.isArray(snapshotState.selectedIds) ? snapshotState.selectedIds : [];
+        const trailIds = Array.isArray(snapshotState.graphTrailIds) ? snapshotState.graphTrailIds : [];
+        if (!selectedIds.every(knownWord) || !trailIds.every(knownWord)) {
+          throw new Error('В файле есть слова, которых нет в текущем словаре.');
+        }
+        ['wordSigns', 'privacyByWord'].forEach((field) => {
+          if (snapshotState[field] !== undefined && !isPlainObject(snapshotState[field])) {
+            throw new Error('Пометки слов в файле имеют неверный формат.');
+          }
+        });
+        if (snapshotState.topThreeValues !== undefined
+          && (!Array.isArray(snapshotState.topThreeValues) || !snapshotState.topThreeValues.every(knownWord))) {
+          throw new Error('Топ-3 в файле имеет неверный формат.');
+        }
+        const worlds = values[WORLD_STORAGE_KEY];
+        if (worlds.storiesByWord !== undefined && !isPlainObject(worlds.storiesByWord)) {
+          throw new Error('Истории в файле имеют неверный формат.');
+        }
+        const forks = values[FORKS_STORAGE_KEY];
+        if (forks.history !== undefined && !Array.isArray(forks.history)) {
+          throw new Error('История развилок в файле имеет неверный формат.');
+        }
+        return values;
+      }
+
+      function applySnapshotImport(storage) {
+        SNAPSHOT_STORAGE_KEYS.forEach((key) => localStorage.setItem(key, JSON.stringify(storage[key])));
+        state = restoreState();
+        worldData = restoreWorldData();
+        forksData = restoreForksData();
+        activeFork = null;
+        focusedShelfId = state.supplementShelfId || null;
+        activeGraphNodeId = null;
+        graphChainIds = new Set();
+        graphWalkTargetId = null;
+        graphCard.hidden = true;
+        graphToast.hidden = true;
+        const nextView = totalSelected() >= 3 ? 'snapshot' : state.view;
+        showView(nextView, true, false);
+        snapshotTransferMessage('Слепок заменён данными из файла.');
+      }
+
+      async function importSnapshotFile(file) {
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+          snapshotTransferMessage('Этот файл слишком большой для слепка.');
+          return;
+        }
+        try {
+          const payload = JSON.parse(await file.text());
+          if (!isPlainObject(payload) || payload.format !== 'hand-compass-snapshot' || payload.version !== SNAPSHOT_EXPORT_VERSION) {
+            throw new Error('Это не файл слепка Hand & Compass текущего формата.');
+          }
+          const storage = validateSnapshotStorage(payload.localStorage);
+          if (!window.confirm('Заменить текущий слепок, истории и локальную историю развилок данными из файла? Это действие нельзя отменить без новой выгрузки.')) {
+            snapshotTransferMessage('Загрузка отменена.');
+            return;
+          }
+          applySnapshotImport(storage);
+        } catch (error) {
+          snapshotTransferMessage(error instanceof Error ? error.message : 'Не удалось прочитать файл слепка.');
         }
       }
 
@@ -3186,7 +3415,7 @@
         }
         showView('graph', true, true, { preserveGraph: true });
         window.requestAnimationFrame(() => {
-          if (wordId && isGraphItemVisible(wordId)) selectGraphNode(wordId, true, true, false);
+          if (wordId && isGraphItemVisible(wordId)) selectGraphNode(wordId, true, false);
           else if (wordId) showGraphAddProposal(wordId);
         });
       }
@@ -4061,7 +4290,7 @@
         persistState();
         if (returnView === 'scatter') renderScatter();
         showView(returnView);
-        if (returnView === 'graph') window.requestAnimationFrame(() => selectGraphNode(itemId, false, false, false));
+        if (returnView === 'graph') window.requestAnimationFrame(() => selectGraphNode(itemId, false, false));
       }
 
       function animateWordToken(button) {
@@ -4985,7 +5214,7 @@
             'aria-label': `Открыть слово «${item.word}». Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
             'data-graph-node-id': item.id,
             'data-pressure-index': position.pressureCount,
-            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
+            style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--node-label-color:${GRAPH_LABEL_COLORS[position.shelf] || GRAPH_LABEL_COLORS.custom};--node-label-stroke:${GRAPH_LABEL_STROKES[position.shelf] || GRAPH_LABEL_STROKES.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
           });
           const plate = svgElement('rect', {
             class: 'graph-node-plate', x: -position.width / 2, y: -position.height / 2,
@@ -5011,7 +5240,7 @@
         });
 
         graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
-        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false, false);
+        if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
         else {
           activeGraphNodeId = null;
           graphChainIds = new Set();
@@ -5100,7 +5329,7 @@
         updateGraphHighlight();
       }
 
-      function selectGraphNode(id, scrollCard = true, showPressure = true, allowToggle = true) {
+      function selectGraphNode(id, showPressure = true, allowToggle = true) {
         if (!isGraphItemVisible(id)) return;
         if (allowToggle && activeGraphNodeId === id) {
           clearGraphFocus();
@@ -5510,6 +5739,15 @@
       snapshotSummaryContent.addEventListener('click', (event) => {
         const wordButton = event.target.closest('[data-snapshot-summary-word]');
         if (wordButton) openWordWorld(wordButton.dataset.snapshotSummaryWord, 'snapshot');
+      });
+
+      exportSnapshotButton.addEventListener('click', downloadSnapshotExport);
+      importSnapshotButton.addEventListener('click', () => {
+        snapshotImportInput.value = '';
+        snapshotImportInput.click();
+      });
+      snapshotImportInput.addEventListener('change', () => {
+        importSnapshotFile(snapshotImportInput.files?.[0]);
       });
 
       function activateGraphTarget(target) {
