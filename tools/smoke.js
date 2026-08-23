@@ -22,6 +22,7 @@ const DEFAULT_CHROME_BIN = process.platform === 'darwin'
   : 'google-chrome';
 const CHROME_BIN = process.env.HAC_CHROME_BIN || DEFAULT_CHROME_BIN;
 const TIMEOUT_MS = 12_000;
+const GRAPH_BENCHMARK_MODE = process.argv.includes('--graph-151');
 
 const MIME_TYPES = {
   '.css': 'text/css; charset=utf-8',
@@ -332,6 +333,61 @@ async function terminate(processHandle) {
   if (processHandle.exitCode === null) processHandle.kill('SIGKILL');
 }
 
+async function runGraphBenchmark(client, serverPort, consoleErrors) {
+  const dictionary = JSON.parse(await readFile(join(ROOT, 'draft/words_v3.json'), 'utf8'));
+  const wordIds = dictionary.words.map((word) => word.id);
+  assert(wordIds.length === 151, `Expected 151 dictionary words, received ${wordIds.length}`);
+  await client.call('Emulation.setDeviceMetricsOverride', {
+    width: 390, height: 844, deviceScaleFactor: 3, mobile: true
+  });
+  await client.call('Page.navigate', { url: `http://127.0.0.1:${serverPort}/draft/index.html?graph-benchmark=1` });
+  await waitFor(client, "document.readyState === 'complete' && !document.body.classList.contains('is-booting')", 'benchmark bootstrap');
+  const selectionWaves = Object.fromEntries(wordIds.map((id) => [id, 1]));
+  const benchmarkState = {
+    version: 5,
+    selectedIds: wordIds,
+    customWords: [],
+    selectionWaves,
+    waveOneIds: wordIds,
+    waveOneCustomIds: [],
+    wave: 2,
+    view: 'graph',
+    pendingCustomId: null,
+    pickerReturnView: 'scatter',
+    supplementShelfId: null,
+    matchTarget: 50,
+    matchVisibleCount: 3,
+    activeProfileId: null,
+    worldWordId: null,
+    worldHistory: [],
+    worldReturn: null,
+    worldProfileId: null,
+    intersectionReturn: null,
+    snapshotShelfId: 'values',
+    wordSigns: {},
+    privacyByWord: {},
+    topThreeValues: [],
+    graphTrailIds: [],
+    updatedAt: new Date().toISOString()
+  };
+  await evaluate(client, `localStorage.setItem('hand_compass_snapshot_v2_draft', ${JSON.stringify(JSON.stringify(benchmarkState))})`);
+  const runs = [];
+  for (let index = 0; index < 3; index += 1) {
+    const startedAt = Date.now();
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, `${visible('#graphScreen')} && document.querySelectorAll('[data-graph-node-id]').length === 151`, `151-node graph render ${index + 1}`);
+    runs.push(Date.now() - startedAt);
+  }
+  const viewport = await evaluate(client, `(() => ({
+    width: document.documentElement.clientWidth,
+    height: window.innerHeight,
+    nodes: document.querySelectorAll('[data-graph-node-id]').length
+  }))()`);
+  assert(consoleErrors.length === 0, `graph console errors: ${consoleErrors.join(' | ')}`);
+  const average = Math.round(runs.reduce((total, value) => total + value, 0) / runs.length);
+  console.log(`GRAPH 151 PASS (${viewport.width}×${viewport.height}): ${runs.join(', ')} ms; average ${average} ms; ${viewport.nodes} nodes`);
+}
+
 async function main() {
   assert(existsSync(CHROME_BIN), `Chrome не найден: ${CHROME_BIN}. Укажи HAC_CHROME_BIN=/путь/к/chrome.`);
   const startedAt = Date.now();
@@ -374,6 +430,11 @@ async function main() {
       }
     });
     await Promise.all([client.call('Page.enable'), client.call('Runtime.enable'), client.call('Log.enable')]);
+
+    if (GRAPH_BENCHMARK_MODE) {
+      await runGraphBenchmark(client, serverPort, consoleErrors);
+      return;
+    }
 
     await client.call('Page.navigate', { url: `http://127.0.0.1:${serverPort}/draft/index.html?smoke=1` });
     await waitFor(client, "document.readyState === 'complete' && !document.body.classList.contains('is-booting')", 'draft bootstrap');
