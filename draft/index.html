@@ -1131,12 +1131,22 @@
       pointer-events: none;
     }
 
+    .graph-node-popularity-badge {
+      fill: color-mix(in srgb, var(--node-color, #66877b) 90%, #fffdf7);
+      stroke: rgba(255, 253, 247, 0.96);
+      stroke-width: 3.2;
+      filter: drop-shadow(0 3px 4px rgba(20, 31, 28, 0.46));
+      pointer-events: none;
+    }
+
     .graph-node-popularity {
-      fill: rgba(255, 253, 247, 0.74);
+      fill: #fffdf7;
       font-family: var(--sans);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.01em;
+      paint-order: stroke fill;
+      stroke: rgba(29, 43, 38, 0.5);
+      stroke-width: 1.6;
       pointer-events: none;
     }
 
@@ -4409,14 +4419,20 @@
           });
           const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 8, 'text-anchor': 'middle' });
           label.textContent = item.word.length > 22 ? `${item.word.slice(0, 21)}…` : item.word;
+          const popularityX = position.width / 2 - 3;
+          const popularityY = -position.height / 2 - 9;
+          const popularityBadge = svgElement('circle', {
+            class: 'graph-node-popularity-badge', cx: popularityX, cy: popularityY, r: 16.5,
+            'aria-hidden': 'true'
+          });
           const popularity = svgElement('text', {
-            class: 'graph-node-popularity', x: position.width / 2 - 12, y: -position.height / 2 + 18,
-            'text-anchor': 'end', 'aria-hidden': 'true'
+            class: 'graph-node-popularity', x: popularityX, y: popularityY + 4.5,
+            'text-anchor': 'middle', 'aria-hidden': 'true'
           });
           popularity.textContent = String(profileCount);
           const title = svgElement('title');
           title.textContent = `${item.word}. Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров.`;
-          group.append(plate, label, popularity, title);
+          group.append(plate, label, popularityBadge, popularity, title);
           graphSvg.append(group);
         });
 
