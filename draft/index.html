@@ -1963,6 +1963,10 @@
       <section class="screen world-screen" id="wordWorldScreen" aria-labelledby="worldTitle" hidden>
         <div class="world-layout" id="wordWorldContent" aria-live="polite"></div>
       </section>
+
+      <section class="screen forks-screen" id="forksScreen" aria-labelledby="forkTitle" hidden>
+        <div class="forks-layout" id="forksContent" aria-live="polite"></div>
+      </section>
     </main>
     <nav class="primary-nav" id="primaryNav" aria-label="Основная навигация" hidden>
       <button class="primary-nav-button" type="button" data-primary-view="snapshot">Слепок</button>
@@ -1983,10 +1987,28 @@
       const STORAGE_KEY = 'hand_compass_snapshot_v2_draft';
       const WORLD_STORAGE_KEY = 'hand_compass_word_worlds_v1';
       const GRAPH_INTRO_SESSION_KEY = 'hand_compass_graph_intro_seen_v1';
+      const FORKS_STORAGE_KEY = 'hand_compass_forks_v1';
+      const FORKS_SESSION_KEY = 'hand_compass_fork_seen_v1';
+      const FORKS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
+      const DILEMMAS = JSON.parse(document.getElementById('dilemmasData').textContent);
       const WORDS = Array.isArray(DATA.words) ? DATA.words : [];
       const FAKE_PROFILES = Array.isArray(FAKE_DATA.profiles) ? FAKE_DATA.profiles : [];
+      const FORK_ARCHETYPE_VOICES = Object.freeze({
+        dreamer: { A: 'Мне было бы тяжело делать вид, что этого не произошло.', B: 'Мне важнее сначала услышать человека, а не ставить точку.' },
+        doer: { A: 'Я предпочитаю обозначить границу сразу и действовать дальше.', B: 'Я выберу разговор, если он даёт понятный следующий шаг.' },
+        strategist: { A: 'Мне важно не оставлять последствия расти в тишине.', B: 'Я выберу путь, который меньше ломает дальше.' },
+        guardian: { A: 'Я держу сторону своих, но не хочу прятать цену выбора.', B: 'Я хочу сохранить рядом доверие, даже если разговор неудобный.' },
+        rebel: { A: 'Я не люблю соглашаться с тем, что считаю чужим правилом.', B: 'Я оставлю себе право не участвовать в чужом решении.' },
+        hermit: { A: 'Я скажу коротко и без лишних слов.', B: 'Я не буду лезть туда, куда меня не просили.' },
+        star: { A: 'Я не хочу делать вид, будто всё в порядке.', B: 'Мне важно не унизить человека одним ответом.' },
+        harmonizer: { A: 'Я обозначу это спокойно, чтобы не копить обиду.', B: 'Я выберу способ, после которого с человеком можно остаться рядом.' },
+        analyst: { A: 'Я выберу вариант, где последствия понятнее.', B: 'Я не стану действовать, пока не вижу, что это улучшит.' },
+        creator: { A: 'Я скажу то, что считаю живым и честным.', B: 'Я оставлю место для другого хода, не только для жёсткого ответа.' },
+        volcano: { A: 'Я не буду делать вид, что меня это не задело.', B: 'Я сделаю паузу, чтобы не наломать дров.' },
+        seeker: { A: 'Я попробую честно посмотреть, что тут моё.', B: 'Я выберу путь, который оставляет больше воздуха.' }
+      });
       const WORD_BY_ID = new Map(WORDS.map((item) => [item.id, item]));
       const WORD_ID_ALIASES = Object.freeze({
         int_muzyka: 'muzyka',
@@ -2077,6 +2099,8 @@
       const intersectionMap = document.getElementById('intersectionMap');
       const wordWorldScreen = document.getElementById('wordWorldScreen');
       const wordWorldContent = document.getElementById('wordWorldContent');
+      const forksScreen = document.getElementById('forksScreen');
+      const forksContent = document.getElementById('forksContent');
       const storageNotice = document.getElementById('storageNotice');
       const primaryNav = document.getElementById('primaryNav');
       const intersectionsBackButton = document.getElementById('intersectionsBackButton');
@@ -2084,6 +2108,8 @@
       let storageWasBroken = false;
       let state = restoreState();
       let worldData = restoreWorldData();
+      let forksData = restoreForksData();
+      let activeFork = null;
       let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -2289,6 +2315,57 @@
         } catch {
           showStorageNotice('Браузер не дал сохранить историю. Пока она останется только на этом экране.');
         }
+      }
+
+      function emptyForksData() {
+        return { version: 1, history: [], inviteSeen: false };
+      }
+
+      function restoreForksData() {
+        try {
+          const raw = localStorage.getItem(FORKS_STORAGE_KEY);
+          if (!raw) return emptyForksData();
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') throw new Error('invalid forks');
+          const knownDilemmaIds = new Set(DILEMMAS.map((item) => item.id));
+          const history = Array.isArray(parsed.history)
+            ? parsed.history.filter((item) => item && knownDilemmaIds.has(item.dilemmaId) && typeof item.startedAt === 'string')
+                .slice(-60)
+                .map((item) => ({
+                  dilemmaId: item.dilemmaId,
+                  startedAt: item.startedAt,
+                  finishedAt: typeof item.finishedAt === 'string' ? item.finishedAt : null,
+                  prediction: item.prediction === 'A' || item.prediction === 'B' ? item.prediction : null,
+                  actualChoice: item.actualChoice === 'A' || item.actualChoice === 'B' ? item.actualChoice : null,
+                  gap: typeof item.gap === 'boolean' ? item.gap : null,
+                  candidateId: typeof item.candidateId === 'string' && WORD_BY_ID.has(item.candidateId) ? item.candidateId : null,
+                  acceptedCandidate: typeof item.acceptedCandidate === 'boolean' ? item.acceptedCandidate : null,
+                  skipped: item.skipped === true
+                }))
+            : [];
+          return { version: 1, history, inviteSeen: parsed.inviteSeen === true };
+        } catch {
+          showStorageNotice('Сохранённые развилки не удалось прочитать. Исходная запись пока не изменена.');
+          return emptyForksData();
+        }
+      }
+
+      function persistForksData() {
+        try {
+          localStorage.setItem(FORKS_STORAGE_KEY, JSON.stringify(forksData));
+        } catch {
+          showStorageNotice('Браузер не дал сохранить развилку. Пока она останется только на этом экране.');
+        }
+      }
+
+      function hasUsedForkThisSession() {
+        try { return sessionStorage.getItem(FORKS_SESSION_KEY) === 'true'; }
+        catch { return false; }
+      }
+
+      function markForkUsedThisSession() {
+        try { sessionStorage.setItem(FORKS_SESSION_KEY, 'true'); }
+        catch { /* Session storage is an optional guard only. */ }
       }
 
       function showStorageNotice(message, temporary = false) {
@@ -3021,6 +3098,217 @@
 
       function scoredProfiles() {
         return FAKE_PROFILES.map((profile) => ({ profile, score: weightedSimilarity(profile) }));
+      }
+
+      function forkHistoryFor(dilemmaId) {
+        return forksData.history.filter((item) => item.dilemmaId === dilemmaId);
+      }
+
+      function isForkDilemmaAvailable(dilemma, now = Date.now()) {
+        if (!dilemma || !WORD_BY_ID.has(dilemma.candidateA) || !WORD_BY_ID.has(dilemma.candidateB)) return false;
+        const history = forkHistoryFor(dilemma.id);
+        const alreadyFinished = history.some((item) => item.finishedAt && !item.skipped);
+        const inCooldown = history.some((item) => {
+          const startedAt = Date.parse(item.startedAt);
+          return Number.isFinite(startedAt) && now - startedAt < FORKS_COOLDOWN_MS;
+        });
+        return !alreadyFinished && !inCooldown;
+      }
+
+      function forkThemeScore(dilemma) {
+        const selected = new Set(state.selectedIds);
+        let score = 0;
+        (dilemma.words || []).forEach((id) => {
+          if (!selected.has(id)) return;
+          const word = WORD_BY_ID.get(id);
+          score += word?.shelves?.some((shelfId) => shelfId === 'values' || shelfId === 'goals') ? 12 : 3;
+        });
+        return score;
+      }
+
+      function chooseForkDilemma() {
+        const available = DILEMMAS.filter((item) => isForkDilemmaAvailable(item));
+        return available.sort((left, right) => {
+          const scoreDifference = forkThemeScore(right) - forkThemeScore(left);
+          return scoreDifference || hashValue(left.id) - hashValue(right.id);
+        })[0] || null;
+      }
+
+      function chooseForkBot() {
+        const mine = new Set(state.selectedIds.filter((id) => WORD_BY_ID.has(id)));
+        const ranked = scoredProfiles().map(({ profile, score }) => ({
+          profile,
+          score,
+          sharedCount: (profile.words || []).filter((id) => mine.has(id)).length
+        }));
+        const withIntersection = ranked.filter((item) => item.sharedCount > 0);
+        if (withIntersection.length) {
+          return withIntersection.sort((left, right) => right.score - left.score || right.sharedCount - left.sharedCount || left.profile.id.localeCompare(right.profile.id))[0].profile;
+        }
+        const filled = FAKE_PROFILES.filter((profile) => Array.isArray(profile.words) && profile.words.length);
+        return filled[Math.abs(hashValue(`${state.updatedAt || 'fresh'}:${Date.now()}`)) % filled.length] || FAKE_PROFILES[0] || null;
+      }
+
+      function forkActualChoice(dilemma, bot) {
+        const choice = dilemma?.archetypeBias?.[bot?.archetype];
+        return choice === 'A' || choice === 'B' ? choice : 'A';
+      }
+
+      function forkTruthLine(dilemma, bot, choice) {
+        const action = dilemma?.archetypeBias?.[`truth${choice}`] || `Я бы выбрал этот вариант.`;
+        const voice = FORK_ARCHETYPE_VOICES[bot?.archetype]?.[choice] || '';
+        return `${action}${voice ? ` ${voice}` : ''}`;
+      }
+
+      function forkOptionText(dilemma, choice) {
+        return choice === 'A' ? dilemma.optionA : dilemma.optionB;
+      }
+
+      function forkRecord() {
+        return activeFork ? forksData.history.find((item) => item.startedAt === activeFork.startedAt && item.dilemmaId === activeFork.dilemma.id) : null;
+      }
+
+      function createForkButton(label, action, extraClass = '') {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `fork-button ${extraClass}`.trim();
+        button.dataset.forkAction = action;
+        button.textContent = label;
+        return button;
+      }
+
+      function appendForkSkip(container) {
+        container.append(createForkButton('Пропустить', 'skip', 'fork-skip'));
+      }
+
+      function forkHeader(kickerText, titleText, copyText = '') {
+        const header = document.createElement('header');
+        header.className = 'fork-head';
+        if (kickerText) {
+          const kicker = document.createElement('p');
+          kicker.className = 'fork-kicker';
+          kicker.textContent = kickerText;
+          header.append(kicker);
+        }
+        const title = document.createElement('h1');
+        title.id = 'forkTitle';
+        title.tabIndex = -1;
+        title.textContent = titleText;
+        header.append(title);
+        if (copyText) {
+          const copy = document.createElement('p');
+          copy.className = 'fork-copy';
+          copy.textContent = copyText;
+          header.append(copy);
+        }
+        return header;
+      }
+
+      function startFork() {
+        const dilemma = chooseForkDilemma();
+        const bot = dilemma ? chooseForkBot() : null;
+        if (!dilemma || !bot) return null;
+        const startedAt = new Date().toISOString();
+        const actualChoice = forkActualChoice(dilemma, bot);
+        activeFork = { dilemma, bot, startedAt, actualChoice, prediction: null, step: 'situation' };
+        forksData.history.push({
+          dilemmaId: dilemma.id, startedAt, finishedAt: null, prediction: null,
+          actualChoice, gap: null, candidateId: null, acceptedCandidate: null, skipped: false
+        });
+        markForkUsedThisSession();
+        persistForksData();
+        return activeFork;
+      }
+
+      function finishFork({ skipped = false, acceptedCandidate = null, destination = 'intersections' } = {}) {
+        const record = forkRecord();
+        if (record) {
+          record.finishedAt = new Date().toISOString();
+          record.skipped = skipped;
+          if (typeof acceptedCandidate === 'boolean') record.acceptedCandidate = acceptedCandidate;
+        }
+        persistForksData();
+        activeFork = null;
+        showView(destination);
+      }
+
+      function renderForkScreen() {
+        forksContent.replaceChildren();
+        if (!activeFork && hasUsedForkThisSession()) {
+          const empty = document.createElement('section');
+          empty.className = 'fork-empty';
+          empty.append(
+            forkHeader('развилки', 'На сегодня достаточно.', 'Одна ситуация за сессию — чтобы оставить ей место.'),
+            createForkButton('К пересечениям', 'close')
+          );
+          forksContent.append(empty);
+          return;
+        }
+        if (!activeFork && !startFork()) {
+          const empty = document.createElement('section');
+          empty.className = 'fork-empty';
+          empty.append(
+            forkHeader('развилки', 'Пока нет подходящей развилки.', 'Когда в словаре появятся недостающие слова, здесь будут новые ситуации.'),
+            createForkButton('К слепку', 'close')
+          );
+          forksContent.append(empty);
+          return;
+        }
+
+        const { dilemma, bot, actualChoice, step } = activeFork;
+        const stage = document.createElement('section');
+        stage.className = `fork-stage fork-step-${step}`;
+        const actions = document.createElement('div');
+        actions.className = 'fork-actions';
+
+        if (step === 'situation') {
+          stage.append(forkHeader('развилка', 'Ситуация', dilemma.situation));
+          actions.append(createForkButton('Посмотреть на выбор двойника', 'to-prediction', 'fork-primary'));
+        } else if (step === 'prediction') {
+          stage.append(forkHeader('двойник · пример профиля', 'Как поступит двойник?', `${bot.name} — один из примеров профилей, ближе всего к твоему слепку.`));
+          ['A', 'B'].forEach((choice) => {
+            const button = createForkButton(forkOptionText(dilemma, choice), `predict-${choice}`, 'fork-option');
+            const letter = document.createElement('span');
+            letter.className = 'fork-option-letter';
+            letter.textContent = choice;
+            button.prepend(letter);
+            actions.append(button);
+          });
+        } else if (step === 'truth') {
+          const choiceLabel = actualChoice === 'A' ? 'вариант А' : 'вариант Б';
+          stage.append(forkHeader('двойник · пример профиля', `${bot.name} выбрал ${choiceLabel}.`, forkOptionText(dilemma, actualChoice)));
+          const logic = document.createElement('p');
+          logic.className = 'fork-logic';
+          logic.textContent = `«${forkTruthLine(dilemma, bot, actualChoice)}»`;
+          stage.append(logic);
+          actions.append(createForkButton('Дальше', 'to-outcome', 'fork-primary'));
+        } else {
+          const gap = activeFork.prediction !== actualChoice;
+          if (!gap) {
+            stage.append(forkHeader('развилка', 'Похоже, вы понимаете друг друга.', 'В этой ситуации ты ожидал от двойника тот же ход.'));
+            actions.append(createForkButton('К пересечениям', 'finish', 'fork-primary'));
+          } else {
+            const candidateId = actualChoice === 'A' ? dilemma.candidateA : dilemma.candidateB;
+            const candidate = WORD_BY_ID.get(candidateId);
+            stage.append(forkHeader('развилка', 'Ты ждал иначе. А как бы поступил ты?'));
+            const candidateBlock = document.createElement('div');
+            candidateBlock.className = 'fork-candidate';
+            const candidateLabel = document.createElement('p');
+            candidateLabel.textContent = 'В этой развилке рядом оказалось слово:';
+            const candidateWord = document.createElement('strong');
+            candidateWord.textContent = candidate ? `«${candidate.word}»` : '';
+            candidateBlock.append(candidateLabel, candidateWord);
+            stage.append(candidateBlock);
+            actions.append(
+              createForkButton('Узнаю себя — в слепок', 'accept-candidate', 'fork-primary'),
+              createForkButton('Не моё', 'reject-candidate')
+            );
+          }
+        }
+
+        appendForkSkip(actions);
+        stage.append(actions);
+        forksContent.append(stage);
       }
 
       function commonProfileWords(profile, limit = 3) {
@@ -4759,6 +5047,7 @@
         const isGraph = view === 'graph';
         const isIntersections = view === 'intersections';
         const isWordWorld = view === 'word-world';
+        const isForks = view === 'forks';
         if (isGraph) markGraphIntroSeenThisSession();
         if (isIntersections && previousView !== 'intersections' && !options.preserveIntersection) state.activeProfileId = null;
         if (isGraph) window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -4775,11 +5064,13 @@
         graphScreen.hidden = !isGraph;
         intersectionsScreen.hidden = !isIntersections;
         wordWorldScreen.hidden = !isWordWorld;
+        forksScreen.hidden = !isForks;
         state.view = isIntersections ? 'intersections'
           : isGraph ? 'graph'
           : isGraphIntro ? 'graph-intro'
           : isSnapshot ? 'snapshot'
           : isWordWorld ? 'word-world'
+          : isForks ? 'forks'
           : isCustomShelf ? 'custom-shelf'
           : isDarkIntro ? 'dark-intro'
           : isScatter ? 'scatter'
@@ -4793,6 +5084,7 @@
           renderProfileMatches();
         }
         if (isWordWorld) renderWordWorld();
+        if (isForks) renderForkScreen();
         updatePrimaryNavigation(state.view);
         if (shouldPersist) persistState();
         if (focus) {
@@ -4802,6 +5094,7 @@
             : isGraphIntro ? 'graphIntroTitle'
             : isSnapshot ? 'snapshotTitle'
             : isWordWorld ? 'worldTitle'
+            : isForks ? 'forkTitle'
             : isCustomShelf ? 'customShelfTitle'
             : isDarkIntro ? 'darkIntroTitle'
             : isScatter ? 'scatterTitle'
@@ -5102,6 +5395,58 @@
         const word = event.target.closest('[data-open-world-from-intersection]');
         if (!word) return;
         openWordWorld(word.dataset.openWorldFromIntersection, 'intersections', state.activeProfileId);
+      });
+      forksContent.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-fork-action]');
+        if (!button) return;
+        const action = button.dataset.forkAction;
+        if (action === 'close') {
+          showView('intersections');
+          return;
+        }
+        if (!activeFork) return;
+        const record = forkRecord();
+        if (action === 'skip') {
+          finishFork({ skipped: true });
+          return;
+        }
+        if (action === 'to-prediction') {
+          activeFork.step = 'prediction';
+        } else if (action === 'predict-A' || action === 'predict-B') {
+          activeFork.prediction = action.endsWith('A') ? 'A' : 'B';
+          activeFork.step = 'truth';
+          if (record) {
+            record.prediction = activeFork.prediction;
+            record.gap = activeFork.prediction !== activeFork.actualChoice;
+            persistForksData();
+          }
+        } else if (action === 'to-outcome') {
+          activeFork.step = 'outcome';
+          if (record) {
+            record.candidateId = activeFork.actualChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
+            persistForksData();
+          }
+        } else if (action === 'finish') {
+          finishFork();
+          return;
+        } else if (action === 'accept-candidate' || action === 'reject-candidate') {
+          const accepted = action === 'accept-candidate';
+          const candidateId = activeFork.actualChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
+          const candidate = WORD_BY_ID.get(candidateId);
+          if (accepted && candidate && !state.selectedIds.includes(candidate.id)) {
+            state.selectedIds.push(candidate.id);
+            setSelectionWave(candidate.id);
+            const themedShelf = (activeFork.dilemma.shelves || []).find((shelfId) => candidate.shelves.includes(shelfId));
+            state.snapshotShelfId = themedShelf || candidate.shelves[0] || state.snapshotShelfId;
+            persistState();
+          }
+          finishFork({ acceptedCandidate: accepted, destination: accepted ? 'snapshot' : 'intersections' });
+          return;
+        } else {
+          return;
+        }
+        renderForkScreen();
+        window.requestAnimationFrame(() => document.getElementById('forkTitle')?.focus({ preventScroll: true }));
       });
       moreProfilesButton.addEventListener('click', () => {
         const previousCount = state.matchVisibleCount || 3;
