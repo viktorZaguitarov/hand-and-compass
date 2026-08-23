@@ -54,6 +54,10 @@ async function startStaticServer(root) {
   const server = createServer(async (request, response) => {
     try {
       const pathname = decodeURIComponent(new URL(request.url, 'http://127.0.0.1').pathname);
+      if (pathname === '/favicon.ico') {
+        response.writeHead(204).end();
+        return;
+      }
       const relativePath = pathname === '/' ? '/draft/index.html' : pathname;
       const filePath = resolve(root, `.${relativePath}`);
       if (filePath !== root && !filePath.startsWith(`${root}${sep}`)) {
