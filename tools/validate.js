@@ -107,6 +107,10 @@ async function main() {
 
   for (const word of dictionary.words) {
     const owner = `word:${word.id}`;
+    if (word.synonyms !== undefined
+      && (!Array.isArray(word.synonyms) || !word.synonyms.every((value) => typeof value === 'string' && value.trim()))) {
+      fail(`${owner}.synonyms must be an array of non-empty strings when present`);
+    }
     validateReferenceArray(ids, owner, 'neighbors', word.neighbors);
     validateWordReference(ids, owner, 'antonym', word.antonym);
     validateReferenceArray(ids, owner, 'activates', word.activates);
@@ -140,6 +144,10 @@ async function main() {
   if (/graphPopularityMark|graph-node-popularity/.test(draftHtml)) {
     fail('graph still exposes profile popularity instead of personal weight');
   }
+  requireDraftFeature(draftHtml, /PERSONAL_DILEMMAS_STORAGE_KEY/, 'draft has no local storage for personal dilemmas');
+  requireDraftFeature(draftHtml, /id="personalDilemmaText"[^>]+maxlength="500"/, 'personal dilemma text has no 500-character limit');
+  requireDraftFeature(draftHtml, /value="vent"[\s\S]+value="options"/, 'personal dilemma does not offer both local modes');
+  requireDraftFeature(draftHtml, /matchPersonalDilemmaWords/, 'personal dilemma has no local dictionary analysis');
 
   if (!sameJson(dictionary, embeddedWords)) fail('embedded #wordsData differs from draft/words_v3.json');
   if (!sameJson(dilemmas, embeddedDilemmas)) fail('embedded #dilemmasData differs from draft/dilemmas_v1.json');

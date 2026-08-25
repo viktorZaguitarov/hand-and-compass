@@ -573,6 +573,76 @@ async function main() {
     await waitFor(client, `${visible('#scatterScreen')} && ${visible('#personalityTabs')} && document.getElementById('scatterActions').hidden`, 'returning personality tabs');
     completed.push('возврат → личность без онбординга');
 
+    await click(client, '[data-path-chapter="forks"]');
+    await waitFor(client, `${visible('#forksScreen')} && ${visible('#personalDilemmaOpen')}`, 'personal dilemma entry');
+    await click(client, '#personalDilemmaOpen');
+    await waitFor(client, visible('#personalDilemmaComposer'), 'personal dilemma composer');
+    const softCounter = await evaluate(client, `(() => {
+      const input = document.getElementById('personalDilemmaText');
+      input.value = 'я'.repeat(451);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      return {
+        maxLength: input.maxLength,
+        text: document.getElementById('personalDilemmaCount').textContent,
+        near: document.getElementById('personalDilemmaCount').classList.contains('is-near-limit')
+      };
+    })()`);
+    assert(softCounter.maxLength === 500 && softCounter.text === '451 / 500' && softCounter.near, 'personal dilemma soft counter is broken');
+    const weightsBeforePersonal = await evaluate(client, `JSON.stringify(JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).wordWeights)`);
+    await evaluate(client, `(() => {
+      const input = document.getElementById('personalDilemmaText');
+      input.value = 'Мне важны честность и близость, но я устал об этом спорить.';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      document.querySelector('[name="personalDilemmaMode"][value="vent"]').click();
+    })()`);
+    await click(client, '#personalDilemmaForm button[type="submit"]');
+    const ventResult = await evaluate(client, `(() => {
+      const data = JSON.parse(localStorage.getItem('hand_compass_personal_dilemmas_v1'));
+      const weights = JSON.stringify(JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).wordWeights);
+      return { count: data.items.length, mode: data.items[0].mode, outcomes: data.items[0].outcomes.length, weights };
+    })()`);
+    assert(ventResult.count === 1 && ventResult.mode === 'vent' && ventResult.outcomes === 0, 'vent-only personal dilemma was not saved correctly');
+    assert(ventResult.weights === weightsBeforePersonal, 'vent-only personal dilemma changed word weights');
+
+    const unselectedCandidate = await evaluate(client, `(() => {
+      const state = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      const words = JSON.parse(document.getElementById('wordsData').textContent).words;
+      const word = words.find((item) => !state.selectedIds.includes(item.id) && item.word.length >= 5);
+      return { id: word.id, word: word.word };
+    })()`);
+    await evaluate(client, `(() => {
+      const input = document.getElementById('personalDilemmaText');
+      input.value = 'Я думаю про ' + ${JSON.stringify(unselectedCandidate.word)} + ' и не знаю, куда идти.';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      document.querySelector('[name="personalDilemmaMode"][value="options"]').click();
+      const options = document.querySelectorAll('[data-personal-dilemma-option]');
+      options[0].value = 'Остаться и поговорить';
+      options[1].value = 'Уйти и дать себе время';
+      options[2].value = '';
+    })()`);
+    await click(client, '#personalDilemmaForm button[type="submit"]');
+    const optionsResult = await evaluate(client, `(() => {
+      const data = JSON.parse(localStorage.getItem('hand_compass_personal_dilemmas_v1'));
+      const item = data.items.at(-1);
+      const weights = JSON.stringify(JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).wordWeights);
+      return { count: data.items.length, mode: item.mode, outcomes: item.outcomes.length, candidates: item.candidateIds, weights };
+    })()`);
+    assert(optionsResult.count === 2 && optionsResult.mode === 'options' && optionsResult.outcomes === 2, 'options personal dilemma was not saved correctly');
+    assert(optionsResult.candidates.includes(unselectedCandidate.id), 'local dictionary analysis missed an exact word');
+    assert(optionsResult.weights === weightsBeforePersonal, 'saving an options dilemma changed word weights');
+    await click(client, `[data-personal-candidate-id="${unselectedCandidate.id}"]`);
+    const acceptedPersonalCandidate = await evaluate(client, `(() => {
+      const state = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      return { selected: state.selectedIds.includes(${JSON.stringify(unselectedCandidate.id)}), weight: state.wordWeights[${JSON.stringify(unselectedCandidate.id)}] };
+    })()`);
+    assert(acceptedPersonalCandidate.selected && acceptedPersonalCandidate.weight === 1, 'personal dilemma candidate did not enter the snapshot at weight 1');
+    await click(client, '#personalDilemmaList [data-delete-personal-dilemma]');
+    const personalCountAfterDelete = await evaluate(client, `JSON.parse(localStorage.getItem('hand_compass_personal_dilemmas_v1')).items.length`);
+    assert(personalCountAfterDelete === 1, 'personal dilemma was not deleted locally');
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, `${visible('#forksScreen')} && document.querySelectorAll('#personalDilemmaList .personal-dilemma-item').length === 1`, 'personal dilemma after reload');
+    completed.push('свои ситуации: оба режима · локальный разбор · удаление');
+
     await client.call('Emulation.setEmulatedMedia', {
       features: [{ name: 'prefers-reduced-motion', value: 'reduce' }]
     });

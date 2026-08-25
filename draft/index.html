@@ -1669,6 +1669,91 @@
       margin: 0 auto;
     }
 
+    .personal-dilemmas-tools {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-family: var(--sans);
+    }
+    .personal-dilemma-open { width: 100%; }
+    .personal-dilemma-composer,
+    .personal-dilemma-list {
+      padding: 18px;
+      border: 1px solid rgba(49, 95, 82, 0.16);
+      border-radius: 22px;
+      background: rgba(255, 253, 247, 0.92);
+      box-shadow: 0 12px 28px rgba(35, 58, 48, 0.09);
+    }
+    .personal-dilemma-composer h2 { margin: 0 0 5px; color: var(--forest-dark); font-family: var(--serif); font-size: 1.55rem; font-weight: 600; }
+    .personal-dilemma-note { margin: 0 0 14px; color: var(--ink-soft); font-size: 0.75rem; line-height: 1.45; }
+    .personal-dilemma-form { display: grid; gap: 13px; }
+    .personal-dilemma-text-wrap { display: grid; gap: 6px; }
+    .personal-dilemma-text {
+      width: 100%;
+      min-height: 132px;
+      resize: vertical;
+      padding: 13px 14px;
+      border: 1px solid rgba(49, 95, 82, 0.24);
+      border-radius: 16px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.78);
+      font: inherit;
+      line-height: 1.48;
+    }
+    .personal-dilemma-count { justify-self: end; color: var(--ink-soft); font-size: 0.68rem; }
+    .personal-dilemma-count.is-near-limit { color: var(--accent-dark); font-weight: 750; }
+    .personal-dilemma-modes { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+    .personal-dilemma-modes legend { margin-bottom: 7px; color: var(--forest-dark); font-size: 0.76rem; font-weight: 750; }
+    .personal-dilemma-mode {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      padding: 10px 11px;
+      border: 1px solid rgba(49, 95, 82, 0.14);
+      border-radius: 13px;
+      color: var(--ink);
+      background: rgba(238, 230, 212, 0.35);
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+    .personal-dilemma-mode input { margin-top: 2px; accent-color: var(--forest); }
+    .personal-dilemma-options { display: grid; gap: 8px; }
+    .personal-dilemma-options label { color: var(--ink-soft); font-size: 0.7rem; font-weight: 700; }
+    .personal-dilemma-option {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 4px;
+      padding: 9px 11px;
+      border: 1px solid rgba(49, 95, 82, 0.2);
+      border-radius: 12px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.76);
+      font: inherit;
+    }
+    .personal-dilemma-form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .personal-dilemma-status { min-height: 1.3em; margin: 0; color: var(--ink-soft); font-size: 0.72rem; line-height: 1.4; }
+    .personal-candidates { display: grid; gap: 9px; padding-top: 4px; }
+    .personal-candidates p { margin: 0; color: var(--ink-soft); font-size: 0.75rem; line-height: 1.4; }
+    .personal-candidate-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .personal-candidate {
+      min-height: 38px;
+      padding: 7px 10px;
+      border: 1px solid rgba(200, 111, 82, 0.3);
+      border-radius: 999px;
+      color: var(--accent-dark);
+      background: rgba(255, 247, 237, 0.88);
+      font: 700 0.72rem/1.2 var(--sans);
+    }
+    .personal-candidate:disabled { color: var(--forest-dark); border-color: rgba(49, 95, 82, 0.18); background: rgba(220, 233, 223, 0.62); opacity: 1; }
+    .personal-dilemma-list summary { cursor: pointer; color: var(--forest-dark); font-size: 0.82rem; font-weight: 800; }
+    .personal-dilemma-items { display: grid; gap: 9px; margin-top: 12px; }
+    .personal-dilemma-empty { margin: 0; color: var(--ink-soft); font-size: 0.73rem; }
+    .personal-dilemma-item { display: grid; gap: 8px; padding: 12px; border-radius: 15px; background: rgba(238, 230, 212, 0.42); }
+    .personal-dilemma-item p { margin: 0; color: var(--ink); font-family: var(--serif); font-size: 0.9rem; line-height: 1.42; }
+    .personal-dilemma-item-meta { color: var(--ink-soft); font-size: 0.65rem; }
+    .personal-dilemma-item ul { display: grid; gap: 4px; margin: 0; padding-left: 18px; color: var(--ink-soft); font-size: 0.7rem; line-height: 1.35; }
+    .personal-dilemma-delete { justify-self: start; min-height: 34px; padding: 6px 9px; border: 0; border-radius: 10px; color: var(--rose); background: rgba(152, 95, 99, 0.08); font: 700 0.68rem var(--sans); }
+
     .fork-stage,
     .fork-empty {
       position: relative;
@@ -1861,6 +1946,7 @@
       font-style: italic;
       line-height: 1.48;
     }
+    .fork-warmth { margin: 0; color: var(--accent-dark); font-family: var(--sans); font-size: 0.82rem; font-weight: 750; }
     .fork-candidate {
       padding: 16px;
       border: 1px solid rgba(196, 160, 96, 0.35);
@@ -2465,6 +2551,9 @@
       .friction-item, .intersection-empty, .intersection-honesty { font-size: 0.7rem; }
       .intersections-actions .secondary-button { min-height: 44px; }
       .forks-screen { min-height: calc(100svh - 88px); padding: 15px 12px 78px; align-content: start; }
+      .personal-dilemma-composer, .personal-dilemma-list { padding: 14px; border-radius: 18px; }
+      .personal-dilemma-composer h2 { font-size: 1.32rem; }
+      .personal-dilemma-form-actions { grid-template-columns: 1fr; }
       .fork-stage, .fork-empty { min-height: calc(100svh - 190px); gap: 14px; padding: 24px 16px; border-radius: 21px; }
       .fork-kicker { margin-bottom: 7px; font-size: 0.58rem; }
       .fork-head h1 { margin-bottom: 9px; font-size: clamp(1.65rem, 7.6vw, 2.32rem); }
@@ -2775,7 +2864,43 @@
       </section>
 
       <section class="screen forks-screen" id="forksScreen" aria-labelledby="forkTitle" hidden>
-        <div class="forks-layout" id="forksContent" aria-live="polite"></div>
+        <div class="forks-layout">
+          <section class="personal-dilemmas-tools" aria-label="Свои ситуации">
+            <button class="secondary-button personal-dilemma-open" id="personalDilemmaOpen" type="button">Написать свою ситуацию</button>
+            <section class="personal-dilemma-composer" id="personalDilemmaComposer" hidden>
+              <h2>Что сейчас не отпускает?</h2>
+              <p class="personal-dilemma-note">Запись останется только в этом браузере. Никуда не отправляем.</p>
+              <form class="personal-dilemma-form" id="personalDilemmaForm">
+                <label class="personal-dilemma-text-wrap" for="personalDilemmaText">
+                  <span class="sr-only">Твоя ситуация</span>
+                  <textarea class="personal-dilemma-text" id="personalDilemmaText" maxlength="500" placeholder="Опиши ситуацию своими словами" required></textarea>
+                  <span class="personal-dilemma-count" id="personalDilemmaCount">0 / 500</span>
+                </label>
+                <fieldset class="personal-dilemma-modes">
+                  <legend>Что хочется сделать с записью?</legend>
+                  <label class="personal-dilemma-mode"><input type="radio" name="personalDilemmaMode" value="vent" checked> <span>Просто выговориться — без вариантов и решения</span></label>
+                  <label class="personal-dilemma-mode"><input type="radio" name="personalDilemmaMode" value="options"> <span>С вариантами — записать 2–3 своих выхода</span></label>
+                </fieldset>
+                <div class="personal-dilemma-options" id="personalDilemmaOptions" hidden>
+                  <label>Первый выход<input class="personal-dilemma-option" data-personal-dilemma-option="1" type="text" maxlength="180"></label>
+                  <label>Второй выход<input class="personal-dilemma-option" data-personal-dilemma-option="2" type="text" maxlength="180"></label>
+                  <label>Третий, если нужен<input class="personal-dilemma-option" data-personal-dilemma-option="3" type="text" maxlength="180"></label>
+                </div>
+                <div class="personal-dilemma-form-actions">
+                  <button class="primary-button" type="submit">Сохранить у себя</button>
+                  <button class="secondary-button" id="personalDilemmaCancel" type="button">Закрыть</button>
+                </div>
+                <p class="personal-dilemma-status" id="personalDilemmaStatus" aria-live="polite"></p>
+                <div class="personal-candidates" id="personalDilemmaCandidates" hidden></div>
+              </form>
+            </section>
+            <details class="personal-dilemma-list" id="personalDilemmaListDetails">
+              <summary>Мои ситуации <span id="personalDilemmaListCount"></span></summary>
+              <div class="personal-dilemma-items" id="personalDilemmaList"></div>
+            </details>
+          </section>
+          <div id="forksContent" aria-live="polite"></div>
+        </div>
       </section>
     </main>
   </div>
@@ -2793,6 +2918,7 @@
       const WORLD_STORAGE_KEY = 'hand_compass_word_worlds_v1';
       const GRAPH_INTRO_SESSION_KEY = 'hand_compass_graph_intro_seen_v1';
       const FORKS_STORAGE_KEY = 'hand_compass_forks_v1';
+      const PERSONAL_DILEMMAS_STORAGE_KEY = 'hand_compass_personal_dilemmas_v1';
       const FORKS_SESSION_KEY = 'hand_compass_fork_seen_v1';
       const FORKS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
       const SNAPSHOT_EXPORT_VERSION = 1;
@@ -2934,6 +3060,17 @@
       const profileIntersectionContent = document.getElementById('profileIntersectionContent');
       const forksScreen = document.getElementById('forksScreen');
       const forksContent = document.getElementById('forksContent');
+      const personalDilemmaOpen = document.getElementById('personalDilemmaOpen');
+      const personalDilemmaComposer = document.getElementById('personalDilemmaComposer');
+      const personalDilemmaForm = document.getElementById('personalDilemmaForm');
+      const personalDilemmaText = document.getElementById('personalDilemmaText');
+      const personalDilemmaCount = document.getElementById('personalDilemmaCount');
+      const personalDilemmaOptions = document.getElementById('personalDilemmaOptions');
+      const personalDilemmaStatus = document.getElementById('personalDilemmaStatus');
+      const personalDilemmaCandidates = document.getElementById('personalDilemmaCandidates');
+      const personalDilemmaListDetails = document.getElementById('personalDilemmaListDetails');
+      const personalDilemmaListCount = document.getElementById('personalDilemmaListCount');
+      const personalDilemmaList = document.getElementById('personalDilemmaList');
       const storageNotice = document.getElementById('storageNotice');
       const pathNav = document.getElementById('pathNav');
       const pathTrack = document.getElementById('pathTrack');
@@ -2943,7 +3080,10 @@
       let state = restoreState();
       let worldData = restoreWorldData();
       let forksData = restoreForksData();
+      let personalDilemmasData = restorePersonalDilemmasData();
       let activeFork = null;
+      let personalDilemmaComposerOpen = false;
+      let lastPersonalDilemmaId = null;
       let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -3101,6 +3241,8 @@
             ? parsed.profileIntersectionId : null;
           let restoredView = parsed.view === 'profile-intersection' && selectionCount >= 3 && profileIntersectionId
             ? 'profile-intersection'
+            : parsed.view === 'forks' && selectionCount >= 3
+            ? 'forks'
             : parsed.view === 'closeness' && selectionCount >= 3
             ? 'closeness'
             : parsed.view === 'worlds' && selectionCount >= 3
@@ -3303,6 +3445,55 @@
           localStorage.setItem(FORKS_STORAGE_KEY, JSON.stringify(forksData));
         } catch {
           showStorageNotice('Браузер не дал сохранить развилку. Пока она останется только на этом экране.');
+        }
+      }
+
+      function emptyPersonalDilemmasData() {
+        return { version: 1, items: [] };
+      }
+
+      function restorePersonalDilemmasData() {
+        try {
+          const raw = localStorage.getItem(PERSONAL_DILEMMAS_STORAGE_KEY);
+          if (!raw) return emptyPersonalDilemmasData();
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') throw new Error('invalid personal dilemmas');
+          const items = Array.isArray(parsed.items) ? parsed.items
+            .filter((item) => item && typeof item.id === 'string' && typeof item.text === 'string' && item.text.trim())
+            .slice(-80)
+            .map((item) => {
+              const mode = item.mode === 'options' ? 'options' : 'vent';
+              const outcomes = mode === 'options' && Array.isArray(item.outcomes)
+                ? item.outcomes.filter((value) => typeof value === 'string' && value.trim()).slice(0, 3).map((value) => value.trim().slice(0, 180))
+                : [];
+              const candidateIds = Array.isArray(item.candidateIds)
+                ? [...new Set(item.candidateIds.filter((id) => WORD_BY_ID.has(id)))].slice(0, 8)
+                : [];
+              const acceptedCandidateIds = Array.isArray(item.acceptedCandidateIds)
+                ? [...new Set(item.acceptedCandidateIds.filter((id) => candidateIds.includes(id))) ]
+                : [];
+              return {
+                id: item.id.slice(0, 120),
+                text: item.text.trim().slice(0, 500),
+                mode,
+                outcomes,
+                candidateIds,
+                acceptedCandidateIds,
+                createdAt: typeof item.createdAt === 'string' ? item.createdAt : null
+              };
+            }) : [];
+          return { version: 1, items };
+        } catch {
+          showStorageNotice('Свои ситуации не удалось прочитать. Исходная запись пока не изменена.');
+          return emptyPersonalDilemmasData();
+        }
+      }
+
+      function persistPersonalDilemmasData() {
+        try {
+          localStorage.setItem(PERSONAL_DILEMMAS_STORAGE_KEY, JSON.stringify(personalDilemmasData));
+        } catch {
+          showStorageNotice('Браузер не дал сохранить ситуацию. Пока она останется только на этом экране.');
         }
       }
 
@@ -4352,6 +4543,206 @@
         record.weightsApplied = true;
         record.weightedWordIds = weightedWordIds;
         return weightedWordIds;
+      }
+
+      const PERSONAL_SEARCH_STOP_WORDS = new Set([
+        'когда', 'чтобы', 'который', 'которая', 'которые', 'потому', 'после', 'перед',
+        'только', 'очень', 'сейчас', 'своими', 'своего', 'своей', 'меня', 'тебя', 'этого'
+      ]);
+
+      function normalizePersonalSearch(value) {
+        return String(value || '')
+          .toLocaleLowerCase('ru')
+          .replaceAll('ё', 'е')
+          .replace(/[^а-яa-z0-9\s-]/gi, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function personalSearchTokens(value) {
+        return normalizePersonalSearch(value).split(/[\s-]+/)
+          .filter((token) => token.length >= 4 && !PERSONAL_SEARCH_STOP_WORDS.has(token));
+      }
+
+      function sharedSearchPrefix(left, right) {
+        const limit = Math.min(left.length, right.length);
+        let length = 0;
+        while (length < limit && left[length] === right[length]) length += 1;
+        return length;
+      }
+
+      function matchPersonalDilemmaWords(text) {
+        const normalizedText = normalizePersonalSearch(text);
+        const inputTokens = personalSearchTokens(normalizedText);
+        if (!normalizedText || !inputTokens.length) return [];
+        return WORDS.map((word) => {
+          const terms = [word.word, ...(Array.isArray(word.synonyms) ? word.synonyms : [])]
+            .map(normalizePersonalSearch)
+            .filter(Boolean);
+          let score = 0;
+          terms.forEach((term) => {
+            if (` ${normalizedText} `.includes(` ${term} `)) score += 12;
+            personalSearchTokens(term).forEach((termToken) => {
+              const bestPrefix = inputTokens.reduce((best, inputToken) => Math.max(best, sharedSearchPrefix(inputToken, termToken)), 0);
+              if (bestPrefix >= 7) score += 4;
+              else if (bestPrefix >= 5) score += 2;
+              else if (bestPrefix === Math.min(4, termToken.length) && termToken.length <= 5) score += 1;
+            });
+          });
+          return { id: word.id, score, length: word.word.length };
+        })
+          .filter((item) => item.score > 0)
+          .sort((left, right) => right.score - left.score || left.length - right.length || left.id.localeCompare(right.id))
+          .slice(0, 8)
+          .map((item) => item.id);
+      }
+
+      function personalDilemmaMode() {
+        return personalDilemmaForm.elements.personalDilemmaMode.value === 'options' ? 'options' : 'vent';
+      }
+
+      function updatePersonalDilemmaMode() {
+        const withOptions = personalDilemmaMode() === 'options';
+        personalDilemmaOptions.hidden = !withOptions;
+        personalDilemmaOptions.querySelectorAll('[data-personal-dilemma-option]').forEach((input, index) => {
+          input.required = withOptions && index < 2;
+        });
+      }
+
+      function updatePersonalDilemmaCount() {
+        const length = personalDilemmaText.value.length;
+        personalDilemmaCount.textContent = `${length} / 500`;
+        personalDilemmaCount.classList.toggle('is-near-limit', length >= 450);
+      }
+
+      function renderPersonalDilemmaCandidates(recordId = lastPersonalDilemmaId) {
+        personalDilemmaCandidates.replaceChildren();
+        const record = personalDilemmasData.items.find((item) => item.id === recordId);
+        if (!record) {
+          personalDilemmaCandidates.hidden = true;
+          return;
+        }
+        const copy = document.createElement('p');
+        if (!record.candidateIds.length) {
+          copy.textContent = 'В словаре пока не нашлось точного отклика. Запись всё равно сохранена.';
+          personalDilemmaCandidates.append(copy);
+          personalDilemmaCandidates.hidden = false;
+          return;
+        }
+        copy.textContent = 'В тексте отозвались слова. Возьми только те, которые действительно твои:';
+        const chips = document.createElement('div');
+        chips.className = 'personal-candidate-chips';
+        record.candidateIds.forEach((id) => {
+          const word = WORD_BY_ID.get(id);
+          if (!word) return;
+          const selected = hasSnapshotWord(id);
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'personal-candidate';
+          button.dataset.personalCandidateId = id;
+          button.dataset.personalDilemmaId = record.id;
+          button.disabled = selected;
+          button.textContent = selected ? `${word.word} · в слепке` : word.word;
+          chips.append(button);
+        });
+        personalDilemmaCandidates.append(copy, chips);
+        personalDilemmaCandidates.hidden = false;
+      }
+
+      function renderPersonalDilemmaList() {
+        personalDilemmaList.replaceChildren();
+        const items = [...personalDilemmasData.items].reverse();
+        personalDilemmaListCount.textContent = items.length ? `(${items.length})` : '';
+        if (!items.length) {
+          const empty = document.createElement('p');
+          empty.className = 'personal-dilemma-empty';
+          empty.textContent = 'Здесь появятся записи, которые ты сохранишь на этом устройстве.';
+          personalDilemmaList.append(empty);
+          return;
+        }
+        items.forEach((item) => {
+          const article = document.createElement('article');
+          article.className = 'personal-dilemma-item';
+          const text = document.createElement('p');
+          text.textContent = item.text;
+          const meta = document.createElement('span');
+          meta.className = 'personal-dilemma-item-meta';
+          meta.textContent = item.mode === 'options' ? 'с вариантами' : 'просто выговориться';
+          article.append(text, meta);
+          if (item.outcomes.length) {
+            const list = document.createElement('ul');
+            item.outcomes.forEach((outcome) => {
+              const row = document.createElement('li');
+              row.textContent = outcome;
+              list.append(row);
+            });
+            article.append(list);
+          }
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'personal-dilemma-delete';
+          remove.dataset.deletePersonalDilemma = item.id;
+          remove.textContent = 'Удалить';
+          article.append(remove);
+          personalDilemmaList.append(article);
+        });
+      }
+
+      function setPersonalDilemmaComposer(open) {
+        personalDilemmaComposerOpen = open;
+        personalDilemmaComposer.hidden = !open;
+        forksContent.hidden = open;
+        personalDilemmaOpen.textContent = open ? 'Вернуться к дилемме' : 'Написать свою ситуацию';
+        if (open) {
+          updatePersonalDilemmaCount();
+          updatePersonalDilemmaMode();
+          renderPersonalDilemmaCandidates();
+          window.requestAnimationFrame(() => personalDilemmaText.focus());
+        }
+      }
+
+      function savePersonalDilemma() {
+        const text = personalDilemmaText.value.trim().slice(0, 500);
+        const mode = personalDilemmaMode();
+        const outcomes = mode === 'options'
+          ? [...personalDilemmaOptions.querySelectorAll('[data-personal-dilemma-option]')]
+              .map((input) => input.value.trim().slice(0, 180)).filter(Boolean).slice(0, 3)
+          : [];
+        if (!text || (mode === 'options' && outcomes.length < 2)) return false;
+        const randomPart = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const record = {
+          id: `personal:${randomPart}`,
+          text,
+          mode,
+          outcomes,
+          candidateIds: matchPersonalDilemmaWords(text),
+          acceptedCandidateIds: [],
+          createdAt: new Date().toISOString()
+        };
+        personalDilemmasData.items.push(record);
+        personalDilemmasData.items = personalDilemmasData.items.slice(-80);
+        lastPersonalDilemmaId = record.id;
+        persistPersonalDilemmasData();
+        renderPersonalDilemmaList();
+        renderPersonalDilemmaCandidates(record.id);
+        personalDilemmaListDetails.open = true;
+        personalDilemmaStatus.textContent = 'Ситуация сохранена только у тебя.';
+        return true;
+      }
+
+      function acceptPersonalDilemmaCandidate(recordId, wordId) {
+        const record = personalDilemmasData.items.find((item) => item.id === recordId);
+        const word = WORD_BY_ID.get(wordId);
+        if (!record || !record.candidateIds.includes(wordId) || !word || hasSnapshotWord(wordId)) return;
+        state.selectedIds.push(wordId);
+        setSelectionWave(wordId);
+        addWordWeight(wordId);
+        record.acceptedCandidateIds = [...new Set([...record.acceptedCandidateIds, wordId])];
+        state.snapshotShelfId = word.shelves[0] || state.snapshotShelfId;
+        persistState();
+        persistPersonalDilemmasData();
+        renderPersonalDilemmaCandidates(recordId);
+        personalDilemmaStatus.textContent = `«${word.word}» теперь в слепке.`;
       }
 
       function createForkButton(label, action, extraClass = '') {
@@ -7023,7 +7414,12 @@
         }
         if (isWordWorld) renderWordWorld();
         if (isProfileIntersection) renderProfileIntersection();
-        if (isForks) renderForkScreen();
+        if (isForks) {
+          renderPersonalDilemmaList();
+          renderForkScreen();
+          personalDilemmaComposer.hidden = !personalDilemmaComposerOpen;
+          forksContent.hidden = personalDilemmaComposerOpen;
+        }
         animateChapterEntry(previousView, state.view);
         updatePathNavigation(state.view);
         updateContextNavigation(state.view);
@@ -7410,6 +7806,38 @@
         if (!word) return;
         openWordWorld(word.dataset.openWorldFromIntersection, 'intersections', state.activeProfileId);
       });
+      personalDilemmaOpen.addEventListener('click', () => {
+        setPersonalDilemmaComposer(!personalDilemmaComposerOpen);
+      });
+      document.getElementById('personalDilemmaCancel').addEventListener('click', () => {
+        setPersonalDilemmaComposer(false);
+      });
+      personalDilemmaText.addEventListener('input', updatePersonalDilemmaCount);
+      personalDilemmaForm.addEventListener('change', (event) => {
+        if (event.target.matches('[name="personalDilemmaMode"]')) updatePersonalDilemmaMode();
+      });
+      personalDilemmaForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (!savePersonalDilemma()) {
+          personalDilemmaStatus.textContent = 'Для режима с вариантами нужны хотя бы два выхода.';
+        }
+      });
+      personalDilemmaCandidates.addEventListener('click', (event) => {
+        const candidate = event.target.closest('[data-personal-candidate-id]');
+        if (candidate) acceptPersonalDilemmaCandidate(candidate.dataset.personalDilemmaId, candidate.dataset.personalCandidateId);
+      });
+      personalDilemmaList.addEventListener('click', (event) => {
+        const remove = event.target.closest('[data-delete-personal-dilemma]');
+        if (!remove) return;
+        personalDilemmasData.items = personalDilemmasData.items.filter((item) => item.id !== remove.dataset.deletePersonalDilemma);
+        if (lastPersonalDilemmaId === remove.dataset.deletePersonalDilemma) {
+          lastPersonalDilemmaId = null;
+          renderPersonalDilemmaCandidates();
+        }
+        persistPersonalDilemmasData();
+        renderPersonalDilemmaList();
+        personalDilemmaStatus.textContent = 'Ситуация удалена с этого устройства.';
+      });
       forksContent.addEventListener('click', (event) => {
         const profileLink = event.target.closest('[data-fork-profile-id]');
         if (profileLink) {
@@ -7494,6 +7922,7 @@
 
       renderScatter();
       if (state.view === 'profile-intersection' && state.profileIntersectionId && totalSelected() >= 3) showView('profile-intersection', false, false);
+      else if (state.view === 'forks' && totalSelected() >= 3) showView('forks', false, false);
       else if (state.view === 'closeness' && totalSelected() >= 3) showView('closeness', false, false);
       else if (state.view === 'worlds' && totalSelected() >= 3) showView('worlds', false, false);
       else if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
