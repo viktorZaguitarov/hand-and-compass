@@ -1237,6 +1237,13 @@
       background: rgba(255, 248, 243, 0.72);
     }
 
+    .graph-walk-button[aria-pressed="true"] {
+      border-color: rgba(200, 111, 82, 0.48);
+      color: var(--accent-dark);
+      background: var(--accent-soft);
+      box-shadow: 0 5px 13px rgba(115, 63, 47, 0.12);
+    }
+
     .graph-stage {
       width: 100%;
       max-width: 1040px;
@@ -1269,7 +1276,14 @@
       transform-origin: 0 0;
     }
 
-    .graph-zone { fill: rgba(49, 95, 82, 0.055); stroke: rgba(49, 95, 82, 0.13); stroke-width: 1.2; }
+    .graph-zone {
+      fill: rgba(49, 95, 82, 0.055);
+      stroke: rgba(49, 95, 82, 0.13);
+      stroke-width: 1.2;
+      cursor: grab;
+      touch-action: none;
+    }
+    .graph-zone:active { cursor: grabbing; }
     .graph-zone-label {
       fill: rgba(38, 64, 55, 0.24);
       font-family: var(--sans);
@@ -1325,12 +1339,15 @@
     .graph-ghost-plus { fill: var(--forest); font-family: var(--sans); font-size: 18px; font-weight: 600; pointer-events: none; }
 
     .graph-node {
-      cursor: pointer;
+      cursor: grab;
       opacity: 1;
       transform: translate(var(--node-x), var(--node-y)) rotate(var(--node-tilt, 0deg));
       animation: graph-node-arrive 420ms ease both;
-      transition: opacity 220ms ease, filter 220ms ease;
+      transition: opacity 220ms ease, filter 220ms ease, transform 260ms cubic-bezier(0.2, 0.82, 0.28, 1.08);
+      touch-action: none;
     }
+    .graph-node:active { cursor: grabbing; }
+    .graph-node.is-being-dragged { animation: none; transition: none; }
 
     .graph-node-plate {
       fill: color-mix(in srgb, var(--node-color, #66877b) 90%, #fffdf7);
@@ -2456,6 +2473,8 @@
           <header class="screen-head graph-head">
             <h1 id="graphTitle" tabindex="-1">Связи откликов</h1>
             <div class="graph-walk-actions" aria-label="Прогулка по графу">
+              <button class="graph-walk-button" id="graphAllConnectionsButton" type="button" aria-pressed="false">Все связи</button>
+              <button class="graph-walk-button" id="graphTidyButton" type="button">Уборка</button>
               <button class="graph-walk-button" id="graphJumpButton" type="button">Дальний прыжок</button>
               <button class="graph-walk-button graph-walk-button--clear" id="clearGraphTrailButton" type="button" hidden>Очистить след</button>
             </div>
@@ -2648,6 +2667,8 @@
       const graphToast = document.getElementById('graphToast');
       const graphJumpButton = document.getElementById('graphJumpButton');
       const clearGraphTrailButton = document.getElementById('clearGraphTrailButton');
+      const graphAllConnectionsButton = document.getElementById('graphAllConnectionsButton');
+      const graphTidyButton = document.getElementById('graphTidyButton');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
@@ -2678,6 +2699,7 @@
       let graphCanvas = { width: GRAPH_MIN_CANVAS_SIZE, height: GRAPH_MIN_CANVAS_SIZE };
       let graphBounds = { minX: 0, minY: 0, maxX: GRAPH_MIN_CANVAS_SIZE, maxY: GRAPH_MIN_CANVAS_SIZE };
       let graphPositions = new Map();
+      let graphSystemPositions = new Map();
       let graphWalkTargetId = null;
       let graphScale = 1;
       let graphViewportWidthAtFit = 0;
@@ -2686,6 +2708,7 @@
       let graphSuppressClickUntil = 0;
       let graphLastTap = null;
       let graphToastTimer = null;
+      let graphDrag = null;
       const graphTouchPoints = new Map();
       const scatterSeed = createScatterSeed();
       const graphTiltSeed = createScatterSeed();
@@ -2710,6 +2733,7 @@
           snapshotShelfId: 'values',
           wordSigns: {}, privacyByWord: {}, topThreeValues: [],
           graphTrailIds: [],
+          graphWordOffsets: {}, graphCloudOffsets: {}, graphAllConnections: false,
           updatedAt: null
         };
       }
@@ -2737,6 +2761,21 @@
           const graphTrailIds = Array.isArray(parsed.graphTrailIds)
             ? [...new Set(parsed.graphTrailIds.map(canonicalWordId).filter((id) => WORD_BY_ID.has(id) || customIds.has(id)))]
             : [];
+          const restoreGraphOffsets = (source, allowedIds) => {
+            const offsets = {};
+            if (!source || typeof source !== 'object') return offsets;
+            Object.entries(source).forEach(([rawId, value]) => {
+              const id = canonicalWordId(rawId);
+              const x = Number(value?.x);
+              const y = Number(value?.y);
+              if (!allowedIds.has(id) || !Number.isFinite(x) || !Number.isFinite(y)) return;
+              offsets[id] = {
+                x: Math.max(-1200, Math.min(1200, x)),
+                y: Math.max(-1200, Math.min(1200, y))
+              };
+            });
+            return offsets;
+          };
           const waveOneIds = Array.isArray(parsed.waveOneIds)
             ? [...new Set(parsed.waveOneIds.map(canonicalWordId).filter((id) => selectedIds.includes(id)))]
             : [...selectedIds];
@@ -2744,6 +2783,8 @@
             ? [...new Set(parsed.waveOneCustomIds.filter((id) => customIds.has(id)))]
             : [...customIds];
           const knownIds = new Set([...selectedIds, ...customIds]);
+          const graphWordOffsets = restoreGraphOffsets(parsed.graphWordOffsets, new Set([...WORD_BY_ID.keys(), ...customIds]));
+          const graphCloudOffsets = restoreGraphOffsets(parsed.graphCloudOffsets, new Set([...SHELVES.map((shelf) => shelf.id), 'custom']));
           const restoreWordMetadata = (source, maximumLength) => {
             const result = {};
             if (!source || typeof source !== 'object') return result;
@@ -2837,6 +2878,9 @@
             privacyByWord,
             topThreeValues,
             graphTrailIds,
+            graphWordOffsets,
+            graphCloudOffsets,
+            graphAllConnections: parsed.graphAllConnections === true,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -5434,6 +5478,270 @@
         return `M ${source.x.toFixed(1)} ${source.y.toFixed(1)} Q ${controlX.toFixed(1)} ${controlY.toFixed(1)} ${target.x.toFixed(1)} ${target.y.toFixed(1)}`;
       }
 
+      function cloneGraphPosition(position) {
+        return { ...position };
+      }
+
+      function clampGraphWordToCloud(position, x, y, elastic = false) {
+        const dx = x - position.anchorX;
+        const dy = y - position.anchorY;
+        const distance = Math.max(0.001, Math.hypot(dx, dy));
+        if (distance <= position.maximumRadius) return { x, y };
+        const overshoot = distance - position.maximumRadius;
+        const displayRadius = elastic
+          ? position.maximumRadius + Math.min(110, overshoot * 0.22)
+          : position.maximumRadius;
+        return {
+          x: position.anchorX + dx / distance * displayRadius,
+          y: position.anchorY + dy / distance * displayRadius
+        };
+      }
+
+      function applySavedGraphLayout(positions) {
+        graphZones.forEach((zone, shelfId) => {
+          const saved = state.graphCloudOffsets?.[shelfId] || { x: 0, y: 0 };
+          const maximumX = Math.max(GRAPH_CANVAS_PADDING, graphCanvas.width - GRAPH_CANVAS_PADDING);
+          const maximumY = Math.max(GRAPH_CANVAS_PADDING, graphCanvas.height - GRAPH_CANVAS_PADDING);
+          const movedX = Math.max(GRAPH_CANVAS_PADDING, Math.min(maximumX, zone.x + saved.x));
+          const movedY = Math.max(GRAPH_CANVAS_PADDING, Math.min(maximumY, zone.y + saved.y));
+          const dx = movedX - zone.x;
+          const dy = movedY - zone.y;
+          zone.x += dx;
+          zone.y += dy;
+          positions.forEach((position) => {
+            if (position.shelf !== shelfId) return;
+            position.x += dx;
+            position.y += dy;
+            position.targetX += dx;
+            position.targetY += dy;
+            position.anchorX += dx;
+            position.anchorY += dy;
+          });
+        });
+
+        graphSystemPositions = new Map([...positions].map(([id, position]) => [id, cloneGraphPosition(position)]));
+        positions.forEach((position, id) => {
+          const offset = state.graphWordOffsets?.[id] || { x: 0, y: 0 };
+          const target = clampGraphWordToCloud(position, position.x + offset.x, position.y + offset.y);
+          position.x = Math.max(position.width / 2 + 26, Math.min(graphCanvas.width - position.width / 2 - 26, target.x));
+          position.y = Math.max(position.height / 2 + 26, Math.min(graphCanvas.height - position.height / 2 - 26, target.y));
+        });
+        graphBounds = graphBoundsFrom(positions);
+      }
+
+      function updateGraphGeometry() {
+        graphSvg.querySelectorAll('[data-graph-node-id]').forEach((node) => {
+          const position = graphPositions.get(node.dataset.graphNodeId);
+          if (!position) return;
+          node.style.setProperty('--node-x', `${position.x.toFixed(1)}px`);
+          node.style.setProperty('--node-y', `${position.y.toFixed(1)}px`);
+          node.style.setProperty('--anchor-x', `${position.anchorX.toFixed(1)}px`);
+          node.style.setProperty('--anchor-y', `${position.anchorY.toFixed(1)}px`);
+        });
+        graphSvg.querySelectorAll('[data-graph-zone-shelf]').forEach((zoneElement) => {
+          const zone = graphZones.get(zoneElement.dataset.graphZoneShelf);
+          if (!zone) return;
+          if (zoneElement.tagName === 'circle') {
+            zoneElement.setAttribute('cx', zone.x.toFixed(1));
+            zoneElement.setAttribute('cy', zone.y.toFixed(1));
+          } else {
+            zoneElement.setAttribute('x', zone.x.toFixed(1));
+            zoneElement.setAttribute('y', (zone.y + 16).toFixed(1));
+          }
+        });
+        graphSvg.querySelectorAll('.graph-edge, .graph-edge-hit').forEach((edge) => {
+          const source = graphPositions.get(edge.dataset.source);
+          const target = graphPositions.get(edge.dataset.target);
+          if (source && target) edge.setAttribute('d', graphCurve(source, target, `${edge.dataset.source}:${edge.dataset.target}`));
+        });
+        graphSvg.querySelectorAll('[data-edge-gradient]').forEach((gradient) => {
+          const source = graphPositions.get(gradient.dataset.source);
+          const target = graphPositions.get(gradient.dataset.target);
+          if (!source || !target) return;
+          gradient.setAttribute('x1', source.x.toFixed(1));
+          gradient.setAttribute('y1', source.y.toFixed(1));
+          gradient.setAttribute('x2', target.x.toFixed(1));
+          gradient.setAttribute('y2', target.y.toFixed(1));
+        });
+        graphSvg.querySelectorAll('.graph-whisker, .graph-ghost').forEach((element) => {
+          const source = graphPositions.get(element.dataset.source);
+          if (!source) return;
+          const x = source.x + Number(element.dataset.offsetX || 0);
+          const y = source.y + Number(element.dataset.offsetY || 0);
+          if (element.classList.contains('graph-whisker')) {
+            element.setAttribute('d', `M ${source.x.toFixed(1)} ${source.y.toFixed(1)} L ${x.toFixed(1)} ${y.toFixed(1)}`);
+          } else {
+            element.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+          }
+        });
+      }
+
+      function graphContentPoint(event) {
+        const rect = graphSvg.getBoundingClientRect();
+        return {
+          x: (event.clientX - rect.left) * graphCanvas.width / Math.max(1, rect.width),
+          y: (event.clientY - rect.top) * graphCanvas.height / Math.max(1, rect.height)
+        };
+      }
+
+      function beginGraphDrag(event, target) {
+        if (event.button !== undefined && event.button !== 0) return false;
+        const node = target.closest('[data-graph-node-id]');
+        const zone = target.closest('.graph-zone[data-graph-zone-shelf]');
+        if (!node && !zone) return false;
+        const point = graphContentPoint(event);
+        if (node) {
+          const id = node.dataset.graphNodeId;
+          const position = graphPositions.get(id);
+          if (!position) return false;
+          graphDrag = {
+            type: 'word', id, pointerId: event.pointerId, startPoint: point,
+            origin: cloneGraphPosition(position), moved: false
+          };
+          node.classList.add('is-being-dragged');
+        } else {
+          const shelfId = zone.dataset.graphZoneShelf;
+          const cloud = graphZones.get(shelfId);
+          if (!cloud) return false;
+          graphDrag = {
+            type: 'cloud', shelfId, pointerId: event.pointerId, startPoint: point,
+            originZone: { x: cloud.x, y: cloud.y },
+            originPositions: new Map([...graphPositions]
+              .filter(([, position]) => position.shelf === shelfId)
+              .map(([id, position]) => [id, cloneGraphPosition(position)])),
+            moved: false
+          };
+        }
+        graphSvg.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+        event.stopPropagation();
+        return true;
+      }
+
+      function moveGraphDrag(event) {
+        if (!graphDrag || event.pointerId !== graphDrag.pointerId) return;
+        const point = graphContentPoint(event);
+        const dx = point.x - graphDrag.startPoint.x;
+        const dy = point.y - graphDrag.startPoint.y;
+        if (!graphDrag.moved && Math.hypot(dx, dy) < 5) return;
+        graphDrag.moved = true;
+        if (graphDrag.type === 'word') {
+          const position = graphPositions.get(graphDrag.id);
+          if (!position) return;
+          const target = clampGraphWordToCloud(position, graphDrag.origin.x + dx, graphDrag.origin.y + dy, true);
+          position.x = target.x;
+          position.y = target.y;
+        } else {
+          const zone = graphZones.get(graphDrag.shelfId);
+          const targetX = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.width - GRAPH_CANVAS_PADDING, graphDrag.originZone.x + dx));
+          const targetY = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.height - GRAPH_CANVAS_PADDING, graphDrag.originZone.y + dy));
+          const cloudDx = targetX - graphDrag.originZone.x;
+          const cloudDy = targetY - graphDrag.originZone.y;
+          zone.x = targetX;
+          zone.y = targetY;
+          graphDrag.originPositions.forEach((origin, id) => {
+            const position = graphPositions.get(id);
+            if (!position) return;
+            position.x = origin.x + cloudDx;
+            position.y = origin.y + cloudDy;
+            position.anchorX = origin.anchorX + cloudDx;
+            position.anchorY = origin.anchorY + cloudDy;
+          });
+        }
+        updateGraphGeometry();
+        event.preventDefault();
+      }
+
+      function finishGraphDrag(event) {
+        if (!graphDrag || event.pointerId !== graphDrag.pointerId) return false;
+        const finished = graphDrag;
+        graphDrag = null;
+        graphSvg.releasePointerCapture?.(event.pointerId);
+        if (finished.type === 'word') {
+          const node = graphSvg.querySelector(`[data-graph-node-id="${CSS.escape(finished.id)}"]`);
+          node?.classList.remove('is-being-dragged');
+          const position = graphPositions.get(finished.id);
+          const base = graphSystemPositions.get(finished.id);
+          if (position && base && finished.moved) {
+            const clamped = clampGraphWordToCloud(position, position.x, position.y);
+            position.x = clamped.x;
+            position.y = clamped.y;
+            state.graphWordOffsets[finished.id] = { x: position.x - base.x, y: position.y - base.y };
+          }
+        } else if (finished.moved) {
+          const zone = graphZones.get(finished.shelfId);
+          const saved = state.graphCloudOffsets[finished.shelfId] || { x: 0, y: 0 };
+          const dx = zone.x - finished.originZone.x;
+          const dy = zone.y - finished.originZone.y;
+          state.graphCloudOffsets[finished.shelfId] = { x: saved.x + dx, y: saved.y + dy };
+          graphSystemPositions.forEach((position) => {
+            if (position.shelf !== finished.shelfId) return;
+            position.x += dx;
+            position.y += dy;
+            position.anchorX += dx;
+            position.anchorY += dy;
+            position.targetX += dx;
+            position.targetY += dy;
+          });
+        }
+        if (finished.moved) {
+          graphSuppressClickUntil = Date.now() + 360;
+          graphBounds = graphBoundsFrom(graphPositions);
+          updateGraphGeometry();
+          persistState();
+        }
+        return true;
+      }
+
+      function tidyGraph() {
+        state.graphWordOffsets = {};
+        state.graphCloudOffsets = {};
+        persistState();
+        activeGraphNodeId = null;
+        graphChainIds = new Set();
+        renderGraph();
+        showGraphToast('Облака вернулись на свои места.');
+      }
+
+      function toggleAllGraphConnections() {
+        state.graphAllConnections = !state.graphAllConnections;
+        graphAllConnectionsButton.setAttribute('aria-pressed', String(state.graphAllConnections));
+        persistState();
+        updateGraphHighlight();
+      }
+
+      function nudgeGraphCloud(shelfId, dx, dy) {
+        const zone = graphZones.get(shelfId);
+        if (!zone) return;
+        const targetX = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.width - GRAPH_CANVAS_PADDING, zone.x + dx));
+        const targetY = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.height - GRAPH_CANVAS_PADDING, zone.y + dy));
+        const actualX = targetX - zone.x;
+        const actualY = targetY - zone.y;
+        zone.x = targetX;
+        zone.y = targetY;
+        graphPositions.forEach((position) => {
+          if (position.shelf !== shelfId) return;
+          position.x += actualX;
+          position.y += actualY;
+          position.anchorX += actualX;
+          position.anchorY += actualY;
+        });
+        graphSystemPositions.forEach((position) => {
+          if (position.shelf !== shelfId) return;
+          position.x += actualX;
+          position.y += actualY;
+          position.anchorX += actualX;
+          position.anchorY += actualY;
+          position.targetX += actualX;
+          position.targetY += actualY;
+        });
+        const saved = state.graphCloudOffsets[shelfId] || { x: 0, y: 0 };
+        state.graphCloudOffsets[shelfId] = { x: saved.x + actualX, y: saved.y + actualY };
+        graphBounds = graphBoundsFrom(graphPositions);
+        updateGraphGeometry();
+        persistState();
+      }
+
       function renderGraph() {
         const items = graphItems();
         const itemMap = new Map(items.map((item) => [item.id, item]));
@@ -5441,6 +5749,7 @@
         graphPressureSources = buildGraphPressure(items);
         const layout = computeGraphLayout(items, graphAdjacency, graphPressureSources);
         const positions = layout.positions;
+        applySavedGraphLayout(positions);
         graphPositions = positions;
         const graphShelves = layout.shelves;
         graphSvg.setAttribute('viewBox', `0 0 ${graphCanvas.width} ${graphCanvas.height}`);
@@ -5452,7 +5761,8 @@
         graphShelves.forEach((shelf) => {
           const zone = graphZones.get(shelf.id);
           const label = svgElement('text', {
-            class: 'graph-zone-label', x: zone.x, y: zone.y + 16, 'text-anchor': 'middle'
+            class: 'graph-zone-label', x: zone.x, y: zone.y + 16, 'text-anchor': 'middle',
+            'data-graph-zone-shelf': shelf.id
           });
           label.textContent = shelf.title.toLocaleUpperCase('ru-RU');
           zoneLabels.append(label);
@@ -5462,7 +5772,10 @@
         graphShelves.forEach((shelf) => {
           const zone = graphZones.get(shelf.id);
           graphSvg.append(svgElement('circle', {
-            class: 'graph-zone', cx: zone.x, cy: zone.y, r: zone.radius
+            class: 'graph-zone', cx: zone.x, cy: zone.y, r: zone.radius,
+            'data-graph-zone-shelf': shelf.id,
+            role: 'button', tabindex: 0,
+            'aria-label': `Перетащить облако «${shelf.title}» целиком`
           }));
         });
 
@@ -5479,7 +5792,10 @@
               id: gradientId,
               gradientUnits: 'userSpaceOnUse',
               x1: source.x.toFixed(1), y1: source.y.toFixed(1),
-              x2: target.x.toFixed(1), y2: target.y.toFixed(1)
+              x2: target.x.toFixed(1), y2: target.y.toFixed(1),
+              'data-edge-gradient': gradientId,
+              'data-source': id,
+              'data-target': neighborId
             });
             gradient.append(
               svgElement('stop', { offset: '0%', 'stop-color': GRAPH_COLORS[source.shelf] || GRAPH_COLORS.custom }),
@@ -5523,7 +5839,9 @@
               class: 'graph-whisker',
               d: `M ${source.x.toFixed(1)} ${source.y.toFixed(1)} L ${target.x.toFixed(1)} ${target.y.toFixed(1)}`,
               'data-source': item.id,
-              'data-target': neighborId
+              'data-target': neighborId,
+              'data-offset-x': (target.x - source.x).toFixed(1),
+              'data-offset-y': (target.y - source.y).toFixed(1)
             });
             const ghost = svgElement('g', {
               class: 'graph-ghost',
@@ -5532,7 +5850,9 @@
               role: 'button',
               'aria-label': `Добавить соседнее слово «${WORD_BY_ID.get(neighborId).word}»`,
               'data-ghost-id': neighborId,
-              'data-source': item.id
+              'data-source': item.id,
+              'data-offset-x': (target.x - source.x).toFixed(1),
+              'data-offset-y': (target.y - source.y).toFixed(1)
             });
             const hit = svgElement('circle', { class: 'graph-ghost-hit', cx: 0, cy: 0, r: 22 });
             const dot = svgElement('circle', { class: 'graph-ghost-dot', cx: 0, cy: 0, r: 12 });
@@ -5552,6 +5872,7 @@
             role: 'button',
             'aria-label': `Открыть слово «${item.word}». Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
             'data-graph-node-id': item.id,
+            'data-graph-shelf': position.shelf,
             'data-pressure-index': position.pressureCount,
             style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--node-label-color:${GRAPH_LABEL_COLORS[position.shelf] || GRAPH_LABEL_COLORS.custom};--node-label-stroke:${GRAPH_LABEL_STROKES[position.shelf] || GRAPH_LABEL_STROKES.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
           });
@@ -5579,6 +5900,7 @@
         });
 
         graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
+        graphAllConnectionsButton.setAttribute('aria-pressed', String(state.graphAllConnections));
         if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
         else {
           activeGraphNodeId = null;
@@ -5628,19 +5950,20 @@
 
       function updateGraphHighlight() {
         const hasActive = Boolean(activeGraphNodeId);
+        const keepAllVisible = state.graphAllConnections === true;
         graphSvg.querySelectorAll('[data-graph-node-id]').forEach((node) => {
           const id = node.dataset.graphNodeId;
           node.classList.toggle('is-active', id === activeGraphNodeId);
           node.classList.toggle('is-chain', hasActive && graphChainIds.has(id));
-          node.classList.toggle('is-dimmed', hasActive && !graphChainIds.has(id));
+          node.classList.toggle('is-dimmed', hasActive && !keepAllVisible && !graphChainIds.has(id));
         });
         graphSvg.querySelectorAll('.graph-edge').forEach((edge) => {
           const isDirectEdge = edge.dataset.source === activeGraphNodeId || edge.dataset.target === activeGraphNodeId;
           edge.classList.toggle('is-chain', hasActive && isDirectEdge);
-          edge.classList.toggle('is-dimmed', hasActive && !isDirectEdge);
+          edge.classList.toggle('is-dimmed', hasActive && !keepAllVisible && !isDirectEdge);
         });
         graphSvg.querySelectorAll('.graph-whisker, .graph-ghost').forEach((element) => {
-          element.classList.toggle('is-dimmed', hasActive && element.dataset.source !== activeGraphNodeId);
+          element.classList.toggle('is-dimmed', hasActive && !keepAllVisible && element.dataset.source !== activeGraphNodeId);
         });
         updateGraphTrailVisual();
       }
@@ -6174,14 +6497,20 @@
       }
 
       graphSvg.addEventListener('pointerdown', (event) => {
+        if (beginGraphDrag(event, event.target)) return;
         if (event.pointerType === 'mouse' || event.pointerType === 'touch') {
           const target = event.target.closest('[data-graph-node-id], [data-ghost-id], [data-graph-edge]');
           if (target) event.preventDefault();
         }
       });
 
+      graphSvg.addEventListener('pointermove', moveGraphDrag);
+      graphSvg.addEventListener('pointerup', finishGraphDrag);
+      graphSvg.addEventListener('pointercancel', finishGraphDrag);
+
       graphViewport.addEventListener('pointerdown', (event) => {
         if (event.pointerType !== 'touch') return;
+        if (event.target.closest('[data-graph-node-id], .graph-zone[data-graph-zone-shelf]')) return;
         const point = graphTouchPoint(event);
         graphTouchPoints.set(event.pointerId, point);
         graphViewport.setPointerCapture?.(event.pointerId);
@@ -6246,6 +6575,17 @@
         activateGraphTarget(event.target);
       });
       graphSvg.addEventListener('keydown', (event) => {
+        const zone = event.target.closest('.graph-zone[data-graph-zone-shelf]');
+        if (zone && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+          event.preventDefault();
+          const step = event.shiftKey ? 120 : 48;
+          nudgeGraphCloud(
+            zone.dataset.graphZoneShelf,
+            event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0,
+            event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0
+          );
+          return;
+        }
         if (event.key !== 'Enter' && event.key !== ' ') return;
         const target = event.target.closest('[data-graph-node-id], [data-ghost-id], [data-graph-edge]');
         if (!target) return;
@@ -6277,6 +6617,8 @@
 
       graphJumpButton.addEventListener('click', jumpToDistantGraphWord);
       clearGraphTrailButton.addEventListener('click', clearGraphTrail);
+      graphAllConnectionsButton.addEventListener('click', toggleAllGraphConnections);
+      graphTidyButton.addEventListener('click', tidyGraph);
 
       wordWorldContent.addEventListener('click', (event) => {
         if (event.target.closest('[data-world-back]')) {
