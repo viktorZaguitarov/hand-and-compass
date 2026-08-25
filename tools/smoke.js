@@ -455,6 +455,11 @@ async function main() {
     completed.push('онбординг → слепок');
 
     await click(client, '[data-path-chapter="map"]');
+    const chapterMotion = await evaluate(client, `(() => {
+      const screen = [...document.querySelectorAll('.screen')].find((node) => !node.hidden);
+      return screen ? { name: getComputedStyle(screen).animationName, duration: getComputedStyle(screen).animationDuration } : null;
+    })()`);
+    assert(chapterMotion && chapterMotion.name.includes('chapter-enter') && chapterMotion.duration === '0.3s', 'chapter motion is not active');
     await waitFor(client, `${visible('#graphIntroScreen')} || ${visible('#graphScreen')}`, 'graph entry');
     if (await evaluate(client, visible('#graphIntroScreen'))) await click(client, '#graphIntroNextButton');
     await waitFor(client, `${visible('#graphScreen')} && document.querySelectorAll('[data-graph-node-id]').length >= 6`, 'graph render');
@@ -511,6 +516,14 @@ async function main() {
     await click(client, '[data-path-chapter="personality"]');
     await waitFor(client, `${visible('#scatterScreen')} && ${visible('#personalityTabs')} && document.getElementById('scatterActions').hidden`, 'returning personality tabs');
     completed.push('возврат → личность без онбординга');
+
+    await client.call('Emulation.setEmulatedMedia', {
+      features: [{ name: 'prefers-reduced-motion', value: 'reduce' }]
+    });
+    await click(client, '[data-path-chapter="worlds"]');
+    const reducedMotionClass = await evaluate(client, `document.querySelector('.is-chapter-entering-forward, .is-chapter-entering-backward')?.className || ''`);
+    assert(!reducedMotionClass, 'reduced-motion chapter change should be instant');
+    completed.push('reduced motion');
 
     assert(consoleErrors.length === 0, `console errors: ${consoleErrors.join(' | ')}`);
     console.log(`SMOKE PASS (${Date.now() - startedAt} ms): ${completed.join(' · ')}`);
