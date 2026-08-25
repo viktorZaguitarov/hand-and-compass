@@ -1473,22 +1473,11 @@
       pointer-events: none;
     }
 
-    .graph-node-popularity-badge {
+    .graph-node-weight-dot {
       fill: color-mix(in srgb, var(--node-color, #66877b) 90%, #fffdf7);
       stroke: rgba(255, 253, 247, 0.96);
       stroke-width: 3.2;
       filter: drop-shadow(0 3px 4px rgba(20, 31, 28, 0.46));
-      pointer-events: none;
-    }
-
-    .graph-node-popularity {
-      fill: var(--node-label-color, #fffdf7);
-      font-family: var(--sans);
-      font-size: 13px;
-      font-weight: 700;
-      paint-order: stroke fill;
-      stroke: var(--node-label-stroke, rgba(14, 24, 21, 0.86));
-      stroke-width: 1.6;
       pointer-events: none;
     }
 
@@ -2991,7 +2980,7 @@
 
       function emptyState() {
         return {
-          version: 5, selectedIds: [], customWords: [], selectionWaves: {},
+          version: 6, selectedIds: [], customWords: [], selectionWaves: {}, wordWeights: {},
           waveOneIds: [], waveOneCustomIds: [], wave: 1, view: 'light-intro',
           ritualComplete: false, personalityReturning: false,
           pendingCustomId: null, pickerReturnView: 'scatter', supplementShelfId: null, matchTarget: 50,
@@ -3051,6 +3040,14 @@
             ? [...new Set(parsed.waveOneCustomIds.filter((id) => customIds.has(id)))]
             : [...customIds];
           const knownIds = new Set([...selectedIds, ...customIds]);
+          const wordWeights = {};
+          knownIds.forEach((id) => {
+            const legacyId = LEGACY_WORD_ID_BY_CURRENT.get(id);
+            const savedWeight = Number(parsed.wordWeights?.[id] ?? parsed.wordWeights?.[legacyId]);
+            wordWeights[id] = Number.isFinite(savedWeight)
+              ? Math.max(1, Math.min(9999, Math.floor(savedWeight)))
+              : 1;
+          });
           const graphWordOffsets = restoreGraphOffsets(parsed.graphWordOffsets, new Set([...WORD_BY_ID.keys(), ...customIds]));
           const graphCloudOffsets = restoreGraphOffsets(parsed.graphCloudOffsets, new Set([...SHELVES.map((shelf) => shelf.id), 'custom']));
           const restoreWordMetadata = (source, maximumLength) => {
@@ -3128,10 +3125,11 @@
           const supplementShelfId = restoredView === 'scatter' && SHELF_BY_ID.has(parsed.supplementShelfId)
             ? parsed.supplementShelfId : null;
           return {
-            version: 5,
+            version: 6,
             selectedIds,
             customWords,
             selectionWaves,
+            wordWeights,
             waveOneIds,
             waveOneCustomIds,
             wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
@@ -3186,6 +3184,32 @@
         } catch {
           showStorageNotice('Браузер не дал сохранить выбор. Пока он останется только на этом экране.');
         }
+      }
+
+      function hasSnapshotWord(id) {
+        return state.selectedIds.includes(id) || state.customWords.some((item) => item.id === id);
+      }
+
+      function personalWordWeight(id) {
+        if (!hasSnapshotWord(id)) return 0;
+        const weight = Number(state.wordWeights?.[id]);
+        return Number.isFinite(weight) ? Math.max(1, Math.floor(weight)) : 1;
+      }
+
+      function addWordWeight(id, amount = 1) {
+        if (!hasSnapshotWord(id)) return false;
+        if (!state.wordWeights || typeof state.wordWeights !== 'object') state.wordWeights = {};
+        const current = Number(state.wordWeights[id]);
+        state.wordWeights[id] = Math.min(9999, (Number.isFinite(current) ? Math.max(0, Math.floor(current)) : 0) + amount);
+        return true;
+      }
+
+      function removeWordWeight(id) {
+        if (state.wordWeights && typeof state.wordWeights === 'object') delete state.wordWeights[id];
+      }
+
+      function personalWeightDotRadius(weight) {
+        return 9.5 + 9 * (1 - Math.exp(-Math.max(0, weight - 1) / 3));
       }
 
       function emptyWorldData() {
@@ -3260,6 +3284,10 @@
                   gap: typeof item.gap === 'boolean' ? item.gap : null,
                   candidateId: typeof item.candidateId === 'string' && WORD_BY_ID.has(item.candidateId) ? item.candidateId : null,
                   acceptedCandidate: typeof item.acceptedCandidate === 'boolean' ? item.acceptedCandidate : null,
+                  weightsApplied: item.weightsApplied === true,
+                  weightedWordIds: Array.isArray(item.weightedWordIds)
+                    ? [...new Set(item.weightedWordIds.filter((id) => WORD_BY_ID.has(id)))]
+                    : [],
                   skipped: item.skipped === true
                 }))
             : [];
@@ -4244,13 +4272,6 @@
         return 'встречается часто';
       }
 
-      function graphPopularityMark(count) {
-        if (count === 0) return '·';
-        if (count < 12) return '◦';
-        if (count < 24) return '●';
-        return '✦';
-      }
-
       function scoredProfiles() {
         return FAKE_PROFILES.map((profile) => ({ profile, score: weightedSimilarity(profile) }));
       }
@@ -4321,6 +4342,16 @@
 
       function forkRecord() {
         return activeFork ? forksData.history.find((item) => item.startedAt === activeFork.startedAt && item.dilemmaId === activeFork.dilemma.id) : null;
+      }
+
+      function confirmForkChoiceWords(dilemma, choice, record) {
+        if (!record || record.weightsApplied) return [];
+        const candidateId = choice === 'A' ? dilemma.candidateA : dilemma.candidateB;
+        const relatedIds = [...new Set([...(dilemma.words || []), candidateId])];
+        const weightedWordIds = relatedIds.filter((id) => addWordWeight(id));
+        record.weightsApplied = true;
+        record.weightedWordIds = weightedWordIds;
+        return weightedWordIds;
       }
 
       function createForkButton(label, action, extraClass = '') {
@@ -4435,7 +4466,8 @@
         activeFork = { dilemma, bot, startedAt, actualChoice, userChoice: null, step: 'situation' };
         forksData.history.push({
           dilemmaId: dilemma.id, startedAt, finishedAt: null, prediction: null, userChoice: null,
-          actualChoice, gap: null, candidateId: null, acceptedCandidate: null, skipped: false
+          actualChoice, gap: null, candidateId: null, acceptedCandidate: null,
+          weightsApplied: false, weightedWordIds: [], skipped: false
         });
         markForkUsedThisSession();
         persistForksData();
@@ -5130,9 +5162,11 @@
         } else if (wasSelected) {
           state.selectedIds = state.selectedIds.filter((item) => item !== id);
           removeSelectionWave(id);
+          removeWordWeight(id);
         } else {
           state.selectedIds.push(id);
           setSelectionWave(id);
+          addWordWeight(id);
         }
         state.view = 'scatter';
         persistState();
@@ -5167,6 +5201,7 @@
           if (!state.selectedIds.includes(dictionaryMatch.id)) {
             state.selectedIds.push(dictionaryMatch.id);
             setSelectionWave(dictionaryMatch.id);
+            addWordWeight(dictionaryMatch.id);
           }
           const token = wordField.querySelector(`[data-word-id="${CSS.escape(dictionaryMatch.id)}"]`);
           if (token) token.setAttribute('aria-pressed', 'true');
@@ -5178,6 +5213,7 @@
           const customId = `custom:${randomPart}`;
           state.customWords.push({ id: customId, word: clean, shelfId: supplementShelf?.id || 'custom' });
           setSelectionWave(customId);
+          addWordWeight(customId);
           if (!supplementShelf) {
             state.pendingCustomId = customId;
             state.pickerReturnView = 'scatter';
@@ -5194,6 +5230,7 @@
       function removeCustomWord(id) {
         state.customWords = state.customWords.filter((item) => item.id !== id);
         removeSelectionWave(id);
+        removeWordWeight(id);
         state.view = 'scatter';
         persistState();
         renderScatter();
@@ -6458,13 +6495,14 @@
 
         items.forEach((item, index) => {
           const position = positions.get(item.id);
-          const profileCount = profilesForWord(item.id).length;
+          const personalWeight = personalWordWeight(item.id);
           const group = svgElement('g', {
             class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}${state.graphTrailIds.includes(item.id) ? ' is-trail' : ''}${graphWalkTargetId === item.id && !isGraphItemSelected(item.id) ? ' is-walk-target' : ''}${hasOwnWorldStory(item.id) ? ' has-own-story' : ''}`,
             tabindex: 0,
             role: 'button',
-            'aria-label': `Открыть слово «${item.word}». В учебных картах оно ${wordPresenceLabel(profileCount)}${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
+            'aria-label': `Открыть слово «${item.word}». Точка отражает, как часто ты подтверждаешь это слово${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
             'data-graph-node-id': item.id,
+            'data-personal-weight': personalWeight,
             'data-graph-shelf': position.shelf,
             'data-pressure-index': position.pressureCount,
             style: `--node-color:${GRAPH_COLORS[position.shelf] || GRAPH_COLORS.custom};--node-label-color:${GRAPH_LABEL_COLORS[position.shelf] || GRAPH_LABEL_COLORS.custom};--node-label-stroke:${GRAPH_LABEL_STROKES[position.shelf] || GRAPH_LABEL_STROKES.custom};--anchor-x:${position.anchorX}px;--anchor-y:${position.anchorY}px;--node-x:${position.x.toFixed(1)}px;--node-y:${position.y.toFixed(1)}px;--node-tilt:${graphNodeTilt(item.id)}deg;animation-delay:${Math.min(index * 22, 260)}ms`
@@ -6475,24 +6513,20 @@
           });
           const label = svgElement('text', { class: 'graph-node-label', x: 0, y: 8, 'text-anchor': 'middle' });
           label.textContent = item.word.length > 22 ? `${item.word.slice(0, 21)}…` : item.word;
-          const popularityX = position.width / 2 - 3;
-          const popularityY = -position.height / 2 - 9;
-          const popularityBadge = svgElement('circle', {
-            class: 'graph-node-popularity-badge', cx: popularityX, cy: popularityY, r: 16.5,
+          const weightX = position.width / 2 - 3;
+          const weightY = -position.height / 2 - 9;
+          const weightDot = svgElement('circle', {
+            class: 'graph-node-weight-dot', cx: weightX, cy: weightY,
+            r: personalWeightDotRadius(personalWeight).toFixed(2),
             'aria-hidden': 'true'
           });
-          const popularity = svgElement('text', {
-            class: 'graph-node-popularity', x: popularityX, y: popularityY + 4.5,
-            'text-anchor': 'middle', 'aria-hidden': 'true'
-          });
-          popularity.textContent = graphPopularityMark(profileCount);
           const title = svgElement('title');
-          title.textContent = `${item.word}. В учебных картах ${wordPresenceLabel(profileCount)}.`;
-          group.append(plate, label, popularityBadge, popularity, title);
+          title.textContent = `${item.word}. Точка тем крупнее, чем чаще ты подтверждаешь слово.`;
+          group.append(plate, label, weightDot, title);
           graphSvg.append(group);
         });
 
-        graphStatus.textContent = 'Коротко нажми на слово, чтобы открыть его. Потяни слово, чтобы изменить его место; потяни облако, чтобы переместить его.';
+        graphStatus.textContent = 'Коротко нажми на слово, чтобы открыть его; точка тем крупнее, чем чаще ты подтверждаешь слово. Потяни слово, чтобы изменить его место; потяни облако, чтобы переместить его.';
         graphAllConnectionsButton.setAttribute('aria-pressed', String(state.graphAllConnections));
         if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
         else {
@@ -6801,6 +6835,7 @@
         if (!state.selectedIds.includes(id)) {
           state.selectedIds.push(id);
           setSelectionWave(id);
+          addWordWeight(id);
         }
         if (graphWalkTargetId === id) graphWalkTargetId = null;
         state.view = 'graph';
@@ -7402,6 +7437,8 @@
           if (record) {
             record.userChoice = activeFork.userChoice;
             record.gap = activeFork.userChoice !== activeFork.actualChoice;
+            confirmForkChoiceWords(activeFork.dilemma, activeFork.userChoice, record);
+            persistState();
             persistForksData();
           }
         } else if (action === 'to-outcome') {
@@ -7420,6 +7457,7 @@
           if (accepted && candidate && !state.selectedIds.includes(candidate.id)) {
             state.selectedIds.push(candidate.id);
             setSelectionWave(candidate.id);
+            addWordWeight(candidate.id);
             const themedShelf = (activeFork.dilemma.shelves || []).find((shelfId) => candidate.shelves.includes(shelfId));
             state.snapshotShelfId = themedShelf || candidate.shelves[0] || state.snapshotShelfId;
             persistState();

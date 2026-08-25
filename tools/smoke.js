@@ -344,10 +344,11 @@ async function runGraphBenchmark(client, serverPort, consoleErrors) {
   await waitFor(client, "document.readyState === 'complete' && !document.body.classList.contains('is-booting')", 'benchmark bootstrap');
   const selectionWaves = Object.fromEntries(wordIds.map((id) => [id, 1]));
   const benchmarkState = {
-    version: 5,
+    version: 6,
     selectedIds: wordIds,
     customWords: [],
     selectionWaves,
+    wordWeights: Object.fromEntries(wordIds.map((id) => [id, 1])),
     waveOneIds: wordIds,
     waveOneCustomIds: [],
     wave: 2,
@@ -452,6 +453,11 @@ async function main() {
     await click(client, '[data-word-id="predatelstvo"]');
     await click(client, '#doneButton');
     await waitFor(client, `${visible('#snapshotScreen')} && document.querySelectorAll('#shelfGrid .shelf-card').length > 0`, 'snapshot render');
+    const initialWeights = await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      return saved.selectedIds.map((id) => saved.wordWeights[id]);
+    })()`);
+    assert(initialWeights.every((weight) => weight === 1), 'ritual words did not start with personal weight 1');
     completed.push('онбординг → слепок');
 
     await click(client, '[data-path-chapter="map"]');
@@ -463,6 +469,8 @@ async function main() {
     await waitFor(client, `${visible('#graphIntroScreen')} || ${visible('#graphScreen')}`, 'graph entry');
     if (await evaluate(client, visible('#graphIntroScreen'))) await click(client, '#graphIntroNextButton');
     await waitFor(client, `${visible('#graphScreen')} && document.querySelectorAll('[data-graph-node-id]').length >= 6`, 'graph render');
+    const initialGraphDots = await evaluate(client, `Object.fromEntries([...document.querySelectorAll('[data-graph-node-id]')].map((node) => [node.dataset.graphNodeId, Number(node.querySelector('.graph-node-weight-dot')?.getAttribute('r'))]))`);
+    assert(Object.values(initialGraphDots).every((radius) => Number.isFinite(radius)), 'graph personal-weight dots are missing');
     assert(consoleErrors.length === 0, `graph console errors: ${consoleErrors.join(' | ')}`);
     completed.push('граф без ошибок консоли');
 
@@ -500,15 +508,38 @@ async function main() {
     })()`);
     await waitFor(client, visible('.fork-step-truth'), 'fork truth');
     await waitFor(client, `document.querySelector('.fork-step-truth h1').textContent.includes('иначе')`, 'fork post-choice difference');
+    const weightCheck = await evaluate(client, `(() => {
+      const state = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      const record = JSON.parse(localStorage.getItem('hand_compass_forks_v1')).history.at(-1);
+      const dilemmas = JSON.parse(document.getElementById('dilemmasData').textContent);
+      const dilemma = dilemmas.find((item) => item.id === record.dilemmaId);
+      const candidate = record.userChoice === 'A' ? dilemma.candidateA : dilemma.candidateB;
+      const related = [...new Set([...dilemma.words, candidate])];
+      return {
+        weighted: record.weightedWordIds,
+        weightsApplied: record.weightsApplied,
+        weightedAreSelected: record.weightedWordIds.every((id) => state.selectedIds.includes(id)),
+        weightedGrew: record.weightedWordIds.every((id) => state.wordWeights[id] === 2),
+        outsideSnapshotStayedEmpty: related.filter((id) => !state.selectedIds.includes(id)).every((id) => state.wordWeights[id] === undefined),
+        unrelatedStayedOne: state.selectedIds.filter((id) => !related.includes(id)).every((id) => state.wordWeights[id] === 1)
+      };
+    })()`);
+    assert(weightCheck.weightsApplied && weightCheck.weighted.length > 0, 'dilemma did not confirm a selected word');
+    assert(weightCheck.weightedAreSelected && weightCheck.weightedGrew, 'dilemma weight was not limited to selected words');
+    assert(weightCheck.outsideSnapshotStayedEmpty && weightCheck.unrelatedStayedOne, 'dilemma changed an unrelated or unselected word');
     await click(client, '[data-fork-action="to-outcome"]');
     await waitFor(client, visible('.fork-step-outcome'), 'fork outcome');
-    completed.push('развилка: 4 шага');
+    await click(client, '[data-path-chapter="map"]');
+    await waitFor(client, visible('#graphScreen'), 'graph after dilemma');
+    const grownRadius = await evaluate(client, `Number(document.querySelector('[data-graph-node-id="${weightCheck.weighted[0]}"] .graph-node-weight-dot')?.getAttribute('r'))`);
+    assert(grownRadius > initialGraphDots[weightCheck.weighted[0]], 'personal-weight dot did not grow after dilemma');
+    completed.push('развилка: 4 шага + личный вес');
 
     await click(client, '[data-path-chapter="mirror"]');
     await waitFor(client, visible('#snapshotScreen'), 'snapshot before supplement');
     await click(client, '#shelfGrid [data-deepen-shelf]');
     await waitFor(client, `${visible('#scatterScreen')} && document.getElementById('doneButton').textContent.includes('слепку')`, 'shelf supplement');
-    await evaluate(client, `(() => {
+    const supplementId = await evaluate(client, `(() => {
       const token = [...document.querySelectorAll('#wordField [data-word-id]')].find((node) => node.getAttribute('aria-pressed') === 'false');
       if (!token) throw new Error('No unselected word in supplement');
       token.click();
@@ -516,7 +547,27 @@ async function main() {
     })()`);
     await click(client, '#doneButton');
     await waitFor(client, visible('#snapshotScreen'), 'supplement return to snapshot');
+    const supplementWeight = await evaluate(client, `JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).wordWeights[${JSON.stringify(supplementId)}]`);
+    assert(supplementWeight === 1, 'supplement word did not start with personal weight 1');
     completed.push('дополнить → слепок');
+
+    const legacySelectionCount = await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      const count = saved.selectedIds.length + saved.customWords.length;
+      delete saved.wordWeights;
+      localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
+      return count;
+    })()`);
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, `${visible('#snapshotScreen')} && !document.body.classList.contains('is-booting')`, 'legacy weight migration');
+    await click(client, '[data-path-chapter="map"]');
+    await waitFor(client, visible('#graphScreen'), 'migrated graph');
+    const migratedWeights = await evaluate(client, `(() => ({
+      count: document.querySelectorAll('[data-graph-node-id]').length,
+      allOne: [...document.querySelectorAll('[data-graph-node-id]')].every((node) => node.dataset.personalWeight === '1')
+    }))()`);
+    assert(migratedWeights.count === legacySelectionCount && migratedWeights.allOne, 'legacy selected words were not migrated to weight 1');
+    completed.push('миграция веса без потери слов');
 
     await click(client, '[data-path-chapter="personality"]');
     await waitFor(client, `${visible('#scatterScreen')} && ${visible('#personalityTabs')} && document.getElementById('scatterActions').hidden`, 'returning personality tabs');

@@ -43,6 +43,10 @@ function sameJson(left, right) {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function requireDraftFeature(html, expression, message) {
+  if (!expression.test(html)) fail(message);
+}
+
 function validateWordReference(ids, owner, field, reference) {
   if (reference === null || reference === undefined) return;
   if (typeof reference !== 'string' || !reference) {
@@ -124,7 +128,17 @@ async function main() {
       fail(`${owner}.words must be an array`);
       continue;
     }
+    if (new Set(dilemma.words).size !== dilemma.words.length) {
+      fail(`${owner}.words must not contain duplicates`);
+    }
     for (const wordId of dilemma.words) validateRequiredWordReference(ids, owner, 'words', wordId);
+  }
+
+  requireDraftFeature(draftHtml, /wordWeights:\s*\{\}/, 'draft has no personal word-weight state');
+  requireDraftFeature(draftHtml, /data-personal-weight/, 'graph nodes do not expose personal weight');
+  requireDraftFeature(draftHtml, /точка тем крупнее, чем чаще ты подтверждаешь слово/i, 'graph does not explain the personal-weight dot');
+  if (/graphPopularityMark|graph-node-popularity/.test(draftHtml)) {
+    fail('graph still exposes profile popularity instead of personal weight');
   }
 
   if (!sameJson(dictionary, embeddedWords)) fail('embedded #wordsData differs from draft/words_v3.json');
