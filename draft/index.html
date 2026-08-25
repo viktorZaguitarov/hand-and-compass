@@ -3,26 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Hand &amp; Compass 2.0 — локальный черновик личного слепка из выбранных слов.">
-  <title>Hand &amp; Compass 2.0 — Слепок</title>
+  <meta name="description" content="Hand &amp; Compass 2.0 — личная карта смыслов, которую можно менять по мере пути.">
+  <title>Hand &amp; Compass 2.0 — Путь</title>
   <style>
     :root {
       color-scheme: light;
-      --ink: #20332d;
-      --ink-soft: #536860;
-      --paper: #fbf8ef;
-      --paper-deep: #eee6d4;
-      --paper-warm: #f5efe1;
-      --forest: #315f52;
-      --forest-dark: #1f463c;
-      --forest-soft: #dce9df;
-      --gold: #c5aa76;
-      --gold-soft: #eadfbd;
-      --rose: #985f63;
-      --line: rgba(87, 86, 68, 0.2);
-      --shadow: 0 20px 55px rgba(40, 52, 44, 0.14);
-      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      --serif: Georgia, "Times New Roman", serif;
+      --ink: #192b3d;
+      --ink-soft: #5b6875;
+      --paper: #f7f0e5;
+      --paper-deep: #eadfce;
+      --paper-warm: #fcf7ef;
+      --surface: rgba(255, 251, 244, 0.9);
+      --surface-solid: #fffbf4;
+      --accent: #c86f52;
+      --accent-dark: #a95139;
+      --accent-soft: #f2d8ce;
+      --forest: var(--accent);
+      --forest-dark: var(--ink);
+      --forest-soft: var(--accent-soft);
+      --gold: var(--accent);
+      --gold-soft: var(--accent-soft);
+      --rose: var(--accent-dark);
+      --line: rgba(25, 43, 61, 0.15);
+      --shadow: 0 22px 60px rgba(56, 48, 41, 0.11);
+      --shadow-soft: 0 10px 28px rgba(56, 48, 41, 0.075);
+      --radius-card: 28px;
+      --radius-control: 16px;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      --serif: "PT Serif", Georgia, "Times New Roman", serif;
     }
 
     * { box-sizing: border-box; }
@@ -38,10 +46,10 @@
       min-height: 100vh;
       color: var(--ink);
       background:
-        radial-gradient(circle at 12% 2%, rgba(189, 136, 64, 0.2), transparent 23rem),
-        radial-gradient(circle at 95% 18%, rgba(49, 95, 82, 0.18), transparent 28rem),
-        linear-gradient(150deg, #ece5d5 0%, #f8f4e9 48%, #ebe3d1 100%);
-      font-family: var(--serif);
+        radial-gradient(circle at 10% 0%, rgba(200, 111, 82, 0.12), transparent 25rem),
+        radial-gradient(circle at 96% 20%, rgba(115, 142, 164, 0.11), transparent 29rem),
+        linear-gradient(150deg, #eee3d3 0%, var(--paper) 46%, #eee4d7 100%);
+      font-family: var(--sans);
       transition: color 440ms ease;
     }
 
@@ -52,9 +60,9 @@
       content: "";
       opacity: 0;
       background:
-        radial-gradient(circle at 16% 10%, rgba(110, 121, 151, 0.28), transparent 27rem),
-        radial-gradient(circle at 88% 24%, rgba(119, 91, 116, 0.22), transparent 31rem),
-        linear-gradient(155deg, #1b2431 0%, #273245 52%, #171f2b 100%);
+        radial-gradient(circle at 16% 10%, rgba(119, 143, 164, 0.13), transparent 27rem),
+        radial-gradient(circle at 88% 24%, rgba(200, 111, 82, 0.11), transparent 31rem),
+        linear-gradient(155deg, #eee4d7 0%, #f8f1e7 52%, #eadfce 100%);
       transition: opacity 440ms ease;
       pointer-events: none;
     }
@@ -82,7 +90,7 @@
       outline: none;
     }
     :where(button, input, textarea, summary, [tabindex]):focus-visible {
-      outline: 3px solid rgba(189, 136, 64, 0.55);
+      outline: 3px solid rgba(200, 111, 82, 0.48);
       outline-offset: 3px;
     }
     body.is-pointer-input :where(button, input, textarea, summary, [tabindex]):focus-visible {
@@ -96,7 +104,7 @@
       z-index: 1;
       width: min(1180px, 100%);
       margin: 0 auto;
-      padding: max(16px, env(safe-area-inset-top)) 14px max(84px, env(safe-area-inset-bottom));
+      padding: max(18px, env(safe-area-inset-top)) 16px max(88px, env(safe-area-inset-bottom));
     }
 
     .topbar {
@@ -112,7 +120,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      color: var(--forest-dark);
+      color: var(--ink);
       font-family: var(--sans);
       font-size: 0.78rem;
       font-weight: 750;
@@ -126,33 +134,143 @@
       height: 36px;
       display: grid;
       place-items: center;
-      border: 1px solid rgba(83, 104, 96, 0.28);
+      border: 1px solid var(--line);
       border-radius: 50%;
-      background: rgba(251, 248, 239, 0.74);
-      box-shadow: 0 5px 16px rgba(38, 54, 46, 0.1);
+      background: var(--surface);
+      box-shadow: 0 5px 16px rgba(56, 48, 41, 0.08);
       font-size: 1rem;
       transition: color 440ms ease, background 440ms ease, border-color 440ms ease;
     }
 
     .version-chip {
       padding: 7px 10px;
-      border: 1px solid rgba(49, 95, 82, 0.16);
+      border: 1px solid var(--line);
       border-radius: 999px;
       color: var(--ink-soft);
-      background: rgba(251, 248, 239, 0.58);
+      background: rgba(255, 251, 244, 0.64);
       font-family: var(--sans);
       font-size: 0.7rem;
       letter-spacing: 0.04em;
       transition: color 440ms ease, background 440ms ease, border-color 440ms ease;
     }
 
+    .path-nav {
+      display: grid;
+      gap: 7px;
+      margin: 0 0 12px;
+      font-family: var(--sans);
+    }
+
+    .path-nav-label {
+      margin: 0 4px;
+      color: var(--ink-soft);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .path-track {
+      display: flex;
+      gap: 7px;
+      padding: 2px 3px 7px;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scrollbar-width: none;
+      scroll-snap-type: x proximity;
+    }
+
+    .path-track::-webkit-scrollbar { display: none; }
+
+    .path-chapter {
+      position: relative;
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      column-gap: 7px;
+      min-width: 112px;
+      min-height: 52px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      color: var(--ink-soft);
+      background: rgba(255, 251, 244, 0.5);
+      box-shadow: 0 5px 14px rgba(56, 48, 41, 0.045);
+      text-align: left;
+      scroll-snap-align: center;
+    }
+
+    .path-chapter::after {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 1px);
+      width: 7px;
+      height: 1px;
+      background: rgba(25, 43, 61, 0.18);
+      content: "";
+    }
+
+    .path-chapter:last-child::after { display: none; }
+
+    .path-chapter-icon {
+      grid-row: 1 / -1;
+      align-self: center;
+      display: grid;
+      width: 25px;
+      height: 25px;
+      place-items: center;
+      border: 1px solid rgba(25, 43, 61, 0.18);
+      border-radius: 50%;
+      color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.55);
+      font-size: 0.72rem;
+    }
+
+    .path-chapter-name {
+      align-self: end;
+      font-size: 0.74rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .path-chapter-note {
+      align-self: start;
+      max-width: 104px;
+      margin-top: 2px;
+      font-size: 0.55rem;
+      font-weight: 600;
+      line-height: 1.15;
+    }
+
+    .path-chapter.is-open:not(.is-active) .path-chapter-note { color: #7b8792; }
+    .path-chapter.is-active {
+      color: var(--ink);
+      border-color: rgba(200, 111, 82, 0.42);
+      background: rgba(242, 216, 206, 0.72);
+      box-shadow: 0 7px 18px rgba(169, 81, 57, 0.11);
+    }
+    .path-chapter.is-active .path-chapter-icon {
+      color: #fffaf4;
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+    .path-chapter.is-locked {
+      opacity: 0.58;
+      border-style: dashed;
+      box-shadow: none;
+      cursor: default;
+    }
+    .path-chapter.is-locked .path-chapter-icon::before { content: "🔒"; font-size: 0.62rem; }
+    .path-chapter.is-locked .path-chapter-icon > span { display: none; }
+
     .page {
       position: relative;
       overflow: hidden;
       min-height: calc(100vh - 78px);
-      border: 1px solid rgba(137, 118, 78, 0.28);
-      border-radius: 28px;
-      background: rgba(251, 248, 239, 0.9);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      background: var(--surface);
       box-shadow: var(--shadow);
       transition: background 440ms ease, border-color 440ms ease, box-shadow 440ms ease;
     }
@@ -163,36 +281,36 @@
       top: -130px;
       width: 310px;
       height: 310px;
-      border: 1px solid rgba(189, 136, 64, 0.22);
+      border: 1px solid rgba(200, 111, 82, 0.18);
       border-radius: 50%;
       box-shadow:
-        inset 0 0 0 38px rgba(189, 136, 64, 0.03),
-        inset 0 0 0 78px rgba(49, 95, 82, 0.025);
+        inset 0 0 0 38px rgba(200, 111, 82, 0.025),
+        inset 0 0 0 78px rgba(25, 43, 61, 0.02);
       content: "";
       pointer-events: none;
       transition: border-color 440ms ease, box-shadow 440ms ease;
     }
 
-    body.wave-two .brand { color: #d9e0e8; }
+    body.wave-two .brand { color: var(--ink); }
     body.wave-two .brand-mark,
     body.wave-two .version-chip {
-      color: #dce3ea;
-      border-color: rgba(207, 216, 228, 0.2);
-      background: rgba(24, 33, 46, 0.72);
+      color: var(--ink-soft);
+      border-color: var(--line);
+      background: var(--surface);
     }
 
     body.wave-two .page {
-      color: #e7ebef;
-      border-color: rgba(183, 196, 214, 0.2);
-      background: rgba(27, 36, 50, 0.92);
-      box-shadow: 0 24px 65px rgba(7, 12, 21, 0.38);
+      color: var(--ink);
+      border-color: var(--line);
+      background: var(--surface);
+      box-shadow: var(--shadow);
     }
 
     body.wave-two .page::after {
-      border-color: rgba(173, 184, 209, 0.13);
+      border-color: rgba(200, 111, 82, 0.14);
       box-shadow:
-        inset 0 0 0 38px rgba(128, 145, 176, 0.025),
-        inset 0 0 0 78px rgba(177, 136, 163, 0.025);
+        inset 0 0 0 38px rgba(200, 111, 82, 0.02),
+        inset 0 0 0 78px rgba(25, 43, 61, 0.018);
     }
 
     .primary-nav {
@@ -207,10 +325,10 @@
       width: min(760px, 100vw);
       margin: 0 auto;
       padding: 6px 6px max(6px, env(safe-area-inset-bottom));
-      border: 1px solid rgba(49, 95, 82, 0.18);
+      border: 1px solid var(--line);
       border-radius: 18px 18px 0 0;
-      background: rgba(251, 248, 239, 0.95);
-      box-shadow: 0 12px 32px rgba(29, 44, 38, 0.2);
+      background: rgba(247, 240, 229, 0.92);
+      box-shadow: 0 9px 26px rgba(56, 48, 41, 0.12);
       backdrop-filter: blur(16px);
     }
 
@@ -220,17 +338,17 @@
       padding: 7px 8px;
       border: 1px solid transparent;
       border-radius: 12px;
-      color: var(--ink-soft);
+      color: #6f7a84;
       background: transparent;
       font-family: var(--sans);
       font-size: 0.72rem;
-      font-weight: 750;
+      font-weight: 700;
       line-height: 1.12;
     }
     .primary-nav-button.is-active {
-      border-color: rgba(49, 95, 82, 0.18);
-      color: var(--forest-dark);
-      background: rgba(220, 233, 223, 0.72);
+      border-color: rgba(25, 43, 61, 0.12);
+      color: var(--ink);
+      background: rgba(255, 251, 244, 0.72);
     }
     body.wave-two .primary-nav { border-color: rgba(205, 216, 229, 0.22); background: rgba(25, 35, 49, 0.94); }
     body.wave-two .primary-nav-button { color: #c8d1db; }
@@ -305,7 +423,7 @@
     .screen {
       position: relative;
       z-index: 1;
-      padding: 24px 18px 18px;
+      padding: 30px 24px 24px;
     }
 
     .entry-screen,
@@ -331,6 +449,51 @@
     }
 
     .entry-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+
+    .welcome-copy {
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+    }
+
+    .welcome-copy h1 {
+      max-width: 760px;
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    .welcome-lead {
+      max-width: 590px;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: clamp(0.98rem, 3vw, 1.12rem);
+      line-height: 1.55;
+      text-wrap: balance;
+    }
+
+    .welcome-copy .entry-actions { margin-top: 3px; }
+    .welcome-copy .primary-button { min-width: 176px; }
+
+    .trust-signatures {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 7px;
+      margin: 2px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .trust-signatures li {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      background: rgba(255, 251, 244, 0.52);
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
 
     .graph-intro-copy {
       display: grid;
@@ -383,6 +546,15 @@
     }
 
     h1, h2, h3, p { margin-top: 0; }
+
+    h1, h2, h3,
+    .entry-copy h1,
+    .shelf-title,
+    .intersection-map-title,
+    .world-title,
+    .world-profile-name {
+      font-family: var(--serif);
+    }
 
     h1 {
       margin-bottom: 12px;
@@ -508,8 +680,8 @@
       border: 1px solid rgba(74, 83, 68, 0.2);
       border-radius: 999px;
       color: #2b4039;
-      background: rgba(255, 253, 246, 0.86);
-      box-shadow: 0 5px 13px rgba(42, 55, 47, 0.07);
+      background: rgba(255, 251, 244, 0.88);
+      box-shadow: 0 5px 13px rgba(56, 48, 41, 0.065);
       transform: translateY(var(--lift)) rotate(var(--tilt)) scale(var(--scale));
       transition: transform 160ms ease, color 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
       -webkit-tap-highlight-color: transparent;
@@ -551,9 +723,10 @@
       max-width: 690px;
       margin: 0 auto 18px;
       padding: 17px;
-      border: 1px solid rgba(189, 136, 64, 0.28);
-      border-radius: 20px;
-      background: linear-gradient(140deg, rgba(255, 253, 247, 0.8), rgba(234, 215, 174, 0.22));
+      border: 1px solid rgba(200, 111, 82, 0.2);
+      border-radius: 24px;
+      background: linear-gradient(140deg, rgba(255, 251, 244, 0.88), rgba(242, 216, 206, 0.3));
+      box-shadow: var(--shadow-soft);
     }
 
     .custom-label {
@@ -587,7 +760,7 @@
 
     .small-button, .primary-button, .secondary-button {
       min-height: 46px;
-      border-radius: 13px;
+      border-radius: var(--radius-control);
       font-family: var(--sans);
       font-weight: 700;
       transition: transform 140ms ease, background 140ms ease, opacity 140ms ease;
@@ -595,24 +768,24 @@
 
     .small-button {
       padding: 10px 15px;
-      border: 1px solid rgba(49, 95, 82, 0.24);
-      color: var(--forest-dark);
-      background: var(--forest-soft);
+      border: 1px solid rgba(200, 111, 82, 0.24);
+      color: var(--ink);
+      background: var(--accent-soft);
     }
 
     .primary-button {
       padding: 12px 20px;
       border: 0;
       color: #fffdf5;
-      background: var(--forest);
-      box-shadow: 0 9px 22px rgba(31, 70, 60, 0.2);
+      background: var(--accent);
+      box-shadow: 0 9px 22px rgba(169, 81, 57, 0.2);
     }
 
     .secondary-button {
       padding: 12px 18px;
-      border: 1px solid rgba(49, 95, 82, 0.24);
-      color: var(--forest-dark);
-      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: rgba(255, 251, 244, 0.68);
     }
 
     button:disabled { opacity: 0.44; cursor: not-allowed; transform: none; }
@@ -720,10 +893,10 @@
       overflow: hidden;
       min-height: 176px;
       padding: 17px;
-      border: 1px solid rgba(83, 104, 96, 0.18);
-      border-radius: 21px;
-      background: rgba(255, 253, 247, 0.72);
-      box-shadow: 0 10px 25px rgba(38, 54, 46, 0.075);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 251, 244, 0.78);
+      box-shadow: var(--shadow-soft);
     }
 
     .shelf-card::before {
@@ -736,14 +909,14 @@
     }
 
     .shelf-card.is-empty { opacity: 0.62; }
-    .shelf-values { --shelf-accent: #c5aa76; }
-    .shelf-goals { --shelf-accent: #4f7b70; }
-    .shelf-action { --shelf-accent: #9a645b; }
-    .shelf-foresight { --shelf-accent: #66718c; }
-    .shelf-stones { --shelf-accent: #55574f; }
-    .shelf-supports { --shelf-accent: #78905c; }
-    .shelf-triggers { --shelf-accent: #b46a4f; }
-    .shelf-custom { --shelf-accent: #7d827d; }
+    .shelf-values { --shelf-accent: #b79a71; }
+    .shelf-goals { --shelf-accent: #7f9aab; }
+    .shelf-action { --shelf-accent: #c18b7b; }
+    .shelf-foresight { --shelf-accent: #8b90a9; }
+    .shelf-stones { --shelf-accent: #777b87; }
+    .shelf-supports { --shelf-accent: #8da38b; }
+    .shelf-triggers { --shelf-accent: #b98276; }
+    .shelf-custom { --shelf-accent: #98928b; }
 
     .shelf-picker-card h1 { margin-bottom: 7px; font-size: clamp(2rem, 8vw, 3.5rem); }
     .shelf-picker-word {
@@ -1823,6 +1996,112 @@
     .world-profile-match strong { color: #f0d7a8; }
     .world-profile-action { width: 100%; margin-top: 12px; }
 
+    /* Design foundation: one warm action accent on a calm cream field. */
+    body.wave-two #scatterTitle,
+    body.wave-two .entry-copy h1,
+    body.wave-two .shelf-picker-card h1,
+    body.wave-two .choice-title,
+    body.wave-two .custom-label,
+    body.wave-two .shelf-picker-word,
+    body.wave-two .selection-count strong {
+      color: var(--ink);
+    }
+
+    body.wave-two #scatterScreen .eyebrow,
+    body.wave-two #scatterScreen details.help summary {
+      color: var(--accent-dark);
+    }
+
+    body.wave-two #scatterScreen .lead,
+    body.wave-two #scatterScreen details.help,
+    body.wave-two .selection-count,
+    body.wave-two .selection-hint,
+    body.wave-two .selection-more {
+      color: var(--ink-soft);
+    }
+
+    body.wave-two .selection-bar,
+    body.wave-two .screen-actions,
+    body.wave-two .custom-card {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 251, 244, 0.9);
+      box-shadow: var(--shadow-soft);
+    }
+
+    body.wave-two .custom-input {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    body.wave-two .custom-input::placeholder { color: #87909a; }
+    body.wave-two .secondary-button {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 251, 244, 0.68);
+    }
+    body.wave-two .primary-button { color: #fffaf4; background: var(--accent); }
+    body.wave-two .shelf-picker-button {
+      color: color-mix(in srgb, var(--shelf-accent) 70%, var(--ink));
+      border-color: color-mix(in srgb, var(--shelf-accent) 38%, transparent);
+      background: color-mix(in srgb, var(--shelf-accent) 14%, var(--surface-solid));
+    }
+
+    .world-screen {
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 7%, rgba(127, 154, 171, 0.12), transparent 22rem),
+        radial-gradient(circle at 88% 13%, rgba(200, 111, 82, 0.1), transparent 26rem),
+        linear-gradient(155deg, #f0e6d8 0%, #faf4eb 54%, #eee2d2 100%);
+    }
+
+    .world-back,
+    .world-panel,
+    .world-story-card,
+    .world-bot-card,
+    .world-profile-shelf,
+    .world-profile-match {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 251, 244, 0.68);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .world-back:hover,
+    .world-bot-card:hover { border-color: rgba(200, 111, 82, 0.35); background: rgba(255, 251, 244, 0.88); }
+    .world-kicker,
+    .world-profile-kicker { color: var(--accent-dark); }
+    .world-title,
+    .world-profile-name,
+    .world-section-title,
+    .world-story-copy,
+    .world-story-label,
+    .world-bot-name,
+    .world-profile-shelf,
+    .world-profile-match,
+    .world-panel strong { color: var(--ink); }
+    .world-copy,
+    .world-stat,
+    .world-story-author,
+    .world-bot-character,
+    .world-profile-copy { color: var(--ink-soft); }
+    .world-recognize {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 251, 244, 0.72);
+    }
+    .world-recognize[aria-pressed="true"] { border-color: rgba(200, 111, 82, 0.5); color: var(--accent-dark); background: var(--accent-soft); }
+    .world-story-input {
+      color: var(--ink);
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.72);
+    }
+    .world-story-input::placeholder { color: #87909a; }
+    .world-example-badge { color: #74513e; background: rgba(200, 111, 82, 0.18); }
+    .world-own-badge { color: #415c50; background: rgba(141, 163, 139, 0.25); }
+    .world-profile-match strong { color: var(--accent-dark); }
+
     @keyframes graph-node-arrive {
       from { opacity: 0; transform: translate(var(--anchor-x), var(--anchor-y)) rotate(var(--node-tilt, 0deg)); }
       to { opacity: 1; transform: translate(var(--node-x), var(--node-y)) rotate(var(--node-tilt, 0deg)); }
@@ -1835,13 +2114,25 @@
     }
 
     @media (max-width: 639px) {
-      .app-shell { padding: max(10px, env(safe-area-inset-top)) 8px max(82px, env(safe-area-inset-bottom)); }
+      .app-shell { padding: max(12px, env(safe-area-inset-top)) 10px max(84px, env(safe-area-inset-bottom)); }
       .topbar { margin-bottom: 9px; padding-inline: 4px; }
       .brand { gap: 7px; font-size: 0.68rem; }
       .brand-mark { width: 30px; height: 30px; font-size: 0.85rem; }
       .version-chip { padding: 5px 8px; font-size: 0.62rem; }
-      .page { min-height: calc(100vh - 56px); border-radius: 21px; }
-      .screen { padding: 19px 13px 15px; }
+      .path-nav { gap: 5px; margin-bottom: 8px; }
+      .path-nav-label { margin-inline: 5px; font-size: 0.56rem; }
+      .path-track { gap: 6px; margin-inline: -2px; padding: 1px 2px 5px; }
+      .path-chapter { min-width: 104px; min-height: 48px; padding: 7px 8px; border-radius: 15px; }
+      .path-chapter-icon { width: 22px; height: 22px; font-size: 0.65rem; }
+      .path-chapter-name { font-size: 0.69rem; }
+      .path-chapter-note { max-width: 96px; font-size: 0.51rem; }
+      .page { min-height: calc(100vh - 58px); border-radius: 24px; }
+      .screen { padding: 23px 16px 18px; }
+      .welcome-copy { gap: 15px; }
+      .welcome-copy h1 { max-width: 330px; font-size: clamp(2rem, 10vw, 2.72rem); line-height: 1.01; }
+      .welcome-lead { max-width: 320px; font-size: 0.86rem; line-height: 1.45; }
+      .trust-signatures { max-width: 320px; gap: 6px; }
+      .trust-signatures li { padding: 6px 8px; font-size: 0.6rem; }
       #scatterScreen { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
       .eyebrow { margin-bottom: 7px; font-size: 0.61rem; }
       h1 { margin-bottom: 9px; font-size: clamp(1.72rem, 8.2vw, 2.7rem); line-height: 1.02; }
@@ -2020,15 +2311,57 @@
       <span class="version-chip">черновик 2.0</span>
     </header>
 
+    <nav class="path-nav" id="pathNav" aria-label="Путь по главам">
+      <p class="path-nav-label">Путь</p>
+      <div class="path-track" id="pathTrack">
+        <button class="path-chapter" type="button" data-path-chapter="ritual">
+          <span class="path-chapter-icon" aria-hidden="true"><span>01</span></span>
+          <span class="path-chapter-name">Ритуал</span>
+          <span class="path-chapter-note">выбрать слова</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="map">
+          <span class="path-chapter-icon" aria-hidden="true"><span>02</span></span>
+          <span class="path-chapter-name">Карта</span>
+          <span class="path-chapter-note">после первого слова</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="mirror">
+          <span class="path-chapter-icon" aria-hidden="true"><span>03</span></span>
+          <span class="path-chapter-name">Зеркало</span>
+          <span class="path-chapter-note">после первых слов</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="worlds">
+          <span class="path-chapter-icon" aria-hidden="true"><span>04</span></span>
+          <span class="path-chapter-name">Миры слов</span>
+          <span class="path-chapter-note">после слепка</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="intersections">
+          <span class="path-chapter-icon" aria-hidden="true"><span>05</span></span>
+          <span class="path-chapter-name">Пересечения</span>
+          <span class="path-chapter-note">после слепка</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="forks">
+          <span class="path-chapter-icon" aria-hidden="true"><span>06</span></span>
+          <span class="path-chapter-name">Развилки</span>
+          <span class="path-chapter-note">после слепка</span>
+        </button>
+      </div>
+    </nav>
+
     <main class="page">
       <div class="notice" id="storageNotice" role="status" hidden></div>
 
       <section class="screen entry-screen" id="lightIntroScreen" aria-labelledby="lightIntroTitle">
-        <div class="entry-copy">
-          <h1 id="lightIntroTitle" tabindex="-1">Выбери слова, которые отзываются и близки тебе. Минимум 5, лучше 10–15.</h1>
+        <div class="entry-copy welcome-copy">
+          <h1 id="lightIntroTitle" tabindex="-1">Собери карту того, что для тебя действительно важно.</h1>
+          <p class="welcome-lead">Выбирай слова, которые отзываются. Они сложатся в живой черновик твоего пути — не в тип и не в диагноз.</p>
           <div class="entry-actions">
-            <button class="primary-button" id="startLightButton" type="button">Начать</button>
+            <button class="primary-button" id="startLightButton" type="button">Начать ритуал</button>
           </div>
+          <ul class="trust-signatures" aria-label="О чём важно знать до начала">
+            <li>🔒 Карта остаётся у тебя</li>
+            <li>◇ Без оценок и типов</li>
+            <li>8–10 минут, без финиша</li>
+          </ul>
         </div>
       </section>
 
@@ -2326,6 +2659,8 @@
       const forksScreen = document.getElementById('forksScreen');
       const forksContent = document.getElementById('forksContent');
       const storageNotice = document.getElementById('storageNotice');
+      const pathNav = document.getElementById('pathNav');
+      const pathTrack = document.getElementById('pathTrack');
       const primaryNav = document.getElementById('primaryNav');
       const intersectionsBackButton = document.getElementById('intersectionsBackButton');
 
@@ -2453,7 +2788,7 @@
           const intersectionReturn = parsed.intersectionReturn?.view === 'word-world' && worldWordId
             ? { view: 'word-world', wordId: worldWordId }
             : null;
-          const restoredView = parsed.view === 'intersections' && selectionCount >= 3
+          let restoredView = parsed.view === 'intersections' && selectionCount >= 3
             ? 'intersections'
             : parsed.view === 'graph' && selectionCount
             ? 'graph'
@@ -2466,6 +2801,9 @@
             : allowedSimpleViews.has(parsed.view) || parsed.view === 'scatter'
             ? parsed.view
             : selectionCount ? 'scatter' : 'light-intro';
+          if (selectionCount && restoredView === 'light-intro') {
+            restoredView = selectionCount >= 3 ? 'snapshot' : 'scatter';
+          }
           const pendingCustomId = customIds.has(parsed.pendingCustomId) ? parsed.pendingCustomId : null;
           const supplementShelfId = restoredView === 'scatter' && SHELF_BY_ID.has(parsed.supplementShelfId)
             ? parsed.supplementShelfId : null;
@@ -4177,6 +4515,7 @@
           ? 'Можно закончить или выбрать ещё'
           : lightCount < 5 ? `Ещё ${5 - lightCount} до следующей волны`
             : lightCount < 10 ? 'Уже можно продолжить' : lightCount <= 15 ? 'Хороший объём' : 'Можно остановиться';
+        updatePathNavigation(state.view);
       }
 
       function toggleWord(id) {
@@ -5573,6 +5912,73 @@
         showView('graph');
       }
 
+      const PATH_CHAPTERS = Object.freeze({
+        ritual: {
+          views: ['light-intro', 'scatter', 'dark-intro', 'custom-shelf'],
+          lockedNote: 'выбрать слова'
+        },
+        map: {
+          views: ['graph-intro', 'graph'],
+          lockedNote: 'после первого слова'
+        },
+        mirror: {
+          views: ['snapshot'],
+          lockedNote: 'после первых слов'
+        },
+        worlds: {
+          views: ['word-world'],
+          lockedNote: 'после слепка'
+        },
+        intersections: {
+          views: ['intersections'],
+          lockedNote: 'после слепка'
+        },
+        forks: {
+          views: ['forks'],
+          lockedNote: 'после слепка'
+        }
+      });
+
+      function pathChapterForView(view) {
+        return Object.entries(PATH_CHAPTERS).find(([, chapter]) => chapter.views.includes(view))?.[0] || 'ritual';
+      }
+
+      function pathChapterIsOpen(chapterId) {
+        const count = totalSelected();
+        if (chapterId === 'ritual') return true;
+        if (chapterId === 'map') return count >= 1;
+        return count >= 3;
+      }
+
+      function preferredWorldWordId() {
+        if (state.worldWordId && WORD_BY_ID.has(state.worldWordId)) return state.worldWordId;
+        const topWord = state.topThreeValues.find((id) => WORD_BY_ID.has(id));
+        return topWord || state.selectedIds.find((id) => WORD_BY_ID.has(id)) || null;
+      }
+
+      function updatePathNavigation(view) {
+        const activeChapter = pathChapterForView(view);
+        let activeButton = null;
+        pathTrack.querySelectorAll('[data-path-chapter]').forEach((button) => {
+          const chapterId = button.dataset.pathChapter;
+          const isOpen = pathChapterIsOpen(chapterId);
+          const isActive = chapterId === activeChapter;
+          const note = button.querySelector('.path-chapter-note');
+          button.disabled = !isOpen;
+          button.classList.toggle('is-open', isOpen);
+          button.classList.toggle('is-locked', !isOpen);
+          button.classList.toggle('is-active', isActive);
+          button.setAttribute('aria-current', isActive ? 'step' : 'false');
+          button.setAttribute('aria-label', `${button.querySelector('.path-chapter-name').textContent}. ${isActive ? 'Текущая глава.' : isOpen ? 'Глава открыта.' : PATH_CHAPTERS[chapterId].lockedNote + '.'}`);
+          note.textContent = isActive ? 'ты здесь' : isOpen ? 'открыто' : PATH_CHAPTERS[chapterId].lockedNote;
+          if (isActive) activeButton = button;
+        });
+        if (activeButton) {
+          const targetLeft = activeButton.offsetLeft - (pathTrack.clientWidth - activeButton.offsetWidth) / 2;
+          pathTrack.scrollTo({ left: Math.max(0, targetLeft), behavior: 'auto' });
+        }
+      }
+
       function updatePrimaryNavigation(view) {
         const isMainView = ['snapshot', 'graph', 'intersections', 'word-world', 'forks'].includes(view);
         primaryNav.hidden = !isMainView;
@@ -5634,6 +6040,7 @@
         }
         if (isWordWorld) renderWordWorld();
         if (isForks) renderForkScreen();
+        updatePathNavigation(state.view);
         updatePrimaryNavigation(state.view);
         if (shouldPersist) persistState();
         if (focus) {
@@ -5928,6 +6335,19 @@
       document.getElementById('graphIntroNextButton').addEventListener('click', () => {
         markGraphIntroSeenThisSession();
         showView('graph');
+      });
+      pathNav.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-path-chapter]');
+        if (!target || target.disabled) return;
+        const chapter = target.dataset.pathChapter;
+        if (chapter === 'ritual') showView(totalSelected() ? 'scatter' : 'light-intro');
+        else if (chapter === 'map') openGraphScreen();
+        else if (chapter === 'mirror') showView('snapshot');
+        else if (chapter === 'worlds') {
+          const wordId = preferredWorldWordId();
+          if (wordId) openWordWorld(wordId, state.view);
+        } else if (chapter === 'intersections') showView('intersections');
+        else if (chapter === 'forks') showView('forks');
       });
       primaryNav.addEventListener('click', (event) => {
         const target = event.target.closest('[data-primary-view]');
