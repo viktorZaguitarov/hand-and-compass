@@ -154,6 +154,116 @@
       transition: color 440ms ease, background 440ms ease, border-color 440ms ease;
     }
 
+    .path-nav {
+      display: grid;
+      gap: 7px;
+      margin: 0 0 12px;
+      font-family: var(--sans);
+    }
+
+    .path-nav-label {
+      margin: 0 4px;
+      color: var(--ink-soft);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .path-track {
+      display: flex;
+      gap: 7px;
+      padding: 2px 3px 7px;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scrollbar-width: none;
+      scroll-snap-type: x proximity;
+    }
+
+    .path-track::-webkit-scrollbar { display: none; }
+
+    .path-chapter {
+      position: relative;
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      column-gap: 7px;
+      min-width: 112px;
+      min-height: 52px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      color: var(--ink-soft);
+      background: rgba(255, 251, 244, 0.5);
+      box-shadow: 0 5px 14px rgba(56, 48, 41, 0.045);
+      text-align: left;
+      scroll-snap-align: center;
+    }
+
+    .path-chapter::after {
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 1px);
+      width: 7px;
+      height: 1px;
+      background: rgba(25, 43, 61, 0.18);
+      content: "";
+    }
+
+    .path-chapter:last-child::after { display: none; }
+
+    .path-chapter-icon {
+      grid-row: 1 / -1;
+      align-self: center;
+      display: grid;
+      width: 25px;
+      height: 25px;
+      place-items: center;
+      border: 1px solid rgba(25, 43, 61, 0.18);
+      border-radius: 50%;
+      color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.55);
+      font-size: 0.72rem;
+    }
+
+    .path-chapter-name {
+      align-self: end;
+      font-size: 0.74rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .path-chapter-note {
+      align-self: start;
+      max-width: 104px;
+      margin-top: 2px;
+      font-size: 0.55rem;
+      font-weight: 600;
+      line-height: 1.15;
+    }
+
+    .path-chapter.is-open:not(.is-active) .path-chapter-note { color: #7b8792; }
+    .path-chapter.is-active {
+      color: var(--ink);
+      border-color: rgba(200, 111, 82, 0.42);
+      background: rgba(242, 216, 206, 0.72);
+      box-shadow: 0 7px 18px rgba(169, 81, 57, 0.11);
+    }
+    .path-chapter.is-active .path-chapter-icon {
+      color: #fffaf4;
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+    .path-chapter.is-locked {
+      opacity: 0.58;
+      border-style: dashed;
+      box-shadow: none;
+      cursor: default;
+    }
+    .path-chapter.is-locked .path-chapter-icon::before { content: "🔒"; font-size: 0.62rem; }
+    .path-chapter.is-locked .path-chapter-icon > span { display: none; }
+
     .page {
       position: relative;
       overflow: hidden;
@@ -215,10 +325,10 @@
       width: min(760px, 100vw);
       margin: 0 auto;
       padding: 6px 6px max(6px, env(safe-area-inset-bottom));
-      border: 1px solid rgba(49, 95, 82, 0.18);
+      border: 1px solid var(--line);
       border-radius: 18px 18px 0 0;
-      background: rgba(251, 248, 239, 0.95);
-      box-shadow: 0 12px 32px rgba(29, 44, 38, 0.2);
+      background: rgba(247, 240, 229, 0.92);
+      box-shadow: 0 9px 26px rgba(56, 48, 41, 0.12);
       backdrop-filter: blur(16px);
     }
 
@@ -228,17 +338,17 @@
       padding: 7px 8px;
       border: 1px solid transparent;
       border-radius: 12px;
-      color: var(--ink-soft);
+      color: #6f7a84;
       background: transparent;
       font-family: var(--sans);
       font-size: 0.72rem;
-      font-weight: 750;
+      font-weight: 700;
       line-height: 1.12;
     }
     .primary-nav-button.is-active {
-      border-color: rgba(49, 95, 82, 0.18);
-      color: var(--forest-dark);
-      background: rgba(220, 233, 223, 0.72);
+      border-color: rgba(25, 43, 61, 0.12);
+      color: var(--ink);
+      background: rgba(255, 251, 244, 0.72);
     }
     body.wave-two .primary-nav { border-color: rgba(205, 216, 229, 0.22); background: rgba(25, 35, 49, 0.94); }
     body.wave-two .primary-nav-button { color: #c8d1db; }
@@ -1964,6 +2074,13 @@
       .brand { gap: 7px; font-size: 0.68rem; }
       .brand-mark { width: 30px; height: 30px; font-size: 0.85rem; }
       .version-chip { padding: 5px 8px; font-size: 0.62rem; }
+      .path-nav { gap: 5px; margin-bottom: 8px; }
+      .path-nav-label { margin-inline: 5px; font-size: 0.56rem; }
+      .path-track { gap: 6px; margin-inline: -2px; padding: 1px 2px 5px; }
+      .path-chapter { min-width: 104px; min-height: 48px; padding: 7px 8px; border-radius: 15px; }
+      .path-chapter-icon { width: 22px; height: 22px; font-size: 0.65rem; }
+      .path-chapter-name { font-size: 0.69rem; }
+      .path-chapter-note { max-width: 96px; font-size: 0.51rem; }
       .page { min-height: calc(100vh - 58px); border-radius: 24px; }
       .screen { padding: 23px 16px 18px; }
       #scatterScreen { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
@@ -2143,6 +2260,42 @@
       </div>
       <span class="version-chip">черновик 2.0</span>
     </header>
+
+    <nav class="path-nav" id="pathNav" aria-label="Путь по главам">
+      <p class="path-nav-label">Путь</p>
+      <div class="path-track" id="pathTrack">
+        <button class="path-chapter" type="button" data-path-chapter="ritual">
+          <span class="path-chapter-icon" aria-hidden="true"><span>01</span></span>
+          <span class="path-chapter-name">Ритуал</span>
+          <span class="path-chapter-note">выбрать слова</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="map">
+          <span class="path-chapter-icon" aria-hidden="true"><span>02</span></span>
+          <span class="path-chapter-name">Карта</span>
+          <span class="path-chapter-note">после первого слова</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="mirror">
+          <span class="path-chapter-icon" aria-hidden="true"><span>03</span></span>
+          <span class="path-chapter-name">Зеркало</span>
+          <span class="path-chapter-note">после первых слов</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="worlds">
+          <span class="path-chapter-icon" aria-hidden="true"><span>04</span></span>
+          <span class="path-chapter-name">Миры слов</span>
+          <span class="path-chapter-note">после слепка</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="intersections">
+          <span class="path-chapter-icon" aria-hidden="true"><span>05</span></span>
+          <span class="path-chapter-name">Пересечения</span>
+          <span class="path-chapter-note">после слепка</span>
+        </button>
+        <button class="path-chapter" type="button" data-path-chapter="forks">
+          <span class="path-chapter-icon" aria-hidden="true"><span>06</span></span>
+          <span class="path-chapter-name">Развилки</span>
+          <span class="path-chapter-note">после слепка</span>
+        </button>
+      </div>
+    </nav>
 
     <main class="page">
       <div class="notice" id="storageNotice" role="status" hidden></div>
@@ -2450,6 +2603,8 @@
       const forksScreen = document.getElementById('forksScreen');
       const forksContent = document.getElementById('forksContent');
       const storageNotice = document.getElementById('storageNotice');
+      const pathNav = document.getElementById('pathNav');
+      const pathTrack = document.getElementById('pathTrack');
       const primaryNav = document.getElementById('primaryNav');
       const intersectionsBackButton = document.getElementById('intersectionsBackButton');
 
@@ -4301,6 +4456,7 @@
           ? 'Можно закончить или выбрать ещё'
           : lightCount < 5 ? `Ещё ${5 - lightCount} до следующей волны`
             : lightCount < 10 ? 'Уже можно продолжить' : lightCount <= 15 ? 'Хороший объём' : 'Можно остановиться';
+        updatePathNavigation(state.view);
       }
 
       function toggleWord(id) {
@@ -5697,6 +5853,73 @@
         showView('graph');
       }
 
+      const PATH_CHAPTERS = Object.freeze({
+        ritual: {
+          views: ['light-intro', 'scatter', 'dark-intro', 'custom-shelf'],
+          lockedNote: 'выбрать слова'
+        },
+        map: {
+          views: ['graph-intro', 'graph'],
+          lockedNote: 'после первого слова'
+        },
+        mirror: {
+          views: ['snapshot'],
+          lockedNote: 'после первых слов'
+        },
+        worlds: {
+          views: ['word-world'],
+          lockedNote: 'после слепка'
+        },
+        intersections: {
+          views: ['intersections'],
+          lockedNote: 'после слепка'
+        },
+        forks: {
+          views: ['forks'],
+          lockedNote: 'после слепка'
+        }
+      });
+
+      function pathChapterForView(view) {
+        return Object.entries(PATH_CHAPTERS).find(([, chapter]) => chapter.views.includes(view))?.[0] || 'ritual';
+      }
+
+      function pathChapterIsOpen(chapterId) {
+        const count = totalSelected();
+        if (chapterId === 'ritual') return true;
+        if (chapterId === 'map') return count >= 1;
+        return count >= 3;
+      }
+
+      function preferredWorldWordId() {
+        if (state.worldWordId && WORD_BY_ID.has(state.worldWordId)) return state.worldWordId;
+        const topWord = state.topThreeValues.find((id) => WORD_BY_ID.has(id));
+        return topWord || state.selectedIds.find((id) => WORD_BY_ID.has(id)) || null;
+      }
+
+      function updatePathNavigation(view) {
+        const activeChapter = pathChapterForView(view);
+        let activeButton = null;
+        pathTrack.querySelectorAll('[data-path-chapter]').forEach((button) => {
+          const chapterId = button.dataset.pathChapter;
+          const isOpen = pathChapterIsOpen(chapterId);
+          const isActive = chapterId === activeChapter;
+          const note = button.querySelector('.path-chapter-note');
+          button.disabled = !isOpen;
+          button.classList.toggle('is-open', isOpen);
+          button.classList.toggle('is-locked', !isOpen);
+          button.classList.toggle('is-active', isActive);
+          button.setAttribute('aria-current', isActive ? 'step' : 'false');
+          button.setAttribute('aria-label', `${button.querySelector('.path-chapter-name').textContent}. ${isActive ? 'Текущая глава.' : isOpen ? 'Глава открыта.' : PATH_CHAPTERS[chapterId].lockedNote + '.'}`);
+          note.textContent = isActive ? 'ты здесь' : isOpen ? 'открыто' : PATH_CHAPTERS[chapterId].lockedNote;
+          if (isActive) activeButton = button;
+        });
+        if (activeButton) {
+          const targetLeft = activeButton.offsetLeft - (pathTrack.clientWidth - activeButton.offsetWidth) / 2;
+          pathTrack.scrollTo({ left: Math.max(0, targetLeft), behavior: 'auto' });
+        }
+      }
+
       function updatePrimaryNavigation(view) {
         const isMainView = ['snapshot', 'graph', 'intersections', 'word-world', 'forks'].includes(view);
         primaryNav.hidden = !isMainView;
@@ -5758,6 +5981,7 @@
         }
         if (isWordWorld) renderWordWorld();
         if (isForks) renderForkScreen();
+        updatePathNavigation(state.view);
         updatePrimaryNavigation(state.view);
         if (shouldPersist) persistState();
         if (focus) {
@@ -6052,6 +6276,19 @@
       document.getElementById('graphIntroNextButton').addEventListener('click', () => {
         markGraphIntroSeenThisSession();
         showView('graph');
+      });
+      pathNav.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-path-chapter]');
+        if (!target || target.disabled) return;
+        const chapter = target.dataset.pathChapter;
+        if (chapter === 'ritual') showView(totalSelected() ? 'scatter' : 'light-intro');
+        else if (chapter === 'map') openGraphScreen();
+        else if (chapter === 'mirror') showView('snapshot');
+        else if (chapter === 'worlds') {
+          const wordId = preferredWorldWordId();
+          if (wordId) openWordWorld(wordId, state.view);
+        } else if (chapter === 'intersections') showView('intersections');
+        else if (chapter === 'forks') showView('forks');
       });
       primaryNav.addEventListener('click', (event) => {
         const target = event.target.closest('[data-primary-view]');
