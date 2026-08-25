@@ -491,10 +491,15 @@ async function main() {
 
     await click(client, '[data-path-chapter="forks"]');
     await waitFor(client, visible('.fork-step-situation'), 'fork situation');
-    await click(client, '[data-fork-action="to-prediction"]');
-    await waitFor(client, visible('.fork-step-prediction'), 'fork prediction');
-    await click(client, '[data-fork-action="predict-A"]');
+    await click(client, '[data-fork-action="to-choice"]');
+    await waitFor(client, visible('.fork-step-choice'), 'fork own choice');
+    await evaluate(client, `(() => {
+      const actual = JSON.parse(localStorage.getItem('hand_compass_forks_v1')).history.at(-1).actualChoice;
+      const different = actual === 'A' ? 'B' : 'A';
+      document.querySelector('[data-fork-action="choose-' + different + '"]').click();
+    })()`);
     await waitFor(client, visible('.fork-step-truth'), 'fork truth');
+    await waitFor(client, `document.querySelector('.fork-step-truth h1').textContent.includes('иначе')`, 'fork post-choice difference');
     await click(client, '[data-fork-action="to-outcome"]');
     await waitFor(client, visible('.fork-step-outcome'), 'fork outcome');
     completed.push('развилка: 4 шага');

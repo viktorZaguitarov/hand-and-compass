@@ -2955,7 +2955,6 @@
       let worldData = restoreWorldData();
       let forksData = restoreForksData();
       let activeFork = null;
-      let forkTruthTimer = null;
       let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -3254,6 +3253,9 @@
                   startedAt: item.startedAt,
                   finishedAt: typeof item.finishedAt === 'string' ? item.finishedAt : null,
                   prediction: item.prediction === 'A' || item.prediction === 'B' ? item.prediction : null,
+                  userChoice: item.userChoice === 'A' || item.userChoice === 'B'
+                    ? item.userChoice
+                    : (item.prediction === 'A' || item.prediction === 'B' ? item.prediction : null),
                   actualChoice: item.actualChoice === 'A' || item.actualChoice === 'B' ? item.actualChoice : null,
                   gap: typeof item.gap === 'boolean' ? item.gap : null,
                   candidateId: typeof item.candidateId === 'string' && WORD_BY_ID.has(item.candidateId) ? item.candidateId : null,
@@ -4424,29 +4426,15 @@
         return ['fork-motif-orbit', 'fork-motif-horizon', 'fork-motif-threshold'][Math.abs(hashValue(dilemma.id)) % 3];
       }
 
-      function scheduleForkTruth() {
-        if (!activeFork || activeFork.step !== 'waiting') return;
-        if (forkTruthTimer) window.clearTimeout(forkTruthTimer);
-        const startedAt = activeFork.startedAt;
-        const delay = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 60 : 920;
-        forkTruthTimer = window.setTimeout(() => {
-          forkTruthTimer = null;
-          if (!activeFork || activeFork.startedAt !== startedAt || activeFork.step !== 'waiting') return;
-          activeFork.step = 'truth';
-          renderForkScreen();
-          window.requestAnimationFrame(() => document.getElementById('forkTitle')?.focus({ preventScroll: true }));
-        }, delay);
-      }
-
       function startFork() {
         const dilemma = chooseForkDilemma();
         const bot = dilemma ? chooseForkBot() : null;
         if (!dilemma || !bot) return null;
         const startedAt = new Date().toISOString();
         const actualChoice = forkActualChoice(dilemma, bot);
-        activeFork = { dilemma, bot, startedAt, actualChoice, prediction: null, step: 'situation' };
+        activeFork = { dilemma, bot, startedAt, actualChoice, userChoice: null, step: 'situation' };
         forksData.history.push({
-          dilemmaId: dilemma.id, startedAt, finishedAt: null, prediction: null,
+          dilemmaId: dilemma.id, startedAt, finishedAt: null, prediction: null, userChoice: null,
           actualChoice, gap: null, candidateId: null, acceptedCandidate: null, skipped: false
         });
         markForkUsedThisSession();
@@ -4455,10 +4443,6 @@
       }
 
       function finishFork({ skipped = false, acceptedCandidate = null, destination = 'intersections' } = {}) {
-        if (forkTruthTimer) {
-          window.clearTimeout(forkTruthTimer);
-          forkTruthTimer = null;
-        }
         const record = forkRecord();
         if (record) {
           record.finishedAt = new Date().toISOString();
@@ -4504,61 +4488,58 @@
           stage.append(forkHeader('развилка', 'Представь эту сцену.'));
           appendForkSceneLines(stage, dilemma.situation);
           appendForkTouchedLine(stage, dilemma);
-          actions.append(createForkButton('Посмотреть на выбор двойника', 'to-prediction', 'fork-primary'));
-        } else if (step === 'prediction') {
-          stage.append(forkHeader('учебный двойник', 'Как поступит двойник?', `${bot.name} — условная карта, в которой есть знакомые тебе слова.`));
+          actions.append(createForkButton('Ответить самому', 'to-choice', 'fork-primary'));
+        } else if (step === 'choice') {
+          stage.append(forkHeader('твой выбор', 'Как поступишь ты?'));
           ['A', 'B'].forEach((choice) => {
-            const button = createForkButton(forkOptionText(dilemma, choice), `predict-${choice}`, 'fork-option');
+            const button = createForkButton(forkOptionText(dilemma, choice), `choose-${choice}`, 'fork-option');
             const letter = document.createElement('span');
             letter.className = 'fork-option-letter';
             letter.textContent = choice;
             button.prepend(letter);
             actions.append(button);
           });
-        } else if (step === 'waiting') {
-          stage.append(forkHeader('между выбором и ответом', 'Пауза перед правдой.'));
-          const pause = document.createElement('div');
-          pause.className = 'fork-pause';
-          pause.textContent = 'двойник решает…';
-          stage.append(pause);
         } else if (step === 'truth') {
-          const choiceLabel = actualChoice === 'A' ? 'вариант А' : 'вариант Б';
-          stage.append(forkHeader('учебный двойник', `${bot.name} выбрал ${choiceLabel}.`, forkOptionText(dilemma, actualChoice)));
+          const sameChoice = activeFork.userChoice === actualChoice;
+          stage.append(forkHeader(
+            'после твоего ответа',
+            `${bot.name} выбрал бы ${sameChoice ? 'так же.' : 'иначе.'}`,
+            forkOptionText(dilemma, actualChoice)
+          ));
           const logic = document.createElement('p');
           logic.className = 'fork-logic';
           logic.textContent = `«${forkTruthLine(dilemma, bot, actualChoice)}»`;
           stage.append(logic);
-          actions.append(createForkButton('Дальше', 'to-outcome', 'fork-primary'));
-        } else {
-          const gap = activeFork.prediction !== actualChoice;
-          if (!gap) {
-            stage.append(forkHeader('развилка', 'Похоже, вы понимаете друг друга.', 'В этой ситуации ты ожидал от двойника тот же ход.'));
-            actions.append(createForkButton('К пересечениям', 'finish', 'fork-primary'));
+          if (sameChoice) {
+            const warmth = document.createElement('p');
+            warmth.className = 'fork-warmth';
+            warmth.textContent = 'Здесь вы услышали ситуацию одинаково.';
+            stage.append(warmth);
+            actions.append(createForkButton('Завершить', 'finish', 'fork-primary'));
           } else {
-            const candidateId = actualChoice === 'A' ? dilemma.candidateA : dilemma.candidateB;
-            const candidate = WORD_BY_ID.get(candidateId);
-            stage.append(forkHeader('развилка', 'Ты ждал иначе. А как бы поступил ты?'));
-            const candidateBlock = document.createElement('div');
-            candidateBlock.className = 'fork-candidate';
-            const candidateLabel = document.createElement('p');
-            candidateLabel.textContent = 'В этой развилке рядом оказалось слово:';
-            const candidateWord = document.createElement('strong');
-            candidateWord.textContent = candidate ? `«${candidate.word}»` : '';
-            candidateBlock.append(candidateLabel, candidateWord);
-            stage.append(candidateBlock);
-            actions.append(
-              createForkButton('Узнаю себя — в слепок', 'accept-candidate', 'fork-primary'),
-              createForkButton('Не моё', 'reject-candidate')
-            );
+            actions.append(createForkButton('Посмотреть, что отозвалось', 'to-outcome', 'fork-primary'));
           }
+        } else {
+          const candidateId = activeFork.userChoice === 'A' ? dilemma.candidateA : dilemma.candidateB;
+          const candidate = WORD_BY_ID.get(candidateId);
+          stage.append(forkHeader('после расхождения', 'Что в твоём выборе было главным?'));
+          const candidateBlock = document.createElement('div');
+          candidateBlock.className = 'fork-candidate';
+          const candidateLabel = document.createElement('p');
+          candidateLabel.textContent = 'В твоём выборе рядом оказалось слово:';
+          const candidateWord = document.createElement('strong');
+          candidateWord.textContent = candidate ? `«${candidate.word}»` : '';
+          candidateBlock.append(candidateLabel, candidateWord);
+          stage.append(candidateBlock);
+          actions.append(
+            createForkButton('Узнаю себя — в слепок', 'accept-candidate', 'fork-primary'),
+            createForkButton('Не моё', 'reject-candidate')
+          );
         }
 
-        if (step !== 'waiting') {
-          appendForkSkip(actions);
-          stage.append(actions);
-        }
+        appendForkSkip(actions);
+        stage.append(actions);
         forksContent.append(stage);
-        if (step === 'waiting') scheduleForkTruth();
       }
 
       function commonProfileWords(profile, limit = 3) {
@@ -7413,20 +7394,20 @@
           finishFork({ skipped: true });
           return;
         }
-        if (action === 'to-prediction') {
-          activeFork.step = 'prediction';
-        } else if (action === 'predict-A' || action === 'predict-B') {
-          activeFork.prediction = action.endsWith('A') ? 'A' : 'B';
-          activeFork.step = 'waiting';
+        if (action === 'to-choice') {
+          activeFork.step = 'choice';
+        } else if (action === 'choose-A' || action === 'choose-B') {
+          activeFork.userChoice = action.endsWith('A') ? 'A' : 'B';
+          activeFork.step = 'truth';
           if (record) {
-            record.prediction = activeFork.prediction;
-            record.gap = activeFork.prediction !== activeFork.actualChoice;
+            record.userChoice = activeFork.userChoice;
+            record.gap = activeFork.userChoice !== activeFork.actualChoice;
             persistForksData();
           }
         } else if (action === 'to-outcome') {
           activeFork.step = 'outcome';
           if (record) {
-            record.candidateId = activeFork.actualChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
+            record.candidateId = activeFork.userChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
             persistForksData();
           }
         } else if (action === 'finish') {
@@ -7434,7 +7415,7 @@
           return;
         } else if (action === 'accept-candidate' || action === 'reject-candidate') {
           const accepted = action === 'accept-candidate';
-          const candidateId = activeFork.actualChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
+          const candidateId = activeFork.userChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
           const candidate = WORD_BY_ID.get(candidateId);
           if (accepted && candidate && !state.selectedIds.includes(candidate.id)) {
             state.selectedIds.push(candidate.id);
