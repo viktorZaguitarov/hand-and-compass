@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Hand &amp; Compass 2.0 — личная карта смыслов, которую можно менять по мере пути.">
-  <title>Hand &amp; Compass 2.0 — Путь</title>
+  <title>Hand &amp; Compass — Путь</title>
   <style>
     :root {
       color-scheme: light;
@@ -2450,39 +2450,39 @@
         <span class="brand-mark" aria-hidden="true">⌁</span>
         <span>Hand &amp; Compass</span>
       </div>
-      <span class="version-chip">черновик 2.0</span>
+      <span class="version-chip">личная карта</span>
     </header>
 
     <nav class="path-nav" id="pathNav" aria-label="Путь по главам">
       <p class="path-nav-label">Путь</p>
       <div class="path-track" id="pathTrack">
         <button class="path-chapter" type="button" data-path-chapter="ritual">
-          <span class="path-chapter-icon" aria-hidden="true"><span>01</span></span>
+          <span class="path-chapter-icon" aria-hidden="true"><span>◌</span></span>
           <span class="path-chapter-name">Ритуал</span>
           <span class="path-chapter-note">выбрать слова</span>
         </button>
         <button class="path-chapter" type="button" data-path-chapter="map">
-          <span class="path-chapter-icon" aria-hidden="true"><span>02</span></span>
+          <span class="path-chapter-icon" aria-hidden="true"><span>⌁</span></span>
           <span class="path-chapter-name">Карта</span>
           <span class="path-chapter-note">после первого слова</span>
         </button>
         <button class="path-chapter" type="button" data-path-chapter="mirror">
-          <span class="path-chapter-icon" aria-hidden="true"><span>03</span></span>
+          <span class="path-chapter-icon" aria-hidden="true"><span>◇</span></span>
           <span class="path-chapter-name">Зеркало</span>
           <span class="path-chapter-note">после первых слов</span>
         </button>
         <button class="path-chapter" type="button" data-path-chapter="worlds">
-          <span class="path-chapter-icon" aria-hidden="true"><span>04</span></span>
+          <span class="path-chapter-icon" aria-hidden="true"><span>◎</span></span>
           <span class="path-chapter-name">Миры слов</span>
           <span class="path-chapter-note">после слепка</span>
         </button>
         <button class="path-chapter" type="button" data-path-chapter="intersections">
-          <span class="path-chapter-icon" aria-hidden="true"><span>05</span></span>
+          <span class="path-chapter-icon" aria-hidden="true"><span>∩</span></span>
           <span class="path-chapter-name">Пересечения</span>
           <span class="path-chapter-note">после слепка</span>
         </button>
         <button class="path-chapter" type="button" data-path-chapter="forks">
-          <span class="path-chapter-icon" aria-hidden="true"><span>06</span></span>
+          <span class="path-chapter-icon" aria-hidden="true"><span>⋔</span></span>
           <span class="path-chapter-name">Развилки</span>
           <span class="path-chapter-note">после слепка</span>
         </button>
@@ -2495,7 +2495,7 @@
       <section class="screen entry-screen" id="lightIntroScreen" aria-labelledby="lightIntroTitle">
         <div class="entry-copy welcome-copy">
           <h1 id="lightIntroTitle" tabindex="-1">Собери карту того, что для тебя действительно важно.</h1>
-          <p class="welcome-lead">Выбирай слова, которые отзываются. Они сложатся в живой черновик твоего пути — не в тип и не в диагноз.</p>
+          <p class="welcome-lead">Выбирай слова, которые отзываются. Они сложатся в живую карту твоего пути — не в тип и не в диагноз.</p>
           <div class="entry-actions">
             <button class="primary-button" id="startLightButton" type="button">Начать ритуал</button>
           </div>
@@ -2509,16 +2509,16 @@
 
       <section class="screen" id="scatterScreen" aria-labelledby="scatterTitle" hidden>
         <header class="screen-head">
-          <p class="eyebrow" id="scatterStep">1 из 2</p>
-          <h1 class="choice-title" id="scatterTitle" tabindex="-1">Ценности, цели, опоры — светлые составляющие твоего мироощущения.</h1>
+          <p class="eyebrow" id="scatterStep">то, что тянет</p>
+          <h1 class="choice-title" id="scatterTitle" tabindex="-1">Что хочется приблизить?</h1>
         </header>
 
         <div class="selection-bar" aria-live="polite">
           <div class="selection-copy">
-            <div class="selection-count"><strong id="selectedCount">0</strong><span id="selectedCountLabel">слов выбрано</span></div>
-            <span class="selection-more">можно и больше, если откликается</span>
+            <div class="selection-count"><strong id="selectedCount" aria-hidden="true">◇</strong><span id="selectedCountLabel">Отмечай маленькую тяжесть</span></div>
+            <span class="selection-more">правильного количества нет</span>
           </div>
-          <span class="selection-hint" id="selectionHint">Минимум 5</span>
+          <span class="selection-hint" id="selectionHint">Пусть сначала появится форма</span>
         </div>
 
         <div class="word-field" id="wordField" aria-label="Россыпь слов"></div>
@@ -2541,7 +2541,8 @@
 
       <section class="screen entry-screen" id="darkIntroScreen" aria-labelledby="darkIntroTitle" hidden>
         <div class="entry-copy">
-          <h1 id="darkIntroTitle" tabindex="-1">Теперь наоборот: выбери то, что раздражает, угнетает или выбивает из равновесия.</h1>
+          <h1 id="darkIntroTitle" tabindex="-1">Теперь — что задевает?</h1>
+          <p>Заметь слова о том, что раздражает, угнетает или выбивает из равновесия.</p>
           <div class="entry-actions">
             <button class="secondary-button" id="darkIntroBackButton" type="button">Назад</button>
             <button class="primary-button" id="startDarkButton" type="button">Продолжить</button>
@@ -2559,8 +2560,8 @@
 
       <section class="screen" id="snapshotScreen" aria-labelledby="snapshotTitle" hidden>
         <header class="screen-head snapshot-head">
-          <h1 id="snapshotTitle" tabindex="-1">Вот что откликнулось</h1>
-          <p class="lead">Одно слово может жить сразу в нескольких местах.</p>
+          <h1 id="snapshotTitle" tabindex="-1">Посмотри на выбор как в зеркало.</h1>
+          <p class="lead">Это гипотезы из твоих слов. Править их можешь только ты.</p>
           <div class="honesty-note">
             <span aria-hidden="true">◇</span>
             <span><strong>Это не тип и не диагноз.</strong> Только текущий выбор; его можно изменить.</span>
@@ -2584,11 +2585,11 @@
 
       <section class="screen entry-screen" id="graphIntroScreen" aria-labelledby="graphIntroTitle" hidden>
         <div class="entry-copy graph-intro-copy">
-          <h1 id="graphIntroTitle" tabindex="-1">Ты собрал слепок.</h1>
-          <p>Дальше так: увидишь свой граф → найдёшь, кто ещё такой → встретишь своих.</p>
-          <p>Сейчас в пересечениях — примеры профилей. Живые люди подключатся после запуска.</p>
+          <h1 id="graphIntroTitle" tabindex="-1">Посмотри, как слова держатся друг за друга.</h1>
+          <p>Карта не объясняет тебя. Она показывает соседства, которые можно принять, изменить или отвергнуть.</p>
+          <p>Тяни слова и целые облака, пока расположение не станет твоим.</p>
           <div class="entry-actions">
-            <button class="primary-button" id="graphIntroNextButton" type="button">Дальше</button>
+            <button class="primary-button" id="graphIntroNextButton" type="button">Открыть карту</button>
           </div>
         </div>
       </section>
@@ -2596,7 +2597,7 @@
       <section class="screen graph-screen" id="graphScreen" aria-labelledby="graphTitle" hidden>
         <div class="graph-topbar">
           <header class="screen-head graph-head">
-            <h1 id="graphTitle" tabindex="-1">Связи откликов</h1>
+            <h1 id="graphTitle" tabindex="-1">Найди, что оказалось рядом.</h1>
             <div class="graph-walk-actions" aria-label="Прогулка по графу">
               <button class="graph-walk-button" id="graphAllConnectionsButton" type="button" aria-pressed="false">Все связи</button>
               <button class="graph-walk-button" id="graphTidyButton" type="button">Уборка</button>
@@ -2620,14 +2621,14 @@
 
       <section class="screen intersections-screen" id="intersectionsScreen" aria-labelledby="intersectionsTitle" hidden>
         <header class="screen-head">
-          <h1 id="intersectionsTitle" tabindex="-1">Пересечения</h1>
-          <p class="lead">Выбери близость слепков. Здесь только примеры профилей, не живые люди.</p>
+          <h1 id="intersectionsTitle" tabindex="-1">Найди, где две карты встречаются.</h1>
+          <p class="lead">Настрой, сколько общего хочется увидеть. Здесь пока учебные двойники, не живые люди.</p>
         </header>
 
         <section class="match-panel" aria-labelledby="matchRangeLabel">
           <div class="match-label-row">
             <label class="match-label" id="matchRangeLabel" for="matchRange">Какую близость искать?</label>
-            <output class="match-value" id="matchValue" for="matchRange">50%</output>
+            <output class="match-value" id="matchValue" for="matchRange">поровну</output>
           </div>
           <input class="match-range" id="matchRange" type="range" min="0" max="100" step="1" value="50">
           <div class="match-range-scale" aria-hidden="true"><span>меньше общего</span><span>больше общего</span></div>
@@ -2635,7 +2636,7 @@
 
         <div class="profile-list" id="profileList" aria-live="polite"></div>
         <div class="profile-more-row">
-          <button class="secondary-button" id="moreProfilesButton" type="button">Ещё три</button>
+          <button class="secondary-button" id="moreProfilesButton" type="button">Показать ещё</button>
         </div>
         <article class="intersection-map" id="intersectionMap" aria-live="polite" hidden></article>
         <button class="secondary-button intersections-context-back" id="intersectionsBackButton" type="button" hidden>← К миру слова</button>
@@ -2651,9 +2652,9 @@
       </section>
     </main>
     <nav class="primary-nav" id="primaryNav" aria-label="Основная навигация" hidden>
-      <button class="primary-nav-button" type="button" data-primary-view="snapshot">Слепок</button>
-      <button class="primary-nav-button" type="button" data-primary-view="graph">Граф</button>
-      <button class="primary-nav-button" type="button" data-primary-view="intersections">Пересечения</button>
+      <button class="primary-nav-button" type="button" data-primary-view="snapshot">Зеркало</button>
+      <button class="primary-nav-button" type="button" data-primary-view="graph">Карта</button>
+      <button class="primary-nav-button" type="button" data-primary-view="intersections">Встречи</button>
       <button class="primary-nav-button" type="button" data-primary-view="forks">Развилки</button>
     </nav>
   </div>
@@ -3386,32 +3387,6 @@
         showView('snapshot');
       }
 
-      function wordCountLabel(count) {
-        const mod10 = count % 10;
-        const mod100 = count % 100;
-        if (mod10 === 1 && mod100 !== 11) return 'слово выбрано';
-        if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'слова выбрано';
-        return 'слов выбрано';
-      }
-
-      function shelfCountLabel(count) {
-        const mod10 = count % 10;
-        const mod100 = count % 100;
-        const noun = mod10 === 1 && mod100 !== 11
-          ? 'слово'
-          : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? 'слова' : 'слов';
-        return `${count} ${noun}`;
-      }
-
-      function connectionCountLabel(count) {
-        const mod10 = count % 10;
-        const mod100 = count % 100;
-        const noun = mod10 === 1 && mod100 !== 11
-          ? 'связь'
-          : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? 'связи' : 'связей';
-        return `${count} ${noun}`;
-      }
-
       function profilesForWord(wordId) {
         return FAKE_PROFILES.filter((profile) => Array.isArray(profile.words) && profile.words.includes(wordId));
       }
@@ -3435,10 +3410,10 @@
         const otherWords = (profile.words || []).filter((id) => id !== activeWordId && WORD_BY_ID.has(id));
         const light = otherWords.find((id) => !['stones', 'triggers'].includes(primaryShelf(WORD_BY_ID.get(id))));
         const tension = otherWords.find((id) => ['stones', 'triggers'].includes(primaryShelf(WORD_BY_ID.get(id))));
-        if (light && tension) return `В этом примере рядом «${wordLabel(light)}» и «${wordLabel(tension)}».`;
-        if (light) return `В этом примере в фокусе «${wordLabel(light)}» и ещё несколько близких слов.`;
-        if (tension) return `В этом примере рядом с этим словом есть «${wordLabel(tension)}».`;
-        return 'В этом примере слово отмечено в личном слепке.';
+        if (light && tension) return `Рядом здесь «${wordLabel(light)}» и «${wordLabel(tension)}».`;
+        if (light) return `В фокусе «${wordLabel(light)}» и ещё несколько близких слов.`;
+        if (tension) return `Рядом с этим словом есть «${wordLabel(tension)}».`;
+        return 'Это слово отмечено в условной карте.';
       }
 
       function worldStoryTitle(word) {
@@ -3536,13 +3511,13 @@
         card.className = 'world-bot-card';
         card.type = 'button';
         card.dataset.worldProfileId = profile.id;
-        card.setAttribute('aria-label', `Открыть пример профиля «${profile.name}»`);
+        card.setAttribute('aria-label', `Открыть учебного двойника «${profile.name}»`);
         const name = document.createElement('span');
         name.className = 'world-bot-name';
         name.textContent = profile.name;
         const badge = document.createElement('span');
         badge.className = 'world-example-badge';
-        badge.textContent = 'пример профиля';
+        badge.textContent = 'учебный двойник';
         const character = document.createElement('span');
         character.className = 'world-bot-character';
         character.textContent = profileCharacter(profile, wordId);
@@ -3560,7 +3535,7 @@
         author.textContent = story.profile.name;
         const badge = document.createElement('span');
         badge.className = 'world-example-badge';
-        badge.textContent = 'пример профиля';
+        badge.textContent = 'учебный двойник';
         meta.append(author, badge);
         const copy = document.createElement('p');
         copy.className = 'world-story-copy';
@@ -3573,10 +3548,10 @@
         recognize.type = 'button';
         recognize.dataset.toggleRecognition = story.id;
         recognize.setAttribute('aria-pressed', String(recognized));
-        recognize.textContent = `🤝 Узнаю себя · ${story.baseRecognition + (recognized ? 1 : 0)}`;
+        recognize.textContent = '🤝 Узнаю себя';
         const note = document.createElement('span');
         note.className = 'world-story-note';
-        note.textContent = 'Это статистика слова, не лайк.';
+        note.textContent = 'Это отклик на слово, не оценка истории.';
         recognitionRow.append(recognize, note);
         card.append(meta, copy, recognitionRow);
         return card;
@@ -3651,21 +3626,21 @@
         back.textContent = '← К миру слова';
         const eyebrow = document.createElement('p');
         eyebrow.className = 'world-eyebrow';
-        eyebrow.textContent = 'пример профиля';
+        eyebrow.textContent = 'учебный двойник';
         const title = document.createElement('h1');
         title.className = 'world-profile-name';
         title.id = 'worldTitle';
         title.tabIndex = -1;
-        title.textContent = profile.name;
+        title.textContent = `${profile.name}: где ваши слова встречаются?`;
         const copy = document.createElement('p');
         copy.className = 'world-profile-copy';
-        copy.textContent = `У этого примера отмечено ${shelfCountLabel((profile.words || []).length)}. Это не описание человека, а набор слов в демонстрационных данных.`;
+        copy.textContent = 'Это условная карта для исследования, а не описание человека.';
         header.append(back, eyebrow, title, copy);
 
         const shelvesPanel = document.createElement('section');
         shelvesPanel.className = 'world-panel';
         const shelvesTitle = document.createElement('h2');
-        shelvesTitle.textContent = 'Топ-полки';
+        shelvesTitle.textContent = 'Что в этой карте заметнее';
         const shelves = document.createElement('div');
         shelves.className = 'world-profile-shelves';
         profileShelfCounts(profile).slice(0, 3).forEach(([shelfId, count]) => {
@@ -3675,7 +3650,7 @@
           const label = document.createElement('span');
           label.textContent = `${shelf.emoji} ${shelf.title}`;
           const value = document.createElement('strong');
-          value.textContent = shelfCountLabel(count);
+          value.textContent = 'заметно';
           row.append(label, value);
           shelves.append(row);
         });
@@ -3698,10 +3673,10 @@
 
         const overlap = document.createElement('p');
         overlap.className = 'world-profile-match';
-        overlap.append('Общего: ');
+        overlap.append('Между картами: ');
         const percentage = document.createElement('strong');
-        percentage.textContent = `${profileSharedPercent(profile)}%`;
-        overlap.append(percentage, ' в текущем наборе слов.');
+        percentage.textContent = similarityLabel(profileSharedPercent(profile));
+        overlap.append(percentage, '.');
         const openMap = document.createElement('button');
         openMap.className = 'primary-button world-profile-action';
         openMap.type = 'button';
@@ -3739,7 +3714,7 @@
         title.className = 'world-title';
         title.id = 'worldTitle';
         title.tabIndex = -1;
-        title.textContent = word.word;
+        title.textContent = `${word.word}: что здесь отзывается?`;
         const chips = document.createElement('div');
         chips.className = 'world-shelf-chips';
         (word.shelves || []).forEach((shelfId) => {
@@ -3756,10 +3731,10 @@
         const count = profilesForWord(word.id).length;
         const stat = document.createElement('p');
         stat.className = 'world-stat';
-        stat.textContent = `Выбрали ${count} из ${FAKE_PROFILES.length} примеров.`;
+        stat.textContent = `В учебных картах это слово ${wordPresenceLabel(count)}.`;
         const statNote = document.createElement('p');
         statNote.className = 'world-panel-copy';
-        statNote.textContent = 'Статистика среди примеров профилей.';
+        statNote.textContent = 'Это фон для исследования, не вывод о тебе.';
         statPanel.append(stat, statNote);
         const parent = word.interest ? WORD_BY_ID.get(word.interest) : null;
         if (parent) {
@@ -3779,7 +3754,7 @@
         const botPanel = document.createElement('section');
         botPanel.className = 'world-panel';
         const botTitle = document.createElement('h2');
-        botTitle.textContent = 'Кто здесь живёт';
+        botTitle.textContent = 'С кем это слово оказалось рядом?';
         botPanel.append(botTitle);
         if (profiles.length) {
           const list = document.createElement('div');
@@ -3789,7 +3764,7 @@
         } else {
           const empty = document.createElement('p');
           empty.className = 'world-empty';
-          empty.textContent = 'В примерах профилей это слово пока никто не выбрал.';
+          empty.textContent = 'В учебных картах это слово пока звучит отдельно.';
           botPanel.append(empty);
         }
 
@@ -3807,7 +3782,7 @@
         } else {
           const empty = document.createElement('p');
           empty.className = 'world-empty';
-          empty.textContent = 'Пока нет истории из примеров. Можно оставить первую на этом устройстве.';
+          empty.textContent = 'Здесь пока тихо. Можно оставить первую историю на этом устройстве.';
           storiesPanel.append(empty);
         }
         const write = document.createElement('button');
@@ -3832,10 +3807,10 @@
           input.rows = 4;
           input.maxLength = 900;
           input.required = true;
-          input.placeholder = '1–5 строк о том, как это случается у тебя';
+          input.placeholder = 'Несколько строк о том, как это случается у тебя';
           const note = document.createElement('p');
           note.className = 'world-story-note';
-          note.textContent = 'Анонимно. Сохранится только на этом устройстве, пока продукт локальный.';
+          note.textContent = 'Анонимно. Сохранится только на этом устройстве.';
           const actions = document.createElement('div');
           actions.className = 'world-form-actions';
           const save = document.createElement('button');
@@ -3860,7 +3835,7 @@
 
         const footer = document.createElement('p');
         footer.className = 'world-footer';
-        footer.textContent = 'Когда подключатся живые люди, здесь появятся их истории — анонимно, по их выбору.';
+        footer.textContent = 'Чужая история — приглашение свериться со своей, а не доказательство сходства.';
         wordWorldContent.append(header, statPanel, storiesPanel, botPanel, footer);
       }
 
@@ -4018,6 +3993,28 @@
           if (mine.has(id) && theirs.has(id)) sharedWeight += weight;
         });
         return unionWeight ? Math.round(sharedWeight / unionWeight * 100) : 0;
+      }
+
+      function similarityLabel(score) {
+        if (score < 20) return 'почти порознь';
+        if (score < 40) return 'скорее разные';
+        if (score <= 60) return 'поровну';
+        if (score <= 80) return 'скорее близко';
+        return 'много общего';
+      }
+
+      function wordPresenceLabel(count) {
+        if (count === 0) return 'пока звучит отдельно';
+        if (count < 12) return 'встречается редко';
+        if (count < 24) return 'встречается время от времени';
+        return 'встречается часто';
+      }
+
+      function graphPopularityMark(count) {
+        if (count === 0) return '·';
+        if (count < 12) return '◦';
+        if (count < 24) return '●';
+        return '✦';
       }
 
       function scoredProfiles() {
@@ -4267,7 +4264,7 @@
           appendForkTouchedLine(stage, dilemma);
           actions.append(createForkButton('Посмотреть на выбор двойника', 'to-prediction', 'fork-primary'));
         } else if (step === 'prediction') {
-          stage.append(forkHeader('двойник · пример профиля', 'Как поступит двойник?', `${bot.name} — один из примеров профилей, ближе всего к твоему слепку.`));
+          stage.append(forkHeader('учебный двойник', 'Как поступит двойник?', `${bot.name} — условная карта, в которой есть знакомые тебе слова.`));
           ['A', 'B'].forEach((choice) => {
             const button = createForkButton(forkOptionText(dilemma, choice), `predict-${choice}`, 'fork-option');
             const letter = document.createElement('span');
@@ -4284,7 +4281,7 @@
           stage.append(pause);
         } else if (step === 'truth') {
           const choiceLabel = actualChoice === 'A' ? 'вариант А' : 'вариант Б';
-          stage.append(forkHeader('двойник · пример профиля', `${bot.name} выбрал ${choiceLabel}.`, forkOptionText(dilemma, actualChoice)));
+          stage.append(forkHeader('учебный двойник', `${bot.name} выбрал ${choiceLabel}.`, forkOptionText(dilemma, actualChoice)));
           const logic = document.createElement('p');
           logic.className = 'fork-logic';
           logic.textContent = `«${forkTruthLine(dilemma, bot, actualChoice)}»`;
@@ -4343,7 +4340,7 @@
         button.setAttribute('aria-pressed', String(state.activeProfileId === profile.id));
         button.setAttribute('aria-expanded', String(state.activeProfileId === profile.id));
         button.setAttribute('aria-controls', 'intersectionMap');
-        button.setAttribute('aria-label', `Открыть пример профиля «${profile.name}», совпадение ${score}%`);
+        button.setAttribute('aria-label', `Открыть учебного двойника «${profile.name}»: ${similarityLabel(score)}`);
 
         const top = document.createElement('span');
         top.className = 'profile-card-top';
@@ -4352,12 +4349,12 @@
         name.textContent = profile.name;
         const percentage = document.createElement('span');
         percentage.className = 'profile-score';
-        percentage.textContent = `${score}%`;
+        percentage.textContent = similarityLabel(score);
         top.append(name, percentage);
 
         const example = document.createElement('span');
         example.className = 'profile-example';
-        example.textContent = 'пример профиля';
+        example.textContent = 'учебный двойник';
 
         const common = document.createElement('p');
         common.className = 'profile-common';
@@ -4370,7 +4367,8 @@
       function renderProfileMatches() {
         const scored = scoredProfiles();
         matchRange.value = String(state.matchTarget);
-        matchValue.textContent = `${state.matchTarget}%`;
+        matchValue.textContent = similarityLabel(state.matchTarget);
+        matchRange.setAttribute('aria-valuetext', similarityLabel(state.matchTarget));
 
         const ranked = scored.sort((left, right) => {
           const distance = Math.abs(left.score - state.matchTarget) - Math.abs(right.score - state.matchTarget);
@@ -4584,19 +4582,19 @@
         const heading = document.createElement('div');
         const kicker = document.createElement('p');
         kicker.className = 'intersection-map-kicker';
-        kicker.textContent = 'пример профиля';
+        kicker.textContent = 'учебный двойник';
         const title = document.createElement('h2');
         title.className = 'intersection-map-title';
         title.textContent = profile.name;
         heading.append(kicker, title);
         const percentage = document.createElement('strong');
         percentage.className = 'intersection-map-score';
-        percentage.textContent = `${score}%`;
+        percentage.textContent = similarityLabel(score);
         head.append(heading, percentage);
 
         const common = createIntersectionSection('Общее поле');
         if (commonItems.length) {
-          common.append(createIntersectionSummary(`Сходитесь ${intersectionShelfPhrase(commonItems)} (${shelfCountLabel(commonItems.length)}).`, commonItems));
+          common.append(createIntersectionSummary(`Сходитесь ${intersectionShelfPhrase(commonItems)}.`, commonItems));
           appendIntersectionDetails(common, (details) => appendIntersectionShelfGroups(details, commonIds));
         } else {
           const empty = document.createElement('p');
@@ -4608,10 +4606,10 @@
         const complement = createIntersectionSection('Дополнение');
         if (complementItems.length) {
           const complementLine = theirsOnlyItems.length && mineOnlyItems.length
-            ? `Дополняете друг друга ${intersectionShelfPhrase(complementItems)} (${shelfCountLabel(complementItems.length)}).`
+            ? `Дополняете друг друга ${intersectionShelfPhrase(complementItems)}.`
             : theirsOnlyItems.length
-            ? `У него есть ещё ${intersectionShelfPhrase(theirsOnlyItems)} (${shelfCountLabel(theirsOnlyItems.length)}).`
-            : `У тебя есть ещё ${intersectionShelfPhrase(mineOnlyItems)} (${shelfCountLabel(mineOnlyItems.length)}).`;
+            ? `У него есть ещё ${intersectionShelfPhrase(theirsOnlyItems)}.`
+            : `У тебя есть ещё ${intersectionShelfPhrase(mineOnlyItems)}.`;
           complement.append(createIntersectionSummary(complementLine, complementItems));
           appendIntersectionDetails(complement, (details) => {
             const complementGrid = document.createElement('div');
@@ -4645,7 +4643,7 @@
             [point.leftId, { id: point.leftId, word: point.leftWord, shelves: [point.leftShelf] }],
             [point.rightId, { id: point.rightId, word: point.rightWord, shelves: [point.rightShelf] }]
           ])).values()];
-          friction.append(createIntersectionSummary(`Точки трения: ${intersectionShelfPhrase(frictionItems)} (${connectionCountLabel(frictionPoints.length)}).`, frictionItems));
+          friction.append(createIntersectionSummary(`Точки трения могут быть ${intersectionShelfPhrase(frictionItems)}.`, frictionItems));
           appendIntersectionDetails(friction, (details) => {
             const list = document.createElement('div');
             list.className = 'friction-list';
@@ -4680,7 +4678,7 @@
 
         const honesty = document.createElement('p');
         honesty.className = 'intersection-honesty';
-        honesty.textContent = 'Совпадение не значит совместимость. Это карта, а не приговор.';
+        honesty.textContent = 'Общие слова не означают совместимость. Это карта, а не приговор.';
         intersectionMap.append(head, common, complement, friction, honesty);
         if (!forksData.inviteSeen && !hasUsedForkThisSession() && chooseForkDilemma()) {
           const invite = document.createElement('section');
@@ -4748,12 +4746,12 @@
         const isSecondWave = state.wave === 2;
         const supplementShelf = activeSupplementShelf();
         document.body.classList.toggle('wave-two', isSecondWave && state.view === 'scatter');
-        scatterStep.textContent = supplementShelf ? 'ДОПОЛНИТЬ ПОЛКУ' : `${isSecondWave ? 2 : 1} из 2`;
+        scatterStep.textContent = supplementShelf ? 'ещё одно движение' : isSecondWave ? 'то, что задевает' : 'то, что тянет';
         scatterTitle.textContent = supplementShelf
-          ? `Выбери слова, которые хочешь добавить в «${supplementShelf.emoji} ${supplementShelf.title}».`
+          ? `Что ещё просится в «${supplementShelf.emoji} ${supplementShelf.title}»?`
           : isSecondWave
-          ? 'Камни и триггеры — тоже часть личности. Без них слепок нечестный.'
-          : 'Ценности, цели, опоры — светлые составляющие твоего мироощущения.';
+          ? 'Что нарушает твоё равновесие?'
+          : 'Что хочется приблизить?';
         backWaveButton.hidden = supplementShelf || !isSecondWave;
         skipButton.hidden = supplementShelf || !isSecondWave;
         doneButton.textContent = supplementShelf ? 'К слепку' : isSecondWave ? 'Готово' : 'Дальше';
@@ -4763,15 +4761,15 @@
         const count = totalSelected();
         const lightCount = lightSelectionCount();
         const supplementShelf = activeSupplementShelf();
-        selectedCount.textContent = String(count);
-        selectedCountLabel.textContent = wordCountLabel(count);
+        selectedCount.textContent = '◇';
+        selectedCountLabel.textContent = count ? 'Карта начинает проявляться' : 'Отмечай маленькую тяжесть';
         doneButton.disabled = !supplementShelf && state.wave === 1 && lightCount < 5;
         selectionHint.textContent = supplementShelf
           ? 'Можно вернуться в слепок'
           : state.wave === 2
           ? 'Можно закончить или выбрать ещё'
-          : lightCount < 5 ? `Ещё ${5 - lightCount} до следующей волны`
-            : lightCount < 10 ? 'Уже можно продолжить' : lightCount <= 15 ? 'Хороший объём' : 'Можно остановиться';
+          : lightCount < 5 ? 'Продолжай, пока не появится форма'
+            : 'Можно идти дальше или выбрать ещё';
         updatePathNavigation(state.view);
       }
 
@@ -5066,8 +5064,8 @@
 
         if (rareWord) {
           appendSnapshotSummarySentence(lookAt, rareWord.profileCount === 0
-            ? ['Похоже, «', snapshotSummaryWord(rareWord.word), '» — редкое слово: среди примеров его не выбрал никто; возможно, его смысл для тебя особенно личный.']
-            : ['Похоже, «', snapshotSummaryWord(rareWord.word), '» — редкое слово: среди примеров его выбрали немногие; возможно, для тебя оно звучит по-особому.']);
+            ? ['Похоже, «', snapshotSummaryWord(rareWord.word), '» — редкое слово: в учебных картах оно пока не встречается; возможно, его смысл для тебя особенно личный.']
+            : ['Похоже, «', snapshotSummaryWord(rareWord.word), '» — редкое слово: в учебных картах оно встречается нечасто; возможно, для тебя оно звучит по-особому.']);
         }
 
         const shadowPair = selectedShadowPairs(selectedWords)[0];
@@ -5131,8 +5129,8 @@
         title.textContent = `${shelf.emoji} ${shelf.title}`;
         const count = document.createElement('span');
         count.className = 'shelf-count';
-        count.textContent = String(words.length);
-        count.setAttribute('aria-label', shelfCountLabel(words.length));
+        count.textContent = words.length ? 'есть' : 'пусто';
+        count.setAttribute('aria-label', words.length ? 'В этой полке есть выбранные слова' : 'Эта полка пока пуста');
         const actions = document.createElement('div');
         actions.className = 'shelf-title-actions';
         const deepen = document.createElement('button');
@@ -6083,7 +6081,7 @@
             class: `graph-node${position.shelf === 'stones' || position.shelf === 'triggers' ? ' is-heavy' : ''}${position.pressureCount ? ' is-pressured' : ''}${state.graphTrailIds.includes(item.id) ? ' is-trail' : ''}${graphWalkTargetId === item.id && !isGraphItemSelected(item.id) ? ' is-walk-target' : ''}${hasOwnWorldStory(item.id) ? ' has-own-story' : ''}`,
             tabindex: 0,
             role: 'button',
-            'aria-label': `Открыть слово «${item.word}». Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
+            'aria-label': `Открыть слово «${item.word}». В учебных картах оно ${wordPresenceLabel(profileCount)}${hasOwnWorldStory(item.id) ? '. У этого слова есть твоя история' : ''}`,
             'data-graph-node-id': item.id,
             'data-graph-shelf': position.shelf,
             'data-pressure-index': position.pressureCount,
@@ -6105,14 +6103,14 @@
             class: 'graph-node-popularity', x: popularityX, y: popularityY + 4.5,
             'text-anchor': 'middle', 'aria-hidden': 'true'
           });
-          popularity.textContent = String(profileCount);
+          popularity.textContent = graphPopularityMark(profileCount);
           const title = svgElement('title');
-          title.textContent = `${item.word}. Выбрали ${profileCount} из ${FAKE_PROFILES.length} примеров.`;
+          title.textContent = `${item.word}. В учебных картах ${wordPresenceLabel(profileCount)}.`;
           group.append(plate, label, popularityBadge, popularity, title);
           graphSvg.append(group);
         });
 
-        graphStatus.textContent = `${items.length} ${items.length === 1 ? 'узел' : items.length < 5 ? 'узла' : 'узлов'} · ${edgeCount} ${edgeCount === 1 ? 'связь' : edgeCount < 5 ? 'связи' : 'связей'}`;
+        graphStatus.textContent = 'Потяни слово, чтобы проверить расстояние. Потяни фон, чтобы сдвинуть облако.';
         graphAllConnectionsButton.setAttribute('aria-pressed', String(state.graphAllConnections));
         if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
         else {
@@ -6194,7 +6192,7 @@
           .filter(Boolean)
           .sort((left, right) => left.word.localeCompare(right.word, 'ru'));
         if (!sources.length) return;
-        showGraphToast(`На это слово давит: ${sources.map((item) => item.word).join(', ')}. Это не приговор — это то, что мешает ему работать.`);
+        showGraphToast(`С этим словом могут спорить: ${sources.map((item) => item.word).join(', ')}. Это связь словаря, а не вывод о тебе.`);
       }
 
       function clearGraphFocus() {
@@ -6304,10 +6302,10 @@
           : [];
         const interestParent = item.interest ? WORD_BY_ID.get(item.interest) : null;
         const briefParts = [];
-        if (pressureSources.length) briefParts.push(`Давление: ${pressureSources.map((source) => source.word).join(', ')}`);
-        if (neighbors.length) briefParts.push(`${neighbors.length} ${neighbors.length === 1 ? 'сосед' : neighbors.length < 5 ? 'соседа' : 'соседей'}`);
+        if (pressureSources.length) briefParts.push(`может спорить с: ${pressureSources.map((source) => source.word).join(', ')}`);
+        if (neighbors.length) briefParts.push('есть слова по соседству');
         if (shadow) briefParts.push(`теневая пара: ${shadow.word}`);
-        if (activates.length) briefParts.push(`${activates.length} ${activates.length === 1 ? 'камень' : activates.length < 5 ? 'камня' : 'камней'} может откликаться`);
+        if (activates.length) briefParts.push('рядом могут откликаться сложные места');
         if (interestParent) briefParts.push(`часть большего: ${interestParent.word}`);
         const brief = document.createElement('p');
         brief.className = 'graph-card-brief';
