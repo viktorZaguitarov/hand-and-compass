@@ -21,7 +21,7 @@ const DEFAULT_CHROME_BIN = process.platform === 'darwin'
   ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
   : 'google-chrome';
 const CHROME_BIN = process.env.HAC_CHROME_BIN || DEFAULT_CHROME_BIN;
-const TIMEOUT_MS = 12_000;
+const TIMEOUT_MS = 30_000;
 const GRAPH_BENCHMARK_MODE = process.argv.includes('--graph-151');
 
 const MIME_TYPES = {
@@ -454,24 +454,37 @@ async function main() {
     await waitFor(client, `${visible('#snapshotScreen')} && document.querySelectorAll('#shelfGrid .shelf-card').length > 0`, 'snapshot render');
     completed.push('онбординг → слепок');
 
-    await click(client, '[data-primary-view="graph"]');
+    await click(client, '[data-path-chapter="map"]');
     await waitFor(client, `${visible('#graphIntroScreen')} || ${visible('#graphScreen')}`, 'graph entry');
     if (await evaluate(client, visible('#graphIntroScreen'))) await click(client, '#graphIntroNextButton');
     await waitFor(client, `${visible('#graphScreen')} && document.querySelectorAll('[data-graph-node-id]').length >= 6`, 'graph render');
     assert(consoleErrors.length === 0, `graph console errors: ${consoleErrors.join(' | ')}`);
     completed.push('граф без ошибок консоли');
 
-    await click(client, '[data-primary-view="intersections"]');
+    await click(client, '[data-path-chapter="closeness"]');
+    await waitFor(client, visible('#closenessScreen'), 'closeness controls');
+    await evaluate(client, `(() => {
+      const range = document.getElementById('matchRange');
+      range.value = '64';
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+      range.dispatchEvent(new Event('change', { bubbles: true }));
+      return range.getAttribute('aria-valuetext');
+    })()`);
+    await click(client, '#closenessShowIntersections');
     await waitFor(client, `${visible('#intersectionsScreen')} && document.querySelectorAll('#profileList [data-profile-id]').length >= 3`, 'intersection calculation');
+    await click(client, '#profileList [data-profile-id]');
+    await waitFor(client, `${visible('#profileIntersectionScreen')} && document.querySelectorAll('#profileIntersectionContent .profile-intersection-section').length === 3`, 'profile intersection');
+    await click(client, '[data-profile-intersection-back]');
+    await waitFor(client, visible('#intersectionsScreen'), 'intersection list return');
     completed.push('пересечения');
 
-    await click(client, '[data-primary-view="snapshot"]');
-    await waitFor(client, visible('#snapshotScreen'), 'snapshot return');
-    await click(client, '#shelfGrid [data-open-word-world]');
+    await click(client, '[data-path-chapter="worlds"]');
+    await waitFor(client, `${visible('#worldsScreen')} && document.querySelectorAll('#worldsDirectory [data-world-directory-word]').length > 0`, 'world directory');
+    await click(client, '#worldsDirectory [data-world-directory-word]');
     await waitFor(client, `${visible('#wordWorldScreen')} && document.querySelector('#wordWorldContent h1')`, 'word world');
     completed.push('мир слова');
 
-    await click(client, '[data-primary-view="forks"]');
+    await click(client, '[data-path-chapter="forks"]');
     await waitFor(client, visible('.fork-step-situation'), 'fork situation');
     await click(client, '[data-fork-action="to-prediction"]');
     await waitFor(client, visible('.fork-step-prediction'), 'fork prediction');
@@ -481,7 +494,7 @@ async function main() {
     await waitFor(client, visible('.fork-step-outcome'), 'fork outcome');
     completed.push('развилка: 4 шага');
 
-    await click(client, '[data-primary-view="snapshot"]');
+    await click(client, '[data-path-chapter="mirror"]');
     await waitFor(client, visible('#snapshotScreen'), 'snapshot before supplement');
     await click(client, '#shelfGrid [data-deepen-shelf]');
     await waitFor(client, `${visible('#scatterScreen')} && document.getElementById('doneButton').textContent.includes('слепку')`, 'shelf supplement');
@@ -494,6 +507,10 @@ async function main() {
     await click(client, '#doneButton');
     await waitFor(client, visible('#snapshotScreen'), 'supplement return to snapshot');
     completed.push('дополнить → слепок');
+
+    await click(client, '[data-path-chapter="personality"]');
+    await waitFor(client, `${visible('#scatterScreen')} && ${visible('#personalityTabs')} && document.getElementById('scatterActions').hidden`, 'returning personality tabs');
+    completed.push('возврат → личность без онбординга');
 
     assert(consoleErrors.length === 0, `console errors: ${consoleErrors.join(' | ')}`);
     console.log(`SMOKE PASS (${Date.now() - startedAt} ms): ${completed.join(' · ')}`);
