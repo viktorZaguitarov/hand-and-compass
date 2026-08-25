@@ -1308,8 +1308,7 @@
       fill: none;
       stroke: transparent;
       stroke-width: 28px;
-      pointer-events: stroke;
-      cursor: pointer;
+      pointer-events: none;
       vector-effect: non-scaling-stroke;
     }
 
@@ -1319,7 +1318,7 @@
     }
 
     .graph-edge.is-chain { stroke-opacity: 1; stroke-width: 3.5; }
-    .graph-edge.is-dimmed { opacity: 0.1; }
+    .graph-edge.is-dimmed { opacity: 0.04; }
 
     .graph-whisker {
       fill: none;
@@ -2721,8 +2720,9 @@
         action: 1.5, triggers: 1, supports: 0.5
       };
       const SVG_NS = 'http://www.w3.org/2000/svg';
-      const GRAPH_MIN_CANVAS_SIZE = 3600;
-      const GRAPH_CANVAS_PADDING = 360;
+      const GRAPH_MIN_CANVAS_SIZE = 4600;
+      const GRAPH_CANVAS_PADDING = 560;
+      const GRAPH_DRAG_THRESHOLD = 12;
       const GRAPH_CLOUD_GAP = 112;
       const GRAPH_NODE_GAP = 38;
       const GRAPH_LABEL_CLEAR_RADIUS = 118;
@@ -5708,13 +5708,30 @@
         };
       }
 
+      function graphCloudCenterBounds(zone) {
+        const cloudExtent = Math.max(zone.radius, zone.orbitRadius || 0) + 190;
+        return {
+          minX: cloudExtent,
+          maxX: Math.max(cloudExtent, graphCanvas.width - cloudExtent),
+          minY: cloudExtent,
+          maxY: Math.max(cloudExtent, graphCanvas.height - cloudExtent)
+        };
+      }
+
+      function clampGraphCloudCenter(zone, x, y) {
+        const bounds = graphCloudCenterBounds(zone);
+        return {
+          x: Math.max(bounds.minX, Math.min(bounds.maxX, x)),
+          y: Math.max(bounds.minY, Math.min(bounds.maxY, y))
+        };
+      }
+
       function applySavedGraphLayout(positions) {
         graphZones.forEach((zone, shelfId) => {
           const saved = state.graphCloudOffsets?.[shelfId] || { x: 0, y: 0 };
-          const maximumX = Math.max(GRAPH_CANVAS_PADDING, graphCanvas.width - GRAPH_CANVAS_PADDING);
-          const maximumY = Math.max(GRAPH_CANVAS_PADDING, graphCanvas.height - GRAPH_CANVAS_PADDING);
-          const movedX = Math.max(GRAPH_CANVAS_PADDING, Math.min(maximumX, zone.x + saved.x));
-          const movedY = Math.max(GRAPH_CANVAS_PADDING, Math.min(maximumY, zone.y + saved.y));
+          const moved = clampGraphCloudCenter(zone, zone.x + saved.x, zone.y + saved.y);
+          const movedX = moved.x;
+          const movedY = moved.y;
           const dx = movedX - zone.x;
           const dy = movedY - zone.y;
           zone.x += dx;
@@ -5807,6 +5824,7 @@
           if (!position) return false;
           graphDrag = {
             type: 'word', id, pointerId: event.pointerId, startPoint: point,
+            startClient: { x: event.clientX, y: event.clientY },
             origin: cloneGraphPosition(position), moved: false
           };
           node.classList.add('is-being-dragged');
@@ -5816,6 +5834,7 @@
           if (!cloud) return false;
           graphDrag = {
             type: 'cloud', shelfId, pointerId: event.pointerId, startPoint: point,
+            startClient: { x: event.clientX, y: event.clientY },
             originZone: { x: cloud.x, y: cloud.y },
             originPositions: new Map([...graphPositions]
               .filter(([, position]) => position.shelf === shelfId)
@@ -5834,7 +5853,11 @@
         const point = graphContentPoint(event);
         const dx = point.x - graphDrag.startPoint.x;
         const dy = point.y - graphDrag.startPoint.y;
-        if (!graphDrag.moved && Math.hypot(dx, dy) < 5) return;
+        const clientDistance = Math.hypot(
+          event.clientX - graphDrag.startClient.x,
+          event.clientY - graphDrag.startClient.y
+        );
+        if (!graphDrag.moved && clientDistance < GRAPH_DRAG_THRESHOLD) return;
         graphDrag.moved = true;
         if (graphDrag.type === 'word') {
           const position = graphPositions.get(graphDrag.id);
@@ -5844,8 +5867,9 @@
           position.y = target.y;
         } else {
           const zone = graphZones.get(graphDrag.shelfId);
-          const targetX = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.width - GRAPH_CANVAS_PADDING, graphDrag.originZone.x + dx));
-          const targetY = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.height - GRAPH_CANVAS_PADDING, graphDrag.originZone.y + dy));
+          const target = clampGraphCloudCenter(zone, graphDrag.originZone.x + dx, graphDrag.originZone.y + dy);
+          const targetX = target.x;
+          const targetY = target.y;
           const cloudDx = targetX - graphDrag.originZone.x;
           const cloudDy = targetY - graphDrag.originZone.y;
           zone.x = targetX;
@@ -5866,6 +5890,7 @@
       function finishGraphDrag(event) {
         if (!graphDrag || event.pointerId !== graphDrag.pointerId) return false;
         const finished = graphDrag;
+        const cancelled = event.type === 'pointercancel';
         graphDrag = null;
         graphSvg.releasePointerCapture?.(event.pointerId);
         if (finished.type === 'word') {
@@ -5900,7 +5925,13 @@
           graphBounds = graphBoundsFrom(graphPositions);
           updateGraphGeometry();
           persistState();
+        } else if (!cancelled && finished.type === 'word') {
+          graphSuppressClickUntil = Date.now() + 360;
+          recordGraphTrail(finished.id);
+          selectGraphNode(finished.id);
         }
+        event.preventDefault();
+        event.stopPropagation();
         return true;
       }
 
@@ -5924,8 +5955,9 @@
       function nudgeGraphCloud(shelfId, dx, dy) {
         const zone = graphZones.get(shelfId);
         if (!zone) return;
-        const targetX = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.width - GRAPH_CANVAS_PADDING, zone.x + dx));
-        const targetY = Math.max(GRAPH_CANVAS_PADDING, Math.min(graphCanvas.height - GRAPH_CANVAS_PADDING, zone.y + dy));
+        const target = clampGraphCloudCenter(zone, zone.x + dx, zone.y + dy);
+        const targetX = target.x;
+        const targetY = target.y;
         const actualX = targetX - zone.x;
         const actualY = targetY - zone.y;
         zone.x = targetX;
@@ -6023,9 +6055,7 @@
             const edgeHit = svgElement('path', {
               class: 'graph-edge-hit',
               d: graphCurve(source, target, `${id}:${neighborId}`),
-              tabindex: 0,
-              role: 'button',
-              'aria-label': `Объяснить связь «${sourceItem.word}» и «${targetItem.word}»`,
+              'aria-hidden': 'true',
               'data-graph-edge': 'true',
               'data-source': id,
               'data-target': neighborId
@@ -6110,7 +6140,7 @@
           graphSvg.append(group);
         });
 
-        graphStatus.textContent = 'Потяни слово, чтобы проверить расстояние. Потяни фон, чтобы сдвинуть облако.';
+        graphStatus.textContent = 'Коротко нажми на слово, чтобы открыть его. Потяни слово, чтобы изменить его место; потяни облако, чтобы переместить его.';
         graphAllConnectionsButton.setAttribute('aria-pressed', String(state.graphAllConnections));
         if (activeGraphNodeId && itemMap.has(activeGraphNodeId)) selectGraphNode(activeGraphNodeId, false, false);
         else {
@@ -6171,10 +6201,10 @@
         graphSvg.querySelectorAll('.graph-edge').forEach((edge) => {
           const isDirectEdge = edge.dataset.source === activeGraphNodeId || edge.dataset.target === activeGraphNodeId;
           edge.classList.toggle('is-chain', hasActive && isDirectEdge);
-          edge.classList.toggle('is-dimmed', hasActive && !keepAllVisible && !isDirectEdge);
+          edge.classList.toggle('is-dimmed', !keepAllVisible && (!hasActive || !isDirectEdge));
         });
         graphSvg.querySelectorAll('.graph-whisker, .graph-ghost').forEach((element) => {
-          element.classList.toggle('is-dimmed', hasActive && !keepAllVisible && element.dataset.source !== activeGraphNodeId);
+          element.classList.toggle('is-dimmed', !keepAllVisible && (!hasActive || element.dataset.source !== activeGraphNodeId));
         });
         updateGraphTrailVisual();
       }
