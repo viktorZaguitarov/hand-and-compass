@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Hand &amp; Compass 2.0 — локальный черновик личного слепка из выбранных слов.">
-  <title>Hand &amp; Compass 2.0 — Слепок</title>
+  <meta name="description" content="Hand &amp; Compass 2.0 — личная карта смыслов, которую можно менять по мере пути.">
+  <title>Hand &amp; Compass 2.0 — Путь</title>
   <style>
     :root {
       color-scheme: light;
@@ -449,6 +449,51 @@
     }
 
     .entry-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+
+    .welcome-copy {
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+    }
+
+    .welcome-copy h1 {
+      max-width: 760px;
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    .welcome-lead {
+      max-width: 590px;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: clamp(0.98rem, 3vw, 1.12rem);
+      line-height: 1.55;
+      text-wrap: balance;
+    }
+
+    .welcome-copy .entry-actions { margin-top: 3px; }
+    .welcome-copy .primary-button { min-width: 176px; }
+
+    .trust-signatures {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 7px;
+      margin: 2px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .trust-signatures li {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      background: rgba(255, 251, 244, 0.52);
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
 
     .graph-intro-copy {
       display: grid;
@@ -2083,6 +2128,11 @@
       .path-chapter-note { max-width: 96px; font-size: 0.51rem; }
       .page { min-height: calc(100vh - 58px); border-radius: 24px; }
       .screen { padding: 23px 16px 18px; }
+      .welcome-copy { gap: 15px; }
+      .welcome-copy h1 { max-width: 330px; font-size: clamp(2rem, 10vw, 2.72rem); line-height: 1.01; }
+      .welcome-lead { max-width: 320px; font-size: 0.86rem; line-height: 1.45; }
+      .trust-signatures { max-width: 320px; gap: 6px; }
+      .trust-signatures li { padding: 6px 8px; font-size: 0.6rem; }
       #scatterScreen { padding-bottom: calc(148px + env(safe-area-inset-bottom)); }
       .eyebrow { margin-bottom: 7px; font-size: 0.61rem; }
       h1 { margin-bottom: 9px; font-size: clamp(1.72rem, 8.2vw, 2.7rem); line-height: 1.02; }
@@ -2301,11 +2351,17 @@
       <div class="notice" id="storageNotice" role="status" hidden></div>
 
       <section class="screen entry-screen" id="lightIntroScreen" aria-labelledby="lightIntroTitle">
-        <div class="entry-copy">
-          <h1 id="lightIntroTitle" tabindex="-1">Выбери слова, которые отзываются и близки тебе. Минимум 5, лучше 10–15.</h1>
+        <div class="entry-copy welcome-copy">
+          <h1 id="lightIntroTitle" tabindex="-1">Собери карту того, что для тебя действительно важно.</h1>
+          <p class="welcome-lead">Выбирай слова, которые отзываются. Они сложатся в живой черновик твоего пути — не в тип и не в диагноз.</p>
           <div class="entry-actions">
-            <button class="primary-button" id="startLightButton" type="button">Начать</button>
+            <button class="primary-button" id="startLightButton" type="button">Начать ритуал</button>
           </div>
+          <ul class="trust-signatures" aria-label="О чём важно знать до начала">
+            <li>🔒 Карта остаётся у тебя</li>
+            <li>◇ Без оценок и типов</li>
+            <li>8–10 минут, без финиша</li>
+          </ul>
         </div>
       </section>
 
@@ -2732,7 +2788,7 @@
           const intersectionReturn = parsed.intersectionReturn?.view === 'word-world' && worldWordId
             ? { view: 'word-world', wordId: worldWordId }
             : null;
-          const restoredView = parsed.view === 'intersections' && selectionCount >= 3
+          let restoredView = parsed.view === 'intersections' && selectionCount >= 3
             ? 'intersections'
             : parsed.view === 'graph' && selectionCount
             ? 'graph'
@@ -2745,6 +2801,9 @@
             : allowedSimpleViews.has(parsed.view) || parsed.view === 'scatter'
             ? parsed.view
             : selectionCount ? 'scatter' : 'light-intro';
+          if (selectionCount && restoredView === 'light-intro') {
+            restoredView = selectionCount >= 3 ? 'snapshot' : 'scatter';
+          }
           const pendingCustomId = customIds.has(parsed.pendingCustomId) ? parsed.pendingCustomId : null;
           const supplementShelfId = restoredView === 'scatter' && SHELF_BY_ID.has(parsed.supplementShelfId)
             ? parsed.supplementShelfId : null;
