@@ -206,13 +206,18 @@ async function main() {
   }
   requireDraftFeature(draftHtml, /new CompressionStream\('deflate'\)/, 'link comparison does not use deflate compression');
   requireDraftFeature(draftHtml, /new DecompressionStream\('deflate'\)/, 'link comparison cannot open deflate payloads');
-  requireDraftFeature(draftHtml, /url\.hash = `\$\{LINK_COMPARISON_HASH_PREFIX\}/, 'link comparison data is not placed in the URL hash');
-  requireDraftFeature(draftHtml, /url\.searchParams\.set\(LINK_COMPARISON_QUERY_KEY, LINK_COMPARISON_QUERY_VALUE\)/,
-    'link comparison has no non-private marker for a stripped hash');
+  requireDraftFeature(draftHtml, /url\.searchParams\.set\(LINK_COMPARISON_QUERY_KEY, encoded\)/,
+    'new link comparison data is not placed in the query');
+  requireDraftFeature(draftHtml, /rawHash\.startsWith\(LINK_COMPARISON_HASH_PREFIX\)/,
+    'legacy hash comparison links are no longer supported');
+  requireDraftFeature(draftHtml, /function linkComparisonEncodedFromText/,
+    'link comparison has no parser for a pasted message');
+  requireDraftFeature(draftHtml, /Вставь ссылку или сообщение целиком/,
+    'link invitation has no manual paste fallback');
   requireDraftFeature(draftHtml, /!payload\.w\.length/, 'empty link-comparison payload is not rejected');
   requireDraftFeature(draftHtml, /Ссылка не дошла целиком\./, 'truncated link has no honest error screen');
   requireDraftFeature(draftHtml, /text: `\$\{nickname\} приглашает тебя сравнить карты\.\\n\$\{url\}`/,
-    'system share does not carry the full hash URL in text');
+    'system share does not carry the full comparison URL in text');
   requireDraftFeature(draftHtml, /приглашает тебя сравнить карты/, 'link recipient has no invitation screen');
   requireDraftFeature(draftHtml, /function weightedSimilarityBetween/, 'friend comparison does not reuse weighted Jaccard');
   requireDraftFeature(draftHtml, /Что вас связывает[\s\S]+Где вы разные[\s\S]+О чём спросить/, 'friend comparison has an incomplete structure');

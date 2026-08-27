@@ -553,11 +553,13 @@ async function main() {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
     })()`);
-    await waitFor(client, `document.querySelector('#linkShareContent .link-share-url')?.value.includes('#compare=')`, 'sender link creation');
+    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).searchParams.has('c')`, 'sender query-link creation');
     const senderBundle = await evaluate(client, `(() => ({
       url: document.querySelector('#linkShareContent .link-share-url').value,
       storage: Object.fromEntries(Object.entries(localStorage))
     }))()`);
+    assert(new URL(senderBundle.url).searchParams.get('c') && !new URL(senderBundle.url).hash,
+      'sender link is not using the query-only payload format');
 
     await evaluate(client, 'localStorage.clear(); sessionStorage.clear(); true');
     await client.call('Page.navigate', { url: 'about:blank' });
@@ -570,6 +572,8 @@ async function main() {
     }))()`);
     assert(invitation.title === 'Отправитель приглашает тебя сравнить карты.', 'friend invitation has the wrong sender');
     assert(invitation.pathHidden && !invitation.overflow, 'friend invitation navigation or 390px layout is broken');
+    assert(await evaluate(client, `Boolean(document.querySelector('#linkInviteContent [data-link-paste-form] [name="linkMessage"]'))`),
+      'friend invitation has no manual message field');
     await click(client, '[data-link-invite-start]');
     await waitFor(client, visible('#scatterScreen'), 'recipient ritual start');
     const recipientLightIds = await evaluate(client, `(() => {
@@ -616,10 +620,11 @@ async function main() {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
     })()`);
-    await waitFor(client, `document.querySelector('#linkShareContent .link-share-url')?.value.includes('#compare=')`, 'reply link creation');
+    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).searchParams.has('c')`, 'reply query-link creation');
     const responseBundle = await evaluate(client, `(async () => {
       const url = document.querySelector('#linkShareContent .link-share-url').value;
-      const encoded = new URL(url).hash.slice('#compare='.length);
+      const parsedUrl = new URL(url);
+      const encoded = parsedUrl.searchParams.get('c');
       const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(encoded.length / 4) * 4, '=');
       const binary = atob(base64);
       const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
@@ -628,18 +633,19 @@ async function main() {
       return {
         url,
         length: url.length,
-        queryMarker: new URL(url).searchParams.get('comparison'),
+        queryPayload: encoded,
+        hash: parsedUrl.hash,
         payloadWords: payload.w?.map((word) => word.i) || [],
         shared: window.__lastComparisonShare || null
       };
     })()`);
     assert(responseBundle.length > 500, `reply link is suspiciously short (${responseBundle.length} characters)`);
-    assert(responseBundle.queryMarker === 'link', 'reply link has no non-private truncation marker');
+    assert(responseBundle.queryPayload && !responseBundle.hash, 'reply link is not using the query-only payload format');
     assert(responseBundle.payloadWords.length === recipientLightIds.length,
       `reply payload is empty, broken, or does not contain the fresh ritual words (${JSON.stringify({ selected: recipientLightIds.length, payload: responseBundle.payloadWords.length })})`);
     assert(responseBundle.payloadWords.every((id) => recipientLightIds.includes(id)), 'reply payload contains words outside the recipient ritual');
-    assert(responseBundle.shared && responseBundle.shared.text.includes(responseBundle.url), 'system share did not receive the full hash URL');
-    assert(!Object.hasOwn(responseBundle.shared, 'url'), 'system share still sends the fragment through the lossy URL field');
+    assert(responseBundle.shared && responseBundle.shared.text.includes(responseBundle.url), 'system share did not receive the full query URL');
+    assert(!Object.hasOwn(responseBundle.shared, 'url'), 'system share unexpectedly split the comparison URL out of the message text');
     const responseLink = responseBundle.url;
 
     await evaluate(client, `(() => {
@@ -659,24 +665,40 @@ async function main() {
       'reply opened the ritual instead of the comparison, or overflows at 390px');
 
     const truncatedResponseLink = new URL(responseLink);
-    truncatedResponseLink.hash = '';
+    truncatedResponseLink.searchParams.set('c', responseBundle.queryPayload.slice(0, Math.floor(responseBundle.queryPayload.length / 2)));
     await client.call('Page.navigate', { url: 'about:blank' });
     await client.call('Page.navigate', { url: truncatedResponseLink.href });
     await waitFor(client, `${visible('#linkInviteScreen')} && document.getElementById('linkInviteTitle').textContent === 'Ссылка не дошла целиком.'`, 'truncated reply error');
     const truncatedScreen = await evaluate(client, `(() => ({
       lead: document.querySelector('#linkInviteScreen .lead').textContent.trim(),
+      detail: document.querySelector('#linkInviteContent .link-warning').textContent.trim(),
       ritualVisible: !document.getElementById('scatterScreen').hidden || !document.getElementById('lightIntroScreen').hidden,
       overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
     }))()`);
-    assert(truncatedScreen.lead === 'Попроси отправить её заново.' && !truncatedScreen.ritualVisible && !truncatedScreen.overflow,
+    assert(truncatedScreen.lead === 'Попроси отправить её заново.'
+      && truncatedScreen.detail === 'Данные карты повреждены или обрываются.'
+      && !truncatedScreen.ritualVisible && !truncatedScreen.overflow,
       'truncated comparison link silently fell back to the ritual or overflows at 390px');
 
+    await evaluate(client, `(() => {
+      const input = document.querySelector('#linkInviteContent [name="linkMessage"]');
+      input.value = 'Друг приглашает тебя сравнить карты.\\n' + ${JSON.stringify(responseLink)} + '\\nСообщение из Telegram';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      document.querySelector('#linkInviteContent [data-link-paste-form]').requestSubmit();
+    })()`);
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.getElementById('linkComparisonTitle').textContent.includes('Друг')`, 'manual message paste comparison');
+    assert(!await evaluate(client, visible('#scatterScreen')), 'manual message paste fell back to the ritual');
+
+    const legacyHashLink = new URL(responseLink);
+    legacyHashLink.searchParams.delete('c');
+    legacyHashLink.hash = `compare=${responseBundle.queryPayload}`;
     await client.call('Page.navigate', { url: 'about:blank' });
-    await client.call('Page.navigate', { url: responseLink });
-    await waitFor(client, `${visible('#linkComparisonScreen')} && document.getElementById('linkComparisonTitle').textContent.includes('Друг')`, 'return to valid reply comparison');
+    await client.call('Page.navigate', { url: legacyHashLink.href });
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.getElementById('linkComparisonTitle').textContent.includes('Друг')`, 'legacy hash comparison');
+    assert(!await evaluate(client, visible('#scatterScreen')), 'legacy hash link fell back to the ritual');
     await click(client, '[data-link-comparison-back]');
     await waitFor(client, visible('#intersectionsScreen'), 'return from friend comparison');
-    completed.push(`ссылка: чистый профиль → ритуал → сравнение → ответ (${responseBundle.length} символов)`);
+    completed.push(`ссылка query + ручная вставка + старый hash (${responseBundle.length} символов)`);
 
     await click(client, '[data-path-chapter="worlds"]');
     await waitFor(client, `${visible('#worldsScreen')} && document.querySelectorAll('#worldsDirectory [data-world-directory-word]').length > 0`, 'world directory');
@@ -898,7 +920,7 @@ async function main() {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
     })()`);
-    await waitFor(client, `document.querySelector('#linkShareContent .link-share-url')?.value.includes('#compare=')`, '70-word link creation');
+    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).searchParams.has('c')`, '70-word query-link creation');
     fullSnapshotLinkLength = await evaluate(client, `document.querySelector('#linkShareContent .link-share-url').value.length`);
     completed.push(`ссылка на 70 слов: ${fullSnapshotLinkLength} символов`);
 

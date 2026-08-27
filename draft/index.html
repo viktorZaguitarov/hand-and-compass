@@ -2064,6 +2064,9 @@
     .link-share-result { display: grid; gap: 10px; padding-top: 13px; border-top: 1px solid var(--line); }
     .link-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .link-share-status { min-height: 1.4em; color: var(--forest-dark) !important; }
+    .link-paste-form { display: grid; gap: 11px; }
+    .link-paste-input { min-height: 108px; resize: vertical; overflow-wrap: anywhere; }
+    .link-paste-card { background: rgba(255, 253, 247, 0.74); }
 
     .link-comparison-score {
       justify-self: start;
@@ -3033,8 +3036,9 @@
       const LINK_COMPARISON_FORMAT = 'hand-compass-link';
       const LINK_COMPARISON_VERSION = 1;
       const LINK_COMPARISON_HASH_PREFIX = 'compare=';
-      const LINK_COMPARISON_QUERY_KEY = 'comparison';
-      const LINK_COMPARISON_QUERY_VALUE = 'link';
+      const LINK_COMPARISON_QUERY_KEY = 'c';
+      const LINK_COMPARISON_LEGACY_MARKER_KEY = 'comparison';
+      const LINK_COMPARISON_LEGACY_MARKER_VALUE = 'link';
       const LINK_COMPARISON_MAX_WORDS = 100;
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
@@ -3209,6 +3213,8 @@
       let linkGuest = null;
       let linkGuestError = '';
       let pendingLinkComparison = false;
+      let linkPasteValue = '';
+      let linkPasteStatus = '';
       let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -3761,38 +3767,63 @@
         if (verified.words.length !== payload.w.length) throw new Error('Ссылка собралась не целиком. Попробуй ещё раз.');
         const encoded = bytesToBase64Url(compressed);
         const url = new URL(window.location.href);
-        url.searchParams.set(LINK_COMPARISON_QUERY_KEY, LINK_COMPARISON_QUERY_VALUE);
-        url.hash = `${LINK_COMPARISON_HASH_PREFIX}${encoded}`;
+        url.searchParams.delete(LINK_COMPARISON_LEGACY_MARKER_KEY);
+        url.searchParams.set(LINK_COMPARISON_QUERY_KEY, encoded);
+        url.hash = '';
         return { url: url.href, payload, encoded };
       }
 
       function hasLinkComparisonIntent(hash = window.location.hash, search = window.location.search) {
         const rawHash = String(hash || '').replace(/^#/, '');
         return rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)
-          || new URLSearchParams(search).get(LINK_COMPARISON_QUERY_KEY) === LINK_COMPARISON_QUERY_VALUE;
+          || new URLSearchParams(search).has(LINK_COMPARISON_QUERY_KEY)
+          || new URLSearchParams(search).get(LINK_COMPARISON_LEGACY_MARKER_KEY) === LINK_COMPARISON_LEGACY_MARKER_VALUE;
       }
 
       function clearLinkComparisonLocation() {
         const url = new URL(window.location.href);
         url.searchParams.delete(LINK_COMPARISON_QUERY_KEY);
+        url.searchParams.delete(LINK_COMPARISON_LEGACY_MARKER_KEY);
         url.hash = '';
         history.replaceState(null, '', `${url.pathname}${url.search}`);
       }
 
-      async function readLinkComparisonFromHash(hash = window.location.hash, search = window.location.search) {
+      function storeLinkComparisonLocation(encoded) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(LINK_COMPARISON_LEGACY_MARKER_KEY);
+        url.searchParams.set(LINK_COMPARISON_QUERY_KEY, encoded);
+        url.hash = '';
+        history.replaceState(null, '', `${url.pathname}${url.search}`);
+      }
+
+      function linkComparisonEncodedFromText(value) {
+        const text = String(value || '');
+        const queryMatch = text.match(/(?:\?|&)c=([A-Za-z0-9_-]+)/);
+        if (queryMatch) return queryMatch[1];
+        const hashMatch = text.match(/#compare=([A-Za-z0-9_-]+)/);
+        return hashMatch?.[1] || null;
+      }
+
+      async function decodeLinkComparisonEncoded(encoded) {
+        const payload = await decompressLinkComparisonPayload(base64UrlToBytes(encoded));
+        return validateLinkComparisonPayload(payload);
+      }
+
+      async function readLinkComparisonFromLocation(hash = window.location.hash, search = window.location.search) {
         const rawHash = String(hash || '').replace(/^#/, '');
-        const markedAsComparison = new URLSearchParams(search).get(LINK_COMPARISON_QUERY_KEY) === LINK_COMPARISON_QUERY_VALUE;
-        if (!rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)) {
-          return markedAsComparison
-            ? { guest: null, error: 'В адресе нет данных карты.' }
-            : null;
-        }
+        const params = new URLSearchParams(search);
+        const queryPayload = params.get(LINK_COMPARISON_QUERY_KEY);
+        const hashPayload = rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)
+          ? rawHash.slice(LINK_COMPARISON_HASH_PREFIX.length)
+          : null;
+        const markedAsLegacyComparison = params.get(LINK_COMPARISON_LEGACY_MARKER_KEY) === LINK_COMPARISON_LEGACY_MARKER_VALUE;
+        if (!params.has(LINK_COMPARISON_QUERY_KEY) && !hashPayload && !markedAsLegacyComparison) return null;
+        const encoded = queryPayload || hashPayload;
+        if (!encoded) return { guest: null, error: 'В адресе нет данных карты.' };
         try {
-          const encoded = rawHash.slice(LINK_COMPARISON_HASH_PREFIX.length);
-          const payload = await decompressLinkComparisonPayload(base64UrlToBytes(encoded));
-          return { guest: validateLinkComparisonPayload(payload), error: null };
-        } catch (error) {
-          return { guest: null, error: error instanceof Error ? error.message : 'Ссылка сравнения повреждена.' };
+          return { guest: await decodeLinkComparisonEncoded(encoded), error: null, encoded };
+        } catch {
+          return { guest: null, error: 'Данные карты повреждены или обрываются.', encoded: null };
         }
       }
 
@@ -3830,7 +3861,34 @@
           ? 'Карта гостя останется отдельно: её слова не попадут в твой слепок.'
           : linkGuestError || 'В адресе не хватает данных карты.';
         card.append(note, action);
-        linkInviteContent.append(header, card);
+
+        const pasteCard = document.createElement('section');
+        pasteCard.className = 'link-card link-paste-card';
+        const pasteForm = document.createElement('form');
+        pasteForm.className = 'link-paste-form';
+        pasteForm.dataset.linkPasteForm = 'true';
+        const pasteLabel = document.createElement('label');
+        pasteLabel.className = 'link-share-label';
+        pasteLabel.textContent = 'Вставь ссылку или сообщение целиком';
+        const pasteInput = document.createElement('textarea');
+        pasteInput.className = 'link-share-input link-paste-input';
+        pasteInput.name = 'linkMessage';
+        pasteInput.maxLength = 20_000;
+        pasteInput.placeholder = 'Можно вставить весь текст из мессенджера';
+        pasteInput.value = linkPasteValue;
+        pasteLabel.append(pasteInput);
+        const pasteOpen = document.createElement('button');
+        pasteOpen.className = 'secondary-button';
+        pasteOpen.type = 'submit';
+        pasteOpen.textContent = 'Открыть';
+        const pasteStatus = document.createElement('p');
+        pasteStatus.className = 'link-share-status';
+        pasteStatus.dataset.linkPasteStatus = 'true';
+        pasteStatus.role = 'status';
+        pasteStatus.textContent = linkPasteStatus;
+        pasteForm.append(pasteLabel, pasteOpen, pasteStatus);
+        pasteCard.append(pasteForm);
+        linkInviteContent.append(header, card, pasteCard);
       }
 
       function linkComparisonContrasts(guestOnlyIds, mineOnlyIds) {
@@ -8431,6 +8489,40 @@
         if (word) openWordWorld(word.dataset.worldDirectoryWord, 'worlds');
       });
       openLinkShareButton.addEventListener('click', () => openLinkSharePreview('intersections'));
+      linkInviteContent.addEventListener('input', (event) => {
+        if (event.target.matches('[name="linkMessage"]')) linkPasteValue = event.target.value;
+      });
+      linkInviteContent.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-link-paste-form]');
+        if (!form) return;
+        event.preventDefault();
+        const status = form.querySelector('[data-link-paste-status]');
+        const submit = form.querySelector('button[type="submit"]');
+        linkPasteValue = form.elements.linkMessage?.value || '';
+        linkPasteStatus = '';
+        submit.disabled = true;
+        status.textContent = 'Проверяем данные карты…';
+        const encoded = linkComparisonEncodedFromText(linkPasteValue);
+        if (!encoded) {
+          linkPasteStatus = 'Не нашли данные карты. Вставь сообщение целиком вместе со ссылкой.';
+          status.textContent = linkPasteStatus;
+          submit.disabled = false;
+          return;
+        }
+        try {
+          linkGuest = await decodeLinkComparisonEncoded(encoded);
+          linkGuestError = '';
+          pendingLinkComparison = !(state.ritualComplete && totalSelected() >= 3);
+          linkPasteValue = '';
+          linkPasteStatus = '';
+          storeLinkComparisonLocation(encoded);
+          showView(pendingLinkComparison ? 'link-invite' : 'link-comparison', true, false);
+        } catch {
+          linkPasteStatus = 'Не получилось открыть: данные карты повреждены или обрываются.';
+          status.textContent = linkPasteStatus;
+          submit.disabled = false;
+        }
+      });
       linkInviteContent.addEventListener('click', (event) => {
         if (!event.target.closest('[data-link-invite-start]')) return;
         if (!linkGuest) {
@@ -8631,7 +8723,7 @@
 
       async function bootstrap() {
         renderScatter();
-        const incomingComparison = await readLinkComparisonFromHash();
+        const incomingComparison = await readLinkComparisonFromLocation();
         if (incomingComparison) {
           linkGuest = incomingComparison.guest;
           linkGuestError = incomingComparison.error || '';
