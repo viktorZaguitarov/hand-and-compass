@@ -3033,6 +3033,8 @@
       const LINK_COMPARISON_FORMAT = 'hand-compass-link';
       const LINK_COMPARISON_VERSION = 1;
       const LINK_COMPARISON_HASH_PREFIX = 'compare=';
+      const LINK_COMPARISON_QUERY_KEY = 'comparison';
+      const LINK_COMPARISON_QUERY_VALUE = 'link';
       const LINK_COMPARISON_MAX_WORDS = 100;
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
@@ -3692,7 +3694,7 @@
         }
         const nickname = normalizeLinkNickname(payload.n);
         if (!nickname) throw new Error('В ссылке не указано имя отправителя.');
-        if (!Array.isArray(payload.w) || payload.w.length > LINK_COMPARISON_MAX_WORDS) {
+        if (!Array.isArray(payload.w) || !payload.w.length || payload.w.length > LINK_COMPARISON_MAX_WORDS) {
           throw new Error('В ссылке слишком много слов или повреждён список.');
         }
         const seen = new Set();
@@ -3754,15 +3756,37 @@
         const payload = buildLinkComparisonPayload(sourceState, nickname);
         if (!payload.n) throw new Error('Напиши, как тебя подписать.');
         if (!payload.w.length) throw new Error('В слепке пока нет слов, которыми можно поделиться.');
-        const encoded = bytesToBase64Url(await compressLinkComparisonPayload(payload));
+        const compressed = await compressLinkComparisonPayload(payload);
+        const verified = validateLinkComparisonPayload(await decompressLinkComparisonPayload(compressed));
+        if (verified.words.length !== payload.w.length) throw new Error('Ссылка собралась не целиком. Попробуй ещё раз.');
+        const encoded = bytesToBase64Url(compressed);
         const url = new URL(window.location.href);
+        url.searchParams.set(LINK_COMPARISON_QUERY_KEY, LINK_COMPARISON_QUERY_VALUE);
         url.hash = `${LINK_COMPARISON_HASH_PREFIX}${encoded}`;
         return { url: url.href, payload, encoded };
       }
 
-      async function readLinkComparisonFromHash(hash = window.location.hash) {
+      function hasLinkComparisonIntent(hash = window.location.hash, search = window.location.search) {
         const rawHash = String(hash || '').replace(/^#/, '');
-        if (!rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)) return null;
+        return rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)
+          || new URLSearchParams(search).get(LINK_COMPARISON_QUERY_KEY) === LINK_COMPARISON_QUERY_VALUE;
+      }
+
+      function clearLinkComparisonLocation() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(LINK_COMPARISON_QUERY_KEY);
+        url.hash = '';
+        history.replaceState(null, '', `${url.pathname}${url.search}`);
+      }
+
+      async function readLinkComparisonFromHash(hash = window.location.hash, search = window.location.search) {
+        const rawHash = String(hash || '').replace(/^#/, '');
+        const markedAsComparison = new URLSearchParams(search).get(LINK_COMPARISON_QUERY_KEY) === LINK_COMPARISON_QUERY_VALUE;
+        if (!rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)) {
+          return markedAsComparison
+            ? { guest: null, error: 'В адресе нет данных карты.' }
+            : null;
+        }
         try {
           const encoded = rawHash.slice(LINK_COMPARISON_HASH_PREFIX.length);
           const payload = await decompressLinkComparisonPayload(base64UrlToBytes(encoded));
@@ -3793,9 +3817,9 @@
           lead.textContent = 'Сначала собери свою — это минут десять.';
           action.textContent = 'Собрать свою карту';
         } else {
-          title.textContent = 'Ссылка не открылась.';
-          lead.textContent = linkGuestError || 'Похоже, ссылка повреждена или создана в другой версии.';
-          action.textContent = 'Начать без ссылки';
+          title.textContent = 'Ссылка не дошла целиком.';
+          lead.textContent = 'Попроси отправить её заново.';
+          action.textContent = 'Открыть без сравнения';
         }
         header.append(eyebrow, title, lead);
         const card = document.createElement('section');
@@ -3804,7 +3828,7 @@
         note.className = 'link-warning';
         note.textContent = linkGuest
           ? 'Карта гостя останется отдельно: её слова не попадут в твой слепок.'
-          : 'Твой выбор всё равно останется только в этом браузере.';
+          : linkGuestError || 'В адресе не хватает данных карты.';
         card.append(note, action);
         linkInviteContent.append(header, card);
       }
@@ -4112,8 +4136,7 @@
           try {
             await navigator.share({
               title: 'Сравнить карты в Hand & Compass',
-              text: `${nickname} приглашает тебя сравнить карты.`,
-              url
+              text: `${nickname} приглашает тебя сравнить карты.\n${url}`
             });
             return 'Ссылка открыта в системном меню отправки.';
           } catch (error) {
@@ -8411,7 +8434,7 @@
       linkInviteContent.addEventListener('click', (event) => {
         if (!event.target.closest('[data-link-invite-start]')) return;
         if (!linkGuest) {
-          history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+          clearLinkComparisonLocation();
           linkGuestError = '';
         }
         pendingLinkComparison = Boolean(linkGuest);
@@ -8425,7 +8448,7 @@
           return;
         }
         if (event.target.closest('[data-link-comparison-back]')) {
-          history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+          clearLinkComparisonLocation();
           linkGuest = null;
           pendingLinkComparison = false;
           showView('intersections');
@@ -8638,7 +8661,7 @@
         linkGuest = null;
         linkGuestError = 'Ссылку не удалось прочитать в этом браузере.';
         renderScatter();
-        showView(window.location.hash.startsWith(`#${LINK_COMPARISON_HASH_PREFIX}`) ? 'link-invite' : 'light-intro', false, false);
+        showView(hasLinkComparisonIntent() ? 'link-invite' : 'light-intro', false, false);
         document.body.classList.remove('is-booting');
       });
     })();
