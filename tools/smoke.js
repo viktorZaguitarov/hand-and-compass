@@ -536,8 +536,12 @@ async function main() {
 
     await click(client, '[data-path-chapter="forks"]');
     await waitFor(client, visible('.fork-step-situation'), 'fork situation');
-    await click(client, '[data-fork-action="to-choice"]');
-    await waitFor(client, visible('.fork-step-choice'), 'fork own choice');
+    const combinedForkStep = await evaluate(client, `(() => ({
+      question: document.querySelector('.fork-step-situation .fork-question')?.textContent.trim(),
+      choices: document.querySelectorAll('.fork-step-situation [data-fork-action^="choose-"]').length,
+      legacyButton: document.querySelectorAll('[data-fork-action="to-choice"]').length
+    }))()`);
+    assert(combinedForkStep.question === 'Как поступишь ты?' && combinedForkStep.choices === 2 && combinedForkStep.legacyButton === 0, 'fork scene and choices are still split across screens');
     await evaluate(client, `(() => {
       const actual = JSON.parse(localStorage.getItem('hand_compass_forks_v1')).history.at(-1).actualChoice;
       const different = actual === 'A' ? 'B' : 'A';
@@ -570,7 +574,7 @@ async function main() {
     await waitFor(client, visible('#graphScreen'), 'graph after dilemma');
     const grownRadius = await evaluate(client, `Number(document.querySelector('[data-graph-node-id="${weightCheck.weighted[0]}"] .graph-node-weight-dot')?.getAttribute('r'))`);
     assert(grownRadius > initialGraphDots[weightCheck.weighted[0]], 'personal-weight dot did not grow after dilemma');
-    completed.push('развилка: 4 шага + личный вес');
+    completed.push('развилка: сцена + выбор → правда + личный вес');
 
     await click(client, '[data-path-chapter="mirror"]');
     await waitFor(client, visible('#snapshotScreen'), 'snapshot before supplement');

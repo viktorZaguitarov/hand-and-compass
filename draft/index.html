@@ -1878,6 +1878,14 @@
       line-height: 1.35;
     }
     .fork-touched strong { color: var(--accent-dark); font-weight: 750; }
+    .fork-question {
+      margin: 2px 0 0;
+      color: var(--forest-dark);
+      font-family: var(--serif);
+      font-size: clamp(1.25rem, 4vw, 1.65rem);
+      font-weight: 600;
+      line-height: 1.15;
+    }
     .fork-pause {
       display: grid;
       min-height: 190px;
@@ -4897,9 +4905,10 @@
           stage.append(forkHeader('развилка', 'Представь эту сцену.'));
           appendForkSceneLines(stage, dilemma.situation);
           appendForkTouchedLine(stage, dilemma);
-          actions.append(createForkButton('Ответить самому', 'to-choice', 'fork-primary'));
-        } else if (step === 'choice') {
-          stage.append(forkHeader('твой выбор', 'Как поступишь ты?'));
+          const question = document.createElement('h2');
+          question.className = 'fork-question';
+          question.textContent = 'Как поступишь ты?';
+          stage.append(question);
           ['A', 'B'].forEach((choice) => {
             const button = createForkButton(forkOptionText(dilemma, choice), `choose-${choice}`, 'fork-option');
             const letter = document.createElement('span');
@@ -7838,9 +7847,7 @@
           finishFork({ skipped: true });
           return;
         }
-        if (action === 'to-choice') {
-          activeFork.step = 'choice';
-        } else if (action === 'choose-A' || action === 'choose-B') {
+        if (action === 'choose-A' || action === 'choose-B') {
           activeFork.userChoice = action.endsWith('A') ? 'A' : 'B';
           activeFork.step = 'truth';
           if (record) {

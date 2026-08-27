@@ -148,6 +148,10 @@ async function main() {
   requireDraftFeature(draftHtml, /id="personalDilemmaText"[^>]+maxlength="500"/, 'personal dilemma text has no 500-character limit');
   requireDraftFeature(draftHtml, /value="vent"[\s\S]+value="options"/, 'personal dilemma does not offer both local modes');
   requireDraftFeature(draftHtml, /matchPersonalDilemmaWords/, 'personal dilemma has no local dictionary analysis');
+  requireDraftFeature(draftHtml, /className = 'fork-question'[\s\S]+Как поступишь ты\?/, 'system dilemma does not place the question with the scene');
+  if (/to-choice|fork-step-choice/.test(draftHtml)) {
+    fail('system dilemma still splits scene and choice across screens');
+  }
 
   if (!sameJson(dictionary, embeddedWords)) fail('embedded #wordsData differs from draft/words_v3.json');
   if (!sameJson(dilemmas, embeddedDilemmas)) fail('embedded #dilemmasData differs from draft/dilemmas_v1.json');
