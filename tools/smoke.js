@@ -399,6 +399,7 @@ async function main() {
   let client;
   let profileDirectory;
   let serverPort;
+  let fullSnapshotLinkLength = null;
 
   try {
     ({ server, port: serverPort } = await startStaticServer(ROOT));
@@ -437,6 +438,9 @@ async function main() {
       return;
     }
 
+    await client.call('Emulation.setDeviceMetricsOverride', {
+      width: 390, height: 844, deviceScaleFactor: 3, mobile: true
+    });
     await client.call('Page.navigate', { url: `http://127.0.0.1:${serverPort}/draft/index.html?smoke=1` });
     await waitFor(client, "document.readyState === 'complete' && !document.body.classList.contains('is-booting')", 'draft bootstrap');
 
@@ -526,6 +530,98 @@ async function main() {
     await waitFor(client, visible('#intersectionsScreen'), 'intersection list return');
     completed.push('пересечения');
 
+    await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      saved.privacyByWord = { ...(saved.privacyByWord || {}), blizost: 'only-me', predatelstvo: 'only-me' };
+      saved.view = 'intersections';
+      localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
+    })()`);
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, visible('#intersectionsScreen'), 'sender intersections after privacy update');
+    await click(client, '#openLinkShareButton');
+    await waitFor(client, visible('#linkShareScreen'), 'friend link preview');
+    const senderPreview = await evaluate(client, `(() => ({
+      words: [...document.querySelectorAll('#linkShareContent .link-preview-word')].map((node) => node.textContent.trim()),
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(senderPreview.words.includes('честность'), 'public word is missing from friend-link preview');
+    assert(!senderPreview.words.includes('близость') && !senderPreview.words.includes('предательство'), 'private word leaked into friend-link preview');
+    assert(!senderPreview.overflow, 'friend-link preview overflows at 390px');
+    await evaluate(client, `(() => {
+      const input = document.querySelector('#linkShareContent [name="nickname"]');
+      input.value = 'Отправитель';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
+    })()`);
+    await waitFor(client, `document.querySelector('#linkShareContent .link-share-url')?.value.includes('#compare=')`, 'sender link creation');
+    const senderBundle = await evaluate(client, `(() => ({
+      url: document.querySelector('#linkShareContent .link-share-url').value,
+      storage: Object.fromEntries(Object.entries(localStorage))
+    }))()`);
+
+    await evaluate(client, 'localStorage.clear(); sessionStorage.clear(); true');
+    await client.call('Page.navigate', { url: 'about:blank' });
+    await client.call('Page.navigate', { url: senderBundle.url });
+    await waitFor(client, `${visible('#linkInviteScreen')} && !document.body.classList.contains('is-booting')`, 'clean-profile friend invitation');
+    const invitation = await evaluate(client, `(() => ({
+      title: document.getElementById('linkInviteTitle').textContent.trim(),
+      pathHidden: document.getElementById('pathNav').hidden,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(invitation.title === 'Отправитель приглашает тебя сравнить карты.', 'friend invitation has the wrong sender');
+    assert(invitation.pathHidden && !invitation.overflow, 'friend invitation navigation or 390px layout is broken');
+    await click(client, '[data-link-invite-start]');
+    await waitFor(client, visible('#scatterScreen'), 'recipient ritual start');
+    for (const id of ['chestnost', 'muzyka', 'doverie', 'priroda', 'yumor']) {
+      await click(client, `[data-word-id="${id}"]`);
+    }
+    await click(client, '#doneButton');
+    await waitFor(client, visible('#darkIntroScreen'), 'recipient dark-wave entry');
+    await click(client, '#startDarkButton');
+    await click(client, '[data-word-id="davlenie"]');
+    await click(client, '#doneButton');
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.querySelectorAll('#linkComparisonContent .link-comparison-section').length === 3`, 'recipient comparison screen');
+    const recipientComparison = await evaluate(client, `(() => {
+      const stateText = localStorage.getItem('hand_compass_snapshot_v2_draft');
+      const state = JSON.parse(stateText);
+      return {
+        headings: [...document.querySelectorAll('#linkComparisonContent .link-comparison-section h2')].map((node) => node.textContent.trim()),
+        selectedIds: state.selectedIds,
+        storedGuest: stateText.includes('Отправитель') || stateText.includes('linkGuest'),
+        overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+      };
+    })()`);
+    assert(recipientComparison.headings.join('|') === 'Что вас связывает|Где вы разные|О чём спросить Отправитель', 'comparison structure is incomplete');
+    assert(!recipientComparison.selectedIds.includes('knigi') && !recipientComparison.selectedIds.includes('vernost'), 'guest words were imported into the recipient snapshot');
+    assert(!recipientComparison.storedGuest && !recipientComparison.overflow, 'guest data was stored or comparison overflows at 390px');
+    await click(client, '[data-link-comparison-reply]');
+    await waitFor(client, visible('#linkShareScreen'), 'reply-link preview');
+    await evaluate(client, `(() => {
+      const input = document.querySelector('#linkShareContent [name="nickname"]');
+      input.value = 'Друг';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
+    })()`);
+    await waitFor(client, `document.querySelector('#linkShareContent .link-share-url')?.value.includes('#compare=')`, 'reply link creation');
+    const responseLink = await evaluate(client, `document.querySelector('#linkShareContent .link-share-url').value`);
+
+    await evaluate(client, `(() => {
+      localStorage.clear();
+      Object.entries(${JSON.stringify(senderBundle.storage)}).forEach(([key, value]) => localStorage.setItem(key, value));
+      sessionStorage.clear();
+    })()`);
+    await client.call('Page.navigate', { url: 'about:blank' });
+    await client.call('Page.navigate', { url: responseLink });
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.getElementById('linkComparisonTitle').textContent.includes('Друг')`, 'sender opens reply link');
+    const returnedComparison = await evaluate(client, `(() => ({
+      sections: document.querySelectorAll('#linkComparisonContent .link-comparison-section').length,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(returnedComparison.sections === 3 && !returnedComparison.overflow, 'reply comparison is incomplete or overflows at 390px');
+    await click(client, '[data-link-comparison-back]');
+    await waitFor(client, visible('#intersectionsScreen'), 'return from friend comparison');
+    completed.push('ссылка: чистый профиль → ритуал → сравнение → ответ');
+
     await click(client, '[data-path-chapter="worlds"]');
     await waitFor(client, `${visible('#worldsScreen')} && document.querySelectorAll('#worldsDirectory [data-world-directory-word]').length > 0`, 'world directory');
     const worldsLead = await evaluate(client, `document.querySelector('#worldsScreen .lead').textContent.trim()`);
@@ -571,6 +667,8 @@ async function main() {
     await click(client, '[data-fork-action="to-outcome"]');
     await waitFor(client, visible('.fork-step-outcome'), 'fork outcome');
     await click(client, '[data-path-chapter="map"]');
+    await waitFor(client, `${visible('#graphIntroScreen')} || ${visible('#graphScreen')}`, 'graph entry after dilemma');
+    if (await evaluate(client, visible('#graphIntroScreen'))) await click(client, '#graphIntroNextButton');
     await waitFor(client, visible('#graphScreen'), 'graph after dilemma');
     const grownRadius = await evaluate(client, `Number(document.querySelector('[data-graph-node-id="${weightCheck.weighted[0]}"] .graph-node-weight-dot')?.getAttribute('r'))`);
     assert(grownRadius > initialGraphDots[weightCheck.weighted[0]], 'personal-weight dot did not grow after dilemma');
@@ -715,6 +813,38 @@ async function main() {
     const reducedMotionClass = await evaluate(client, `document.querySelector('.is-chapter-entering-forward, .is-chapter-entering-backward')?.className || ''`);
     assert(!reducedMotionClass, 'reduced-motion chapter change should be instant');
     completed.push('reduced motion');
+
+    await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      const ids = JSON.parse(document.getElementById('wordsData').textContent).words.slice(0, 70).map((word) => word.id);
+      saved.selectedIds = ids;
+      saved.selectionWaves = Object.fromEntries(ids.map((id) => [id, 1]));
+      saved.wordWeights = Object.fromEntries(ids.map((id) => [id, 1]));
+      saved.waveOneIds = ids;
+      saved.privacyByWord = Object.fromEntries(ids.map((id) => [id, 'on-match']));
+      saved.ritualComplete = true;
+      saved.view = 'intersections';
+      localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
+    })()`);
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, visible('#intersectionsScreen'), 'full-snapshot link setup');
+    await click(client, '#openLinkShareButton');
+    await waitFor(client, visible('#linkShareScreen'), 'full-snapshot preview');
+    const fullPreview = await evaluate(client, `(() => ({
+      count: new Set([...document.querySelectorAll('#linkShareContent .link-preview-word')].map((node) => node.textContent.trim())).size,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(fullPreview.count === 70 && !fullPreview.overflow,
+      `70-word link preview is incomplete or overflows at 390px (${JSON.stringify(fullPreview)})`);
+    await evaluate(client, `(() => {
+      const input = document.querySelector('#linkShareContent [name="nickname"]');
+      input.value = 'Полная карта';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
+    })()`);
+    await waitFor(client, `document.querySelector('#linkShareContent .link-share-url')?.value.includes('#compare=')`, '70-word link creation');
+    fullSnapshotLinkLength = await evaluate(client, `document.querySelector('#linkShareContent .link-share-url').value.length`);
+    completed.push(`ссылка на 70 слов: ${fullSnapshotLinkLength} символов`);
 
     assert(consoleErrors.length === 0, `console errors: ${consoleErrors.join(' | ')}`);
     console.log(`SMOKE PASS (${Date.now() - startedAt} ms): ${completed.join(' · ')}`);

@@ -207,6 +207,10 @@ async function main() {
   requireDraftFeature(draftHtml, /new CompressionStream\('deflate'\)/, 'link comparison does not use deflate compression');
   requireDraftFeature(draftHtml, /new DecompressionStream\('deflate'\)/, 'link comparison cannot open deflate payloads');
   requireDraftFeature(draftHtml, /url\.hash = `\$\{LINK_COMPARISON_HASH_PREFIX\}/, 'link comparison data is not placed in the URL hash');
+  requireDraftFeature(draftHtml, /приглашает тебя сравнить карты/, 'link recipient has no invitation screen');
+  requireDraftFeature(draftHtml, /function weightedSimilarityBetween/, 'friend comparison does not reuse weighted Jaccard');
+  requireDraftFeature(draftHtml, /Что вас связывает[\s\S]+Где вы разные[\s\S]+О чём спросить/, 'friend comparison has an incomplete structure');
+  requireDraftFeature(draftHtml, /dataset\.linkComparisonReply/, 'friend comparison has no reverse-link action');
   validateLinkComparisonPrivacyFilter(draftHtml, dictionary);
 
   if (!sameJson(dictionary, embeddedWords)) fail('embedded #wordsData differs from draft/words_v3.json');

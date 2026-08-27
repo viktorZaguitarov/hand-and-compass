@@ -8424,7 +8424,12 @@
           openLinkSharePreview('link-comparison');
           return;
         }
-        if (event.target.closest('[data-link-comparison-back]')) showView('intersections');
+        if (event.target.closest('[data-link-comparison-back]')) {
+          history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+          linkGuest = null;
+          pendingLinkComparison = false;
+          showView('intersections');
+        }
       });
       linkShareContent.addEventListener('input', (event) => {
         if (event.target.matches('[name="nickname"]')) linkShareNickname = normalizeLinkNickname(event.target.value);
