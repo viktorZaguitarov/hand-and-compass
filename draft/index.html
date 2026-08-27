@@ -813,14 +813,21 @@
     }
 
     .personality-tabs {
+      position: fixed;
+      left: 50%;
+      bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 11;
       display: flex;
       gap: 8px;
-      margin-bottom: 18px;
+      width: min(470px, calc(100vw - 24px));
+      margin: 0;
       padding: 5px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 253, 247, 0.7);
-      box-shadow: var(--shadow-soft);
+      background: rgba(255, 253, 247, 0.91);
+      box-shadow: 0 12px 30px rgba(38, 54, 46, 0.16);
+      backdrop-filter: blur(14px);
+      transform: translateX(-50%);
     }
 
     .personality-tab {
@@ -883,9 +890,6 @@
     .worlds-word[aria-disabled="true"] { cursor: default; opacity: 0.72; }
     details.worlds-shelf > summary { cursor: pointer; color: var(--ink); font: 800 0.82rem/1.2 var(--sans); }
     details.worlds-shelf > .worlds-word-list { margin-top: 11px; }
-
-    .closeness-screen .match-panel { margin-bottom: 18px; }
-    .closeness-actions { display: flex; justify-content: flex-end; }
 
     .profile-intersection-back { justify-self: start; }
     .profile-intersection-difference { display: grid; gap: 12px; }
@@ -1598,20 +1602,16 @@
       border-top: 1px solid rgba(83, 104, 96, 0.14);
     }
 
-    .graph-card-details > summary {
+    .graph-card-details-title {
       display: flex;
       align-items: center;
       min-height: 34px;
-      cursor: pointer;
+      margin: 0;
       color: var(--forest-dark);
+      font-family: var(--sans);
       font-size: 0.74rem;
       font-weight: 750;
-      list-style: none;
     }
-
-    .graph-card-details > summary::-webkit-details-marker { display: none; }
-    .graph-card-details > summary::after { margin-left: auto; content: "⌄"; font-size: 0.92rem; }
-    .graph-card-details[open] > summary::after { content: "⌃"; }
     .graph-card-detail-content { padding-bottom: 2px; }
 
     .graph-neighbor-note {
@@ -1878,6 +1878,14 @@
       line-height: 1.35;
     }
     .fork-touched strong { color: var(--accent-dark); font-weight: 750; }
+    .fork-question {
+      margin: 2px 0 0;
+      color: var(--forest-dark);
+      font-family: var(--serif);
+      font-size: clamp(1.25rem, 4vw, 1.65rem);
+      font-weight: 600;
+      line-height: 1.15;
+    }
     .fork-pause {
       display: grid;
       min-height: 190px;
@@ -2665,11 +2673,6 @@
           <span class="path-chapter-name">Миры слов</span>
           <span class="path-chapter-note">после слепка</span>
         </button>
-        <button class="path-chapter" type="button" data-path-chapter="closeness">
-          <span class="path-chapter-icon" aria-hidden="true"><span>≈</span></span>
-          <span class="path-chapter-name">Близость</span>
-          <span class="path-chapter-note">после слепка</span>
-        </button>
         <button class="path-chapter" type="button" data-path-chapter="intersections">
           <span class="path-chapter-icon" aria-hidden="true"><span>∩</span></span>
           <span class="path-chapter-name">Пересечения</span>
@@ -2703,8 +2706,8 @@
 
       <section class="screen" id="scatterScreen" aria-labelledby="scatterTitle" hidden>
         <div class="personality-tabs" id="personalityTabs" role="tablist" aria-label="Стороны личности" hidden>
-          <button class="personality-tab" type="button" role="tab" data-personality-wave="1">Откликнувшееся</button>
-          <button class="personality-tab" type="button" role="tab" data-personality-wave="2">Нарушающее равновесие</button>
+          <button class="personality-tab" type="button" role="tab" data-personality-wave="1">Что откликается</button>
+          <button class="personality-tab" type="button" role="tab" data-personality-wave="2">Что нарушает равновесие</button>
         </div>
         <header class="screen-head">
           <p class="eyebrow" id="scatterStep">то, что тянет</p>
@@ -2758,8 +2761,8 @@
 
       <section class="screen" id="snapshotScreen" aria-labelledby="snapshotTitle" hidden>
         <header class="screen-head snapshot-head">
-          <h1 id="snapshotTitle" tabindex="-1">Посмотри на выбор как в зеркало.</h1>
-          <p class="lead">Это гипотезы из твоих слов. Править их можешь только ты.</p>
+          <h1 id="snapshotTitle" tabindex="-1">Это гипотезы из твоих слов</h1>
+          <p class="lead">Править их можешь только ты</p>
           <p class="snapshot-small-note" id="snapshotSmallNote" hidden>Слепок получился маленьким — можно вернуться и добавить слова в любой момент.</p>
         </header>
 
@@ -2793,7 +2796,7 @@
           <header class="screen-head graph-head">
             <h1 id="graphTitle" tabindex="-1">Найди, что оказалось рядом.</h1>
             <div class="graph-walk-actions" aria-label="Прогулка по графу">
-              <button class="graph-walk-button" id="graphAllConnectionsButton" type="button" aria-pressed="false">Все связи</button>
+              <button class="graph-walk-button" id="graphAllConnectionsButton" type="button" aria-pressed="true">Все связи</button>
               <button class="graph-walk-button" id="graphTidyButton" type="button">Уборка</button>
               <button class="graph-walk-button" id="graphJumpButton" type="button">Дальний прыжок</button>
               <button class="graph-walk-button graph-walk-button--clear" id="clearGraphTrailButton" type="button" hidden>Очистить след</button>
@@ -2816,14 +2819,14 @@
       <section class="screen world-screen" id="worldsScreen" aria-labelledby="worldsTitle" hidden>
         <header class="screen-head">
           <h1 id="worldsTitle" tabindex="-1">Твои слова — входы в разные миры.</h1>
-          <p class="lead">Они собраны по полкам твоего слепка. Нажми на слово, чтобы войти глубже.</p>
+          <p class="lead">Нажми на слово, чтобы войти глубже.</p>
         </header>
         <div class="worlds-directory" id="worldsDirectory"></div>
       </section>
 
-      <section class="screen closeness-screen" id="closenessScreen" aria-labelledby="closenessTitle" hidden>
+      <section class="screen intersections-screen" id="intersectionsScreen" aria-labelledby="intersectionsTitle" hidden>
         <header class="screen-head">
-          <h1 id="closenessTitle" tabindex="-1">Какую степень близости хочется исследовать?</h1>
+          <h1 id="intersectionsTitle" tabindex="-1">Найди, где две карты встречаются.</h1>
           <p class="lead">Настрой расстояние до учебных двойников. Это поиск для размышления, не оценка совместимости.</p>
         </header>
 
@@ -2835,16 +2838,6 @@
           <input class="match-range" id="matchRange" type="range" min="0" max="100" step="1" value="50">
           <div class="match-range-scale" aria-hidden="true"><span>меньше общего</span><span>больше общего</span></div>
         </section>
-        <div class="closeness-actions">
-          <button class="primary-button" id="closenessShowIntersections" type="button">Посмотреть пересечения</button>
-        </div>
-      </section>
-
-      <section class="screen intersections-screen" id="intersectionsScreen" aria-labelledby="intersectionsTitle" hidden>
-        <header class="screen-head">
-          <h1 id="intersectionsTitle" tabindex="-1">Найди, где две карты встречаются.</h1>
-          <p class="lead">Рядом — учебные двойники, найденные по выбранной в «Близости» степени совпадения.</p>
-        </header>
 
         <div class="profile-list" id="profileList" aria-live="polite"></div>
         <div class="profile-more-row">
@@ -3047,7 +3040,6 @@
       const graphTidyButton = document.getElementById('graphTidyButton');
       const worldsScreen = document.getElementById('worldsScreen');
       const worldsDirectory = document.getElementById('worldsDirectory');
-      const closenessScreen = document.getElementById('closenessScreen');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
@@ -3130,7 +3122,7 @@
           snapshotShelfId: 'values',
           wordSigns: {}, privacyByWord: {}, topThreeValues: [],
           graphTrailIds: [],
-          graphWordOffsets: {}, graphCloudOffsets: {}, graphAllConnections: false,
+          graphWordOffsets: {}, graphCloudOffsets: {}, graphAllConnections: true,
           updatedAt: null
         };
       }
@@ -3243,8 +3235,8 @@
             ? 'profile-intersection'
             : parsed.view === 'forks' && selectionCount >= 3
             ? 'forks'
-            : parsed.view === 'closeness' && selectionCount >= 3
-            ? 'closeness'
+            : (parsed.view === 'closeness' || parsed.view === 'intersections') && selectionCount >= 3
+            ? 'intersections'
             : parsed.view === 'worlds' && selectionCount >= 3
             ? 'worlds'
             : parsed.view === 'intersections' && selectionCount >= 3
@@ -3274,7 +3266,9 @@
             wordWeights,
             waveOneIds,
             waveOneCustomIds,
-            wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
+            wave: ritualComplete && restoredView === 'scatter' && !supplementShelfId
+              ? 1
+              : parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
             view: restoredView === 'custom-shelf' && !pendingCustomId ? 'scatter' : restoredView,
             ritualComplete,
             personalityReturning: ritualComplete && restoredView === 'scatter',
@@ -3304,7 +3298,7 @@
             graphTrailIds,
             graphWordOffsets,
             graphCloudOffsets,
-            graphAllConnections: parsed.graphAllConnections === true,
+            graphAllConnections: parsed.graphAllConnections !== false,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -4911,9 +4905,10 @@
           stage.append(forkHeader('развилка', 'Представь эту сцену.'));
           appendForkSceneLines(stage, dilemma.situation);
           appendForkTouchedLine(stage, dilemma);
-          actions.append(createForkButton('Ответить самому', 'to-choice', 'fork-primary'));
-        } else if (step === 'choice') {
-          stage.append(forkHeader('твой выбор', 'Как поступишь ты?'));
+          const question = document.createElement('h2');
+          question.className = 'fork-question';
+          question.textContent = 'Как поступишь ты?';
+          stage.append(question);
           ['A', 'B'].forEach((choice) => {
             const button = createForkButton(forkOptionText(dilemma, choice), `choose-${choice}`, 'fork-option');
             const letter = document.createElement('span');
@@ -5024,7 +5019,7 @@
         intersectionMap.hidden = true;
       }
 
-      function renderCloseness() {
+      function renderMatchControls() {
         matchRange.value = String(state.matchTarget);
         matchValue.textContent = similarityLabel(state.matchTarget);
         matchRange.setAttribute('aria-valuetext', similarityLabel(state.matchTarget));
@@ -5034,7 +5029,7 @@
         state.matchTarget = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
         state.matchVisibleCount = 3;
         state.activeProfileId = null;
-        renderCloseness();
+        renderMatchControls();
         if (state.view === 'intersections') renderProfileMatches();
         if (shouldPersist) persistState();
       }
@@ -5512,7 +5507,7 @@
           : isReturningPersonality && isSecondWave
           ? 'Что сейчас нарушает твоё равновесие?'
           : isReturningPersonality
-          ? 'Что сейчас откликается?'
+          ? 'Выбери слова, которые твои — которые откликаются в тебе'
           : isSecondWave
           ? 'Что нарушает твоё равновесие?'
           : 'Что хочется приблизить?';
@@ -6189,6 +6184,11 @@
         activeGraphNodeId = null;
         graphChainIds = new Set();
         renderGraph();
+        const connectedWords = [...(graphWalkNetwork().get(target.id) || new Set())]
+          .map((id) => WORD_BY_ID.get(id)?.word)
+          .filter(Boolean)
+          .sort((left, right) => left.localeCompare(right, 'ru'));
+        graphStatus.textContent = `Выбрано: «${target.word}». Соединено с: ${connectedWords.length ? `${connectedWords.join(', ')}.` : 'прямых связей пока нет.'}`;
         window.requestAnimationFrame(() => centerGraphOnNode(target.id, true));
       }
 
@@ -7177,9 +7177,10 @@
         }
 
         if (detailsContent.childElementCount) {
-          const details = document.createElement('details');
+          const details = document.createElement('section');
           details.className = 'graph-card-details';
-          const summary = document.createElement('summary');
+          const summary = document.createElement('h3');
+          summary.className = 'graph-card-details-title';
           summary.textContent = 'Подробнее';
           details.append(summary, detailsContent);
           graphCard.append(details);
@@ -7271,10 +7272,6 @@
           views: ['worlds', 'word-world'],
           lockedNote: 'после слепка'
         },
-        closeness: {
-          views: ['closeness'],
-          lockedNote: 'после слепка'
-        },
         intersections: {
           views: ['intersections', 'profile-intersection'],
           lockedNote: 'после слепка'
@@ -7289,14 +7286,14 @@
         return Object.entries(PATH_CHAPTERS).find(([, chapter]) => chapter.views.includes(view))?.[0] || 'personality';
       }
 
-      const PATH_CHAPTER_ORDER = ['personality', 'map', 'mirror', 'worlds', 'closeness', 'intersections', 'forks'];
+      const PATH_CHAPTER_ORDER = ['personality', 'map', 'mirror', 'worlds', 'intersections', 'forks'];
 
       function animateChapterEntry(previousView, nextView) {
         const previousChapter = pathChapterForView(previousView);
         const nextChapter = pathChapterForView(nextView);
         const activeScreen = [
           lightIntroScreen, scatterScreen, darkIntroScreen, customShelfScreen, snapshotScreen,
-          graphIntroScreen, graphScreen, worldsScreen, closenessScreen, intersectionsScreen,
+          graphIntroScreen, graphScreen, worldsScreen, intersectionsScreen,
           wordWorldScreen, profileIntersectionScreen, forksScreen
         ].find((screen) => !screen.hidden);
         document.querySelectorAll('.is-chapter-entering-forward, .is-chapter-entering-backward').forEach((screen) => {
@@ -7364,7 +7361,6 @@
         const isGraphIntro = view === 'graph-intro';
         const isGraph = view === 'graph';
         const isWorlds = view === 'worlds';
-        const isCloseness = view === 'closeness';
         const isIntersections = view === 'intersections';
         const isWordWorld = view === 'word-world';
         const isProfileIntersection = view === 'profile-intersection';
@@ -7384,14 +7380,12 @@
         graphIntroScreen.hidden = !isGraphIntro;
         graphScreen.hidden = !isGraph;
         worldsScreen.hidden = !isWorlds;
-        closenessScreen.hidden = !isCloseness;
         intersectionsScreen.hidden = !isIntersections;
         wordWorldScreen.hidden = !isWordWorld;
         profileIntersectionScreen.hidden = !isProfileIntersection;
         forksScreen.hidden = !isForks;
         state.view = isIntersections ? 'intersections'
           : isProfileIntersection ? 'profile-intersection'
-          : isCloseness ? 'closeness'
           : isWorlds ? 'worlds'
           : isGraph ? 'graph'
           : isGraphIntro ? 'graph-intro'
@@ -7408,7 +7402,6 @@
         if (isSnapshot) renderSnapshot();
         if (isGraph && !options.preserveGraph) renderGraph();
         if (isWorlds) renderWorldsDirectory();
-        if (isCloseness) renderCloseness();
         if (isIntersections) {
           renderProfileMatches();
         }
@@ -7428,7 +7421,6 @@
           window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
           const titleId = isIntersections ? 'intersectionsTitle'
             : isProfileIntersection ? 'profileIntersectionTitle'
-            : isCloseness ? 'closenessTitle'
             : isWorlds ? 'worldsTitle'
             : isGraph ? 'graphTitle'
             : isGraphIntro ? 'graphIntroTitle'
@@ -7762,7 +7754,7 @@
         if (chapter === 'personality') {
           if (state.ritualComplete) {
             state.personalityReturning = true;
-            state.wave = state.wave === 2 ? 2 : 1;
+            state.wave = 1;
             showView('scatter');
           } else {
             state.personalityReturning = false;
@@ -7772,7 +7764,6 @@
         else if (chapter === 'map') openGraphScreen();
         else if (chapter === 'mirror') showView('snapshot');
         else if (chapter === 'worlds') showView('worlds');
-        else if (chapter === 'closeness') showView('closeness');
         else if (chapter === 'intersections') showView('intersections');
         else if (chapter === 'forks') showView('forks');
       });
@@ -7782,7 +7773,6 @@
       });
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
-      document.getElementById('closenessShowIntersections').addEventListener('click', () => showView('intersections'));
       profileList.addEventListener('click', (event) => {
         const button = event.target.closest('[data-profile-id]');
         if (!button) return;
@@ -7857,9 +7847,7 @@
           finishFork({ skipped: true });
           return;
         }
-        if (action === 'to-choice') {
-          activeFork.step = 'choice';
-        } else if (action === 'choose-A' || action === 'choose-B') {
+        if (action === 'choose-A' || action === 'choose-B') {
           activeFork.userChoice = action.endsWith('A') ? 'A' : 'B';
           activeFork.step = 'truth';
           if (record) {
@@ -7923,7 +7911,6 @@
       renderScatter();
       if (state.view === 'profile-intersection' && state.profileIntersectionId && totalSelected() >= 3) showView('profile-intersection', false, false);
       else if (state.view === 'forks' && totalSelected() >= 3) showView('forks', false, false);
-      else if (state.view === 'closeness' && totalSelected() >= 3) showView('closeness', false, false);
       else if (state.view === 'worlds' && totalSelected() >= 3) showView('worlds', false, false);
       else if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
       else if (state.view === 'word-world' && state.worldWordId) showView('word-world', false, false);
