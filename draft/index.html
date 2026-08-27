@@ -813,14 +813,21 @@
     }
 
     .personality-tabs {
+      position: fixed;
+      left: 50%;
+      bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 11;
       display: flex;
       gap: 8px;
-      margin-bottom: 18px;
+      width: min(470px, calc(100vw - 24px));
+      margin: 0;
       padding: 5px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 253, 247, 0.7);
-      box-shadow: var(--shadow-soft);
+      background: rgba(255, 253, 247, 0.91);
+      box-shadow: 0 12px 30px rgba(38, 54, 46, 0.16);
+      backdrop-filter: blur(14px);
+      transform: translateX(-50%);
     }
 
     .personality-tab {
@@ -2703,8 +2710,8 @@
 
       <section class="screen" id="scatterScreen" aria-labelledby="scatterTitle" hidden>
         <div class="personality-tabs" id="personalityTabs" role="tablist" aria-label="Стороны личности" hidden>
-          <button class="personality-tab" type="button" role="tab" data-personality-wave="1">Откликнувшееся</button>
-          <button class="personality-tab" type="button" role="tab" data-personality-wave="2">Нарушающее равновесие</button>
+          <button class="personality-tab" type="button" role="tab" data-personality-wave="1">Что откликается</button>
+          <button class="personality-tab" type="button" role="tab" data-personality-wave="2">Что нарушает равновесие</button>
         </div>
         <header class="screen-head">
           <p class="eyebrow" id="scatterStep">то, что тянет</p>
@@ -3274,7 +3281,9 @@
             wordWeights,
             waveOneIds,
             waveOneCustomIds,
-            wave: parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
+            wave: ritualComplete && restoredView === 'scatter' && !supplementShelfId
+              ? 1
+              : parsed.wave === 2 && selectionCount >= 3 ? 2 : 1,
             view: restoredView === 'custom-shelf' && !pendingCustomId ? 'scatter' : restoredView,
             ritualComplete,
             personalityReturning: ritualComplete && restoredView === 'scatter',
@@ -5512,7 +5521,7 @@
           : isReturningPersonality && isSecondWave
           ? 'Что сейчас нарушает твоё равновесие?'
           : isReturningPersonality
-          ? 'Что сейчас откликается?'
+          ? 'Выбери слова, которые твои — которые откликаются в тебе'
           : isSecondWave
           ? 'Что нарушает твоё равновесие?'
           : 'Что хочется приблизить?';
@@ -7762,7 +7771,7 @@
         if (chapter === 'personality') {
           if (state.ritualComplete) {
             state.personalityReturning = true;
-            state.wave = state.wave === 2 ? 2 : 1;
+            state.wave = 1;
             showView('scatter');
           } else {
             state.personalityReturning = false;

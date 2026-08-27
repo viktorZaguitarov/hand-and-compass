@@ -571,6 +571,30 @@ async function main() {
 
     await click(client, '[data-path-chapter="personality"]');
     await waitFor(client, `${visible('#scatterScreen')} && ${visible('#personalityTabs')} && document.getElementById('scatterActions').hidden`, 'returning personality tabs');
+    const returningPersonality = await evaluate(client, `(() => {
+      const tabs = [...document.querySelectorAll('#personalityTabs [data-personality-wave]')];
+      const style = getComputedStyle(document.getElementById('personalityTabs'));
+      const box = document.getElementById('personalityTabs').getBoundingClientRect();
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      return {
+        wave: saved.wave,
+        labels: tabs.map((tab) => tab.textContent.trim()),
+        active: tabs.find((tab) => tab.getAttribute('aria-selected') === 'true')?.dataset.personalityWave,
+        title: document.getElementById('scatterTitle').textContent.trim(),
+        position: style.position,
+        bottomGap: Math.round(window.innerHeight - box.bottom)
+      };
+    })()`);
+    assert(returningPersonality.wave === 1 && returningPersonality.active === '1', 'returning personality did not open on responsive words');
+    assert(returningPersonality.labels.join('|') === 'Что откликается|Что нарушает равновесие', 'returning personality tab labels are stale');
+    assert(returningPersonality.title === 'Выбери слова, которые твои — которые откликаются в тебе', 'returning personality invitation is stale');
+    assert(returningPersonality.position === 'fixed' && returningPersonality.bottomGap <= 16, 'returning personality tabs are not floating at the bottom');
+    await click(client, '#personalityTabs [data-personality-wave="2"]');
+    await waitFor(client, `document.querySelector('#personalityTabs [data-personality-wave="2"]').getAttribute('aria-selected') === 'true'`, 'personality balance tab');
+    await click(client, '[data-path-chapter="map"]');
+    await waitFor(client, visible('#graphScreen'), 'map after personality tab');
+    await click(client, '[data-path-chapter="personality"]');
+    await waitFor(client, `document.querySelector('#personalityTabs [data-personality-wave="1"]').getAttribute('aria-selected') === 'true'`, 'personality resets to first tab');
     completed.push('возврат → личность без онбординга');
 
     await click(client, '[data-path-chapter="forks"]');
