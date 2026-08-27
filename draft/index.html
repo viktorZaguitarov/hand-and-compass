@@ -1605,20 +1605,16 @@
       border-top: 1px solid rgba(83, 104, 96, 0.14);
     }
 
-    .graph-card-details > summary {
+    .graph-card-details-title {
       display: flex;
       align-items: center;
       min-height: 34px;
-      cursor: pointer;
+      margin: 0;
       color: var(--forest-dark);
+      font-family: var(--sans);
       font-size: 0.74rem;
       font-weight: 750;
-      list-style: none;
     }
-
-    .graph-card-details > summary::-webkit-details-marker { display: none; }
-    .graph-card-details > summary::after { margin-left: auto; content: "⌄"; font-size: 0.92rem; }
-    .graph-card-details[open] > summary::after { content: "⌃"; }
     .graph-card-detail-content { padding-bottom: 2px; }
 
     .graph-neighbor-note {
@@ -2800,7 +2796,7 @@
           <header class="screen-head graph-head">
             <h1 id="graphTitle" tabindex="-1">Найди, что оказалось рядом.</h1>
             <div class="graph-walk-actions" aria-label="Прогулка по графу">
-              <button class="graph-walk-button" id="graphAllConnectionsButton" type="button" aria-pressed="false">Все связи</button>
+              <button class="graph-walk-button" id="graphAllConnectionsButton" type="button" aria-pressed="true">Все связи</button>
               <button class="graph-walk-button" id="graphTidyButton" type="button">Уборка</button>
               <button class="graph-walk-button" id="graphJumpButton" type="button">Дальний прыжок</button>
               <button class="graph-walk-button graph-walk-button--clear" id="clearGraphTrailButton" type="button" hidden>Очистить след</button>
@@ -3137,7 +3133,7 @@
           snapshotShelfId: 'values',
           wordSigns: {}, privacyByWord: {}, topThreeValues: [],
           graphTrailIds: [],
-          graphWordOffsets: {}, graphCloudOffsets: {}, graphAllConnections: false,
+          graphWordOffsets: {}, graphCloudOffsets: {}, graphAllConnections: true,
           updatedAt: null
         };
       }
@@ -3313,7 +3309,7 @@
             graphTrailIds,
             graphWordOffsets,
             graphCloudOffsets,
-            graphAllConnections: parsed.graphAllConnections === true,
+            graphAllConnections: parsed.graphAllConnections !== false,
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -6198,6 +6194,11 @@
         activeGraphNodeId = null;
         graphChainIds = new Set();
         renderGraph();
+        const connectedWords = [...(graphWalkNetwork().get(target.id) || new Set())]
+          .map((id) => WORD_BY_ID.get(id)?.word)
+          .filter(Boolean)
+          .sort((left, right) => left.localeCompare(right, 'ru'));
+        graphStatus.textContent = `Выбрано: «${target.word}». Соединено с: ${connectedWords.length ? `${connectedWords.join(', ')}.` : 'прямых связей пока нет.'}`;
         window.requestAnimationFrame(() => centerGraphOnNode(target.id, true));
       }
 
@@ -7186,9 +7187,10 @@
         }
 
         if (detailsContent.childElementCount) {
-          const details = document.createElement('details');
+          const details = document.createElement('section');
           details.className = 'graph-card-details';
-          const summary = document.createElement('summary');
+          const summary = document.createElement('h3');
+          summary.className = 'graph-card-details-title';
           summary.textContent = 'Подробнее';
           details.append(summary, detailsContent);
           graphCard.append(details);

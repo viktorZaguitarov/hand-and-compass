@@ -405,7 +405,7 @@ async function main() {
     const debugPort = await findFreePort();
     profileDirectory = await mkdtemp(join(tmpdir(), 'hand-compass-smoke-'));
     chrome = spawn(CHROME_BIN, [
-      '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+      '--headless=new', '--no-sandbox', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
       '--remote-allow-origins=*', '--remote-debugging-address=127.0.0.1',
       `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profileDirectory}`, 'about:blank'
     ], { stdio: 'ignore' });
@@ -469,6 +469,25 @@ async function main() {
     await waitFor(client, `${visible('#graphIntroScreen')} || ${visible('#graphScreen')}`, 'graph entry');
     if (await evaluate(client, visible('#graphIntroScreen'))) await click(client, '#graphIntroNextButton');
     await waitFor(client, `${visible('#graphScreen')} && document.querySelectorAll('[data-graph-node-id]').length >= 6`, 'graph render');
+    const defaultConnections = await evaluate(client, `(() => ({
+      pressed: document.getElementById('graphAllConnectionsButton').getAttribute('aria-pressed'),
+      saved: JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).graphAllConnections
+    }))()`);
+    assert(defaultConnections.pressed === 'true' && defaultConnections.saved === true, 'all graph connections are not enabled by default');
+    await click(client, '#graphAllConnectionsButton');
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, `${visible('#graphScreen')} && document.getElementById('graphAllConnectionsButton').getAttribute('aria-pressed') === 'false'`, 'saved all-connections toggle');
+    await click(client, '#graphAllConnectionsButton');
+    await evaluate(client, `document.querySelector('[data-graph-node-id="chestnost"]').dispatchEvent(new MouseEvent('click', { bubbles: true }))`);
+    await waitFor(client, `${visible('#graphCard')} && document.querySelector('#graphCard .graph-card-details')`, 'always-open graph details');
+    const graphDetails = await evaluate(client, `(() => {
+      const details = document.querySelector('#graphCard .graph-card-details');
+      const content = details.querySelector('.graph-card-detail-content');
+      return { tag: details.tagName, visible: getComputedStyle(content).display !== 'none', title: details.querySelector('.graph-card-details-title')?.textContent };
+    })()`);
+    assert(graphDetails.tag === 'SECTION' && graphDetails.visible && graphDetails.title === 'Подробнее', 'graph details can still collapse');
+    await click(client, '#graphJumpButton');
+    await waitFor(client, `document.getElementById('graphStatus').textContent.startsWith('Выбрано:') && document.getElementById('graphStatus').textContent.includes('Соединено с:')`, 'distant jump connection summary');
     const initialGraphDots = await evaluate(client, `Object.fromEntries([...document.querySelectorAll('[data-graph-node-id]')].map((node) => [node.dataset.graphNodeId, Number(node.querySelector('.graph-node-weight-dot')?.getAttribute('r'))]))`);
     assert(Object.values(initialGraphDots).every((radius) => Number.isFinite(radius)), 'graph personal-weight dots are missing');
     assert(consoleErrors.length === 0, `graph console errors: ${consoleErrors.join(' | ')}`);
