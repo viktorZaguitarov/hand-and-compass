@@ -2924,6 +2924,14 @@
         <div class="link-card-layout" id="linkShareContent" aria-live="polite"></div>
       </section>
 
+      <section class="screen link-invite-screen" id="linkInviteScreen" aria-labelledby="linkInviteTitle" hidden>
+        <div class="link-card-layout" id="linkInviteContent" aria-live="polite"></div>
+      </section>
+
+      <section class="screen link-comparison-screen" id="linkComparisonScreen" aria-labelledby="linkComparisonTitle" hidden>
+        <div class="link-card-layout" id="linkComparisonContent" aria-live="polite"></div>
+      </section>
+
       <section class="screen world-screen" id="wordWorldScreen" aria-labelledby="worldTitle" hidden>
         <div class="world-layout" id="wordWorldContent" aria-live="polite"></div>
       </section>
@@ -3124,6 +3132,10 @@
       const openLinkShareButton = document.getElementById('openLinkShareButton');
       const linkShareScreen = document.getElementById('linkShareScreen');
       const linkShareContent = document.getElementById('linkShareContent');
+      const linkInviteScreen = document.getElementById('linkInviteScreen');
+      const linkInviteContent = document.getElementById('linkInviteContent');
+      const linkComparisonScreen = document.getElementById('linkComparisonScreen');
+      const linkComparisonContent = document.getElementById('linkComparisonContent');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
       const profileList = document.getElementById('profileList');
@@ -3162,6 +3174,9 @@
       let linkShareReturnView = 'intersections';
       let linkShareNickname = '';
       let linkShareResult = null;
+      let linkGuest = null;
+      let linkGuestError = '';
+      let pendingLinkComparison = false;
       let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -3725,6 +3740,61 @@
         } catch (error) {
           return { guest: null, error: error instanceof Error ? error.message : 'Ссылка сравнения повреждена.' };
         }
+      }
+
+      function renderLinkInvite() {
+        linkInviteContent.replaceChildren();
+        const header = document.createElement('header');
+        header.className = 'screen-head';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'eyebrow';
+        eyebrow.textContent = 'сравнение по ссылке';
+        const title = document.createElement('h1');
+        title.id = 'linkInviteTitle';
+        title.tabIndex = -1;
+        const lead = document.createElement('p');
+        lead.className = 'lead';
+        const action = document.createElement('button');
+        action.className = 'primary-button';
+        action.type = 'button';
+        action.dataset.linkInviteStart = 'true';
+        if (linkGuest) {
+          title.textContent = `${linkGuest.nickname} приглашает тебя сравнить карты.`;
+          lead.textContent = 'Сначала собери свою — это минут десять.';
+          action.textContent = 'Собрать свою карту';
+        } else {
+          title.textContent = 'Ссылка не открылась.';
+          lead.textContent = linkGuestError || 'Похоже, ссылка повреждена или создана в другой версии.';
+          action.textContent = 'Начать без ссылки';
+        }
+        header.append(eyebrow, title, lead);
+        const card = document.createElement('section');
+        card.className = 'link-card';
+        const note = document.createElement('p');
+        note.className = 'link-warning';
+        note.textContent = linkGuest
+          ? 'Карта гостя останется отдельно: её слова не попадут в твой слепок.'
+          : 'Твой выбор всё равно останется только в этом браузере.';
+        card.append(note, action);
+        linkInviteContent.append(header, card);
+      }
+
+      function renderLinkComparisonPending() {
+        linkComparisonContent.replaceChildren();
+        const header = document.createElement('header');
+        header.className = 'screen-head';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'eyebrow';
+        eyebrow.textContent = 'сравнение по ссылке';
+        const title = document.createElement('h1');
+        title.id = 'linkComparisonTitle';
+        title.tabIndex = -1;
+        title.textContent = linkGuest ? `${linkGuest.nickname} и ты` : 'Карты готовы к сравнению.';
+        const lead = document.createElement('p');
+        lead.className = 'lead';
+        lead.textContent = 'Собираем общее и различия только в этом браузере.';
+        header.append(eyebrow, title, lead);
+        linkComparisonContent.append(header);
       }
 
       function appendLinkPreviewGroups(container, records) {
@@ -7646,7 +7716,7 @@
           lockedNote: 'после слепка'
         },
         intersections: {
-          views: ['intersections', 'profile-intersection', 'link-share'],
+          views: ['intersections', 'profile-intersection', 'link-share', 'link-invite', 'link-comparison'],
           lockedNote: 'после слепка'
         },
         forks: {
@@ -7667,7 +7737,8 @@
         const activeScreen = [
           lightIntroScreen, scatterScreen, darkIntroScreen, customShelfScreen, snapshotScreen,
           graphIntroScreen, graphScreen, worldsScreen, intersectionsScreen,
-          linkShareScreen, wordWorldScreen, profileIntersectionScreen, forksScreen
+          linkShareScreen, linkInviteScreen, linkComparisonScreen,
+          wordWorldScreen, profileIntersectionScreen, forksScreen
         ].find((screen) => !screen.hidden);
         document.querySelectorAll('.is-chapter-entering-forward, .is-chapter-entering-backward').forEach((screen) => {
           screen.classList.remove('is-chapter-entering-forward', 'is-chapter-entering-backward');
@@ -7736,6 +7807,8 @@
         const isWorlds = view === 'worlds';
         const isIntersections = view === 'intersections';
         const isLinkShare = view === 'link-share';
+        const isLinkInvite = view === 'link-invite';
+        const isLinkComparison = view === 'link-comparison';
         const isWordWorld = view === 'word-world';
         const isProfileIntersection = view === 'profile-intersection';
         const isForks = view === 'forks';
@@ -7756,12 +7829,16 @@
         worldsScreen.hidden = !isWorlds;
         intersectionsScreen.hidden = !isIntersections;
         linkShareScreen.hidden = !isLinkShare;
+        linkInviteScreen.hidden = !isLinkInvite;
+        linkComparisonScreen.hidden = !isLinkComparison;
         wordWorldScreen.hidden = !isWordWorld;
         profileIntersectionScreen.hidden = !isProfileIntersection;
         forksScreen.hidden = !isForks;
         state.view = isIntersections ? 'intersections'
           : isProfileIntersection ? 'profile-intersection'
           : isLinkShare ? 'link-share'
+          : isLinkInvite ? 'link-invite'
+          : isLinkComparison ? 'link-comparison'
           : isWorlds ? 'worlds'
           : isGraph ? 'graph'
           : isGraphIntro ? 'graph-intro'
@@ -7782,6 +7859,8 @@
           renderProfileMatches();
         }
         if (isLinkShare) renderLinkSharePreview();
+        if (isLinkInvite) renderLinkInvite();
+        if (isLinkComparison) renderLinkComparisonPending();
         if (isWordWorld) renderWordWorld();
         if (isProfileIntersection) renderProfileIntersection();
         if (isForks) {
@@ -7791,14 +7870,17 @@
           forksContent.hidden = personalDilemmaComposerOpen;
         }
         animateChapterEntry(previousView, state.view);
+        pathNav.hidden = isLinkInvite;
         updatePathNavigation(state.view);
         updateContextNavigation(state.view);
-        if (shouldPersist) persistState();
+        if (shouldPersist && !isLinkInvite && !isLinkComparison && !isLinkShare) persistState();
         if (focus) {
           window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
           const titleId = isIntersections ? 'intersectionsTitle'
             : isProfileIntersection ? 'profileIntersectionTitle'
             : isLinkShare ? 'linkShareTitle'
+            : isLinkInvite ? 'linkInviteTitle'
+            : isLinkComparison ? 'linkComparisonTitle'
             : isWorlds ? 'worldsTitle'
             : isGraph ? 'graphTitle'
             : isGraphIntro ? 'graphIntroTitle'
@@ -7861,6 +7943,18 @@
         if (button) chooseCustomShelf(button.dataset.chooseShelf);
       });
 
+      function finishRitual() {
+        state.ritualComplete = true;
+        state.personalityReturning = true;
+        if (linkGuest && pendingLinkComparison) {
+          pendingLinkComparison = false;
+          persistState();
+          showView('link-comparison', true, false);
+          return;
+        }
+        showView('snapshot');
+      }
+
       doneButton.addEventListener('click', () => {
         if (isSupplementingShelf()) {
           finishShelfSupplement();
@@ -7872,16 +7966,12 @@
           showView('dark-intro');
           return;
         }
-        state.ritualComplete = true;
-        state.personalityReturning = true;
-        showView('snapshot');
+        finishRitual();
       });
 
       skipButton.addEventListener('click', () => {
         if (state.wave === 2) {
-          state.ritualComplete = true;
-          state.personalityReturning = true;
-          showView('snapshot');
+          finishRitual();
         }
       });
 
@@ -8150,6 +8240,17 @@
         if (word) openWordWorld(word.dataset.worldDirectoryWord, 'worlds');
       });
       openLinkShareButton.addEventListener('click', () => openLinkSharePreview('intersections'));
+      linkInviteContent.addEventListener('click', (event) => {
+        if (!event.target.closest('[data-link-invite-start]')) return;
+        if (!linkGuest) {
+          history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+          linkGuestError = '';
+        }
+        pendingLinkComparison = Boolean(linkGuest);
+        state.wave = 1;
+        state.personalityReturning = false;
+        showView('scatter');
+      });
       linkShareContent.addEventListener('input', (event) => {
         if (event.target.matches('[name="nickname"]')) linkShareNickname = normalizeLinkNickname(event.target.value);
       });
@@ -8325,20 +8426,41 @@
         });
       });
 
-      renderScatter();
-      if (state.view === 'profile-intersection' && state.profileIntersectionId && totalSelected() >= 3) showView('profile-intersection', false, false);
-      else if (state.view === 'forks' && totalSelected() >= 3) showView('forks', false, false);
-      else if (state.view === 'worlds' && totalSelected() >= 3) showView('worlds', false, false);
-      else if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
-      else if (state.view === 'word-world' && state.worldWordId) showView('word-world', false, false);
-      else if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
-      else if (state.view === 'graph-intro' && totalSelected() >= 3) showView('graph-intro', false, false);
-      else if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
-      else if (state.view === 'custom-shelf' && state.pendingCustomId) showView('custom-shelf', false, false);
-      else if (state.view === 'dark-intro') showView('dark-intro', false, false);
-      else if (state.view === 'scatter') showView('scatter', false, false);
-      else showView('light-intro', false, false);
-      document.body.classList.remove('is-booting');
+      async function bootstrap() {
+        renderScatter();
+        const incomingComparison = await readLinkComparisonFromHash();
+        if (incomingComparison) {
+          linkGuest = incomingComparison.guest;
+          linkGuestError = incomingComparison.error || '';
+          pendingLinkComparison = Boolean(linkGuest);
+          if (linkGuest && state.ritualComplete && totalSelected() >= 3) {
+            pendingLinkComparison = false;
+            showView('link-comparison', false, false);
+          } else {
+            showView('link-invite', false, false);
+          }
+        } else if (state.view === 'profile-intersection' && state.profileIntersectionId && totalSelected() >= 3) showView('profile-intersection', false, false);
+        else if (state.view === 'forks' && totalSelected() >= 3) showView('forks', false, false);
+        else if (state.view === 'worlds' && totalSelected() >= 3) showView('worlds', false, false);
+        else if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
+        else if (state.view === 'word-world' && state.worldWordId) showView('word-world', false, false);
+        else if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
+        else if (state.view === 'graph-intro' && totalSelected() >= 3) showView('graph-intro', false, false);
+        else if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
+        else if (state.view === 'custom-shelf' && state.pendingCustomId) showView('custom-shelf', false, false);
+        else if (state.view === 'dark-intro') showView('dark-intro', false, false);
+        else if (state.view === 'scatter') showView('scatter', false, false);
+        else showView('light-intro', false, false);
+        document.body.classList.remove('is-booting');
+      }
+
+      bootstrap().catch(() => {
+        linkGuest = null;
+        linkGuestError = 'Ссылку не удалось прочитать в этом браузере.';
+        renderScatter();
+        showView(window.location.hash.startsWith(`#${LINK_COMPARISON_HASH_PREFIX}`) ? 'link-invite' : 'light-intro', false, false);
+        document.body.classList.remove('is-booting');
+      });
     })();
   </script>
 </body>
