@@ -891,9 +891,6 @@
     details.worlds-shelf > summary { cursor: pointer; color: var(--ink); font: 800 0.82rem/1.2 var(--sans); }
     details.worlds-shelf > .worlds-word-list { margin-top: 11px; }
 
-    .closeness-screen .match-panel { margin-bottom: 18px; }
-    .closeness-actions { display: flex; justify-content: flex-end; }
-
     .profile-intersection-back { justify-self: start; }
     .profile-intersection-difference { display: grid; gap: 12px; }
     .profile-intersection-column { display: grid; gap: 8px; }
@@ -2668,11 +2665,6 @@
           <span class="path-chapter-name">Миры слов</span>
           <span class="path-chapter-note">после слепка</span>
         </button>
-        <button class="path-chapter" type="button" data-path-chapter="closeness">
-          <span class="path-chapter-icon" aria-hidden="true"><span>≈</span></span>
-          <span class="path-chapter-name">Близость</span>
-          <span class="path-chapter-note">после слепка</span>
-        </button>
         <button class="path-chapter" type="button" data-path-chapter="intersections">
           <span class="path-chapter-icon" aria-hidden="true"><span>∩</span></span>
           <span class="path-chapter-name">Пересечения</span>
@@ -2824,9 +2816,9 @@
         <div class="worlds-directory" id="worldsDirectory"></div>
       </section>
 
-      <section class="screen closeness-screen" id="closenessScreen" aria-labelledby="closenessTitle" hidden>
+      <section class="screen intersections-screen" id="intersectionsScreen" aria-labelledby="intersectionsTitle" hidden>
         <header class="screen-head">
-          <h1 id="closenessTitle" tabindex="-1">Какую степень близости хочется исследовать?</h1>
+          <h1 id="intersectionsTitle" tabindex="-1">Найди, где две карты встречаются.</h1>
           <p class="lead">Настрой расстояние до учебных двойников. Это поиск для размышления, не оценка совместимости.</p>
         </header>
 
@@ -2838,16 +2830,6 @@
           <input class="match-range" id="matchRange" type="range" min="0" max="100" step="1" value="50">
           <div class="match-range-scale" aria-hidden="true"><span>меньше общего</span><span>больше общего</span></div>
         </section>
-        <div class="closeness-actions">
-          <button class="primary-button" id="closenessShowIntersections" type="button">Посмотреть пересечения</button>
-        </div>
-      </section>
-
-      <section class="screen intersections-screen" id="intersectionsScreen" aria-labelledby="intersectionsTitle" hidden>
-        <header class="screen-head">
-          <h1 id="intersectionsTitle" tabindex="-1">Найди, где две карты встречаются.</h1>
-          <p class="lead">Рядом — учебные двойники, найденные по выбранной в «Близости» степени совпадения.</p>
-        </header>
 
         <div class="profile-list" id="profileList" aria-live="polite"></div>
         <div class="profile-more-row">
@@ -3050,7 +3032,6 @@
       const graphTidyButton = document.getElementById('graphTidyButton');
       const worldsScreen = document.getElementById('worldsScreen');
       const worldsDirectory = document.getElementById('worldsDirectory');
-      const closenessScreen = document.getElementById('closenessScreen');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
@@ -3246,8 +3227,8 @@
             ? 'profile-intersection'
             : parsed.view === 'forks' && selectionCount >= 3
             ? 'forks'
-            : parsed.view === 'closeness' && selectionCount >= 3
-            ? 'closeness'
+            : (parsed.view === 'closeness' || parsed.view === 'intersections') && selectionCount >= 3
+            ? 'intersections'
             : parsed.view === 'worlds' && selectionCount >= 3
             ? 'worlds'
             : parsed.view === 'intersections' && selectionCount >= 3
@@ -5029,7 +5010,7 @@
         intersectionMap.hidden = true;
       }
 
-      function renderCloseness() {
+      function renderMatchControls() {
         matchRange.value = String(state.matchTarget);
         matchValue.textContent = similarityLabel(state.matchTarget);
         matchRange.setAttribute('aria-valuetext', similarityLabel(state.matchTarget));
@@ -5039,7 +5020,7 @@
         state.matchTarget = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
         state.matchVisibleCount = 3;
         state.activeProfileId = null;
-        renderCloseness();
+        renderMatchControls();
         if (state.view === 'intersections') renderProfileMatches();
         if (shouldPersist) persistState();
       }
@@ -7282,10 +7263,6 @@
           views: ['worlds', 'word-world'],
           lockedNote: 'после слепка'
         },
-        closeness: {
-          views: ['closeness'],
-          lockedNote: 'после слепка'
-        },
         intersections: {
           views: ['intersections', 'profile-intersection'],
           lockedNote: 'после слепка'
@@ -7300,14 +7277,14 @@
         return Object.entries(PATH_CHAPTERS).find(([, chapter]) => chapter.views.includes(view))?.[0] || 'personality';
       }
 
-      const PATH_CHAPTER_ORDER = ['personality', 'map', 'mirror', 'worlds', 'closeness', 'intersections', 'forks'];
+      const PATH_CHAPTER_ORDER = ['personality', 'map', 'mirror', 'worlds', 'intersections', 'forks'];
 
       function animateChapterEntry(previousView, nextView) {
         const previousChapter = pathChapterForView(previousView);
         const nextChapter = pathChapterForView(nextView);
         const activeScreen = [
           lightIntroScreen, scatterScreen, darkIntroScreen, customShelfScreen, snapshotScreen,
-          graphIntroScreen, graphScreen, worldsScreen, closenessScreen, intersectionsScreen,
+          graphIntroScreen, graphScreen, worldsScreen, intersectionsScreen,
           wordWorldScreen, profileIntersectionScreen, forksScreen
         ].find((screen) => !screen.hidden);
         document.querySelectorAll('.is-chapter-entering-forward, .is-chapter-entering-backward').forEach((screen) => {
@@ -7375,7 +7352,6 @@
         const isGraphIntro = view === 'graph-intro';
         const isGraph = view === 'graph';
         const isWorlds = view === 'worlds';
-        const isCloseness = view === 'closeness';
         const isIntersections = view === 'intersections';
         const isWordWorld = view === 'word-world';
         const isProfileIntersection = view === 'profile-intersection';
@@ -7395,14 +7371,12 @@
         graphIntroScreen.hidden = !isGraphIntro;
         graphScreen.hidden = !isGraph;
         worldsScreen.hidden = !isWorlds;
-        closenessScreen.hidden = !isCloseness;
         intersectionsScreen.hidden = !isIntersections;
         wordWorldScreen.hidden = !isWordWorld;
         profileIntersectionScreen.hidden = !isProfileIntersection;
         forksScreen.hidden = !isForks;
         state.view = isIntersections ? 'intersections'
           : isProfileIntersection ? 'profile-intersection'
-          : isCloseness ? 'closeness'
           : isWorlds ? 'worlds'
           : isGraph ? 'graph'
           : isGraphIntro ? 'graph-intro'
@@ -7419,7 +7393,6 @@
         if (isSnapshot) renderSnapshot();
         if (isGraph && !options.preserveGraph) renderGraph();
         if (isWorlds) renderWorldsDirectory();
-        if (isCloseness) renderCloseness();
         if (isIntersections) {
           renderProfileMatches();
         }
@@ -7439,7 +7412,6 @@
           window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
           const titleId = isIntersections ? 'intersectionsTitle'
             : isProfileIntersection ? 'profileIntersectionTitle'
-            : isCloseness ? 'closenessTitle'
             : isWorlds ? 'worldsTitle'
             : isGraph ? 'graphTitle'
             : isGraphIntro ? 'graphIntroTitle'
@@ -7783,7 +7755,6 @@
         else if (chapter === 'map') openGraphScreen();
         else if (chapter === 'mirror') showView('snapshot');
         else if (chapter === 'worlds') showView('worlds');
-        else if (chapter === 'closeness') showView('closeness');
         else if (chapter === 'intersections') showView('intersections');
         else if (chapter === 'forks') showView('forks');
       });
@@ -7793,7 +7764,6 @@
       });
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
-      document.getElementById('closenessShowIntersections').addEventListener('click', () => showView('intersections'));
       profileList.addEventListener('click', (event) => {
         const button = event.target.closest('[data-profile-id]');
         if (!button) return;
@@ -7934,7 +7904,6 @@
       renderScatter();
       if (state.view === 'profile-intersection' && state.profileIntersectionId && totalSelected() >= 3) showView('profile-intersection', false, false);
       else if (state.view === 'forks' && totalSelected() >= 3) showView('forks', false, false);
-      else if (state.view === 'closeness' && totalSelected() >= 3) showView('closeness', false, false);
       else if (state.view === 'worlds' && totalSelected() >= 3) showView('worlds', false, false);
       else if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
       else if (state.view === 'word-world' && state.worldWordId) showView('word-world', false, false);

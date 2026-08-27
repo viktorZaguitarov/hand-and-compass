@@ -498,8 +498,20 @@ async function main() {
     assert(consoleErrors.length === 0, `graph console errors: ${consoleErrors.join(' | ')}`);
     completed.push('граф без ошибок консоли');
 
-    await click(client, '[data-path-chapter="closeness"]');
-    await waitFor(client, visible('#closenessScreen'), 'closeness controls');
+    const pathStructure = await evaluate(client, `(() => ({
+      chapters: [...document.querySelectorAll('[data-path-chapter]')].map((node) => node.dataset.pathChapter),
+      closenessScreens: document.querySelectorAll('#closenessScreen').length
+    }))()`);
+    assert(pathStructure.chapters.length === 6 && !pathStructure.chapters.includes('closeness') && pathStructure.closenessScreens === 0, 'closeness is still a separate chapter');
+    await click(client, '[data-path-chapter="intersections"]');
+    await waitFor(client, `${visible('#intersectionsScreen')} && ${visible('#matchRange')} && document.querySelectorAll('#profileList [data-profile-id]').length >= 3`, 'combined intersections controls');
+    await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      saved.view = 'closeness';
+      localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
+    })()`);
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, `${visible('#intersectionsScreen')} && document.querySelector('[data-path-chapter="intersections"]').getAttribute('aria-current') === 'step'`, 'legacy closeness migration');
     await evaluate(client, `(() => {
       const range = document.getElementById('matchRange');
       range.value = '64';
@@ -507,8 +519,7 @@ async function main() {
       range.dispatchEvent(new Event('change', { bubbles: true }));
       return range.getAttribute('aria-valuetext');
     })()`);
-    await click(client, '#closenessShowIntersections');
-    await waitFor(client, `${visible('#intersectionsScreen')} && document.querySelectorAll('#profileList [data-profile-id]').length >= 3`, 'intersection calculation');
+    await waitFor(client, `document.querySelectorAll('#profileList [data-profile-id]').length >= 3`, 'intersection calculation');
     await click(client, '#profileList [data-profile-id]');
     await waitFor(client, `${visible('#profileIntersectionScreen')} && document.querySelectorAll('#profileIntersectionContent .profile-intersection-section').length === 3`, 'profile intersection');
     await click(client, '[data-profile-intersection-back]');
