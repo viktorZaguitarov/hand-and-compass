@@ -2000,6 +2000,100 @@
       font-family: var(--sans);
     }
 
+    .friend-compare-entry {
+      display: flex;
+      justify-content: center;
+      max-width: 780px;
+      margin: 0 auto 14px;
+    }
+
+    .friend-compare-entry .primary-button { width: min(100%, 360px); }
+
+    .link-share-screen,
+    .link-invite-screen,
+    .link-comparison-screen { padding-bottom: 42px; }
+
+    .link-card-layout {
+      display: grid;
+      gap: 16px;
+      width: min(760px, 100%);
+      margin: 0 auto;
+    }
+
+    .link-card {
+      display: grid;
+      gap: 14px;
+      padding: 19px;
+      border: 1px solid rgba(83, 104, 96, 0.2);
+      border-radius: 23px;
+      background: rgba(255, 253, 247, 0.9);
+      box-shadow: var(--shadow-soft);
+      font-family: var(--sans);
+    }
+
+    .link-card h2 { margin: 0; color: var(--forest-dark); font-size: 1.08rem; }
+    .link-card p { margin: 0; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.5; }
+    .link-preview-groups { display: grid; gap: 10px; }
+    .link-preview-shelf { display: grid; gap: 8px; padding: 11px; border-radius: 15px; background: rgba(238, 230, 212, 0.46); }
+    .link-preview-shelf-title { color: var(--ink-soft); font-size: 0.67rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .link-preview-words { display: flex; flex-wrap: wrap; gap: 6px; }
+    .link-preview-word { padding: 6px 9px; border-radius: 999px; color: var(--ink); background: rgba(255, 253, 247, 0.84); font-size: 0.72rem; }
+
+    .link-warning {
+      padding: 13px 14px;
+      border: 1px solid rgba(170, 102, 87, 0.24);
+      border-radius: 15px;
+      color: #764a42 !important;
+      background: rgba(242, 224, 214, 0.62);
+      font-weight: 700;
+    }
+
+    .link-share-form { display: grid; gap: 11px; }
+    .link-share-label { display: grid; gap: 7px; color: var(--forest-dark); font-size: 0.78rem; font-weight: 800; }
+    .link-share-input,
+    .link-share-url {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid rgba(83, 104, 96, 0.28);
+      border-radius: 14px;
+      color: var(--ink);
+      background: rgba(255, 253, 247, 0.94);
+      font: 0.82rem/1.45 var(--sans);
+    }
+    .link-share-url { min-height: 92px; resize: vertical; overflow-wrap: anywhere; }
+    .link-share-result { display: grid; gap: 10px; padding-top: 13px; border-top: 1px solid var(--line); }
+    .link-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .link-share-status { min-height: 1.4em; color: var(--forest-dark) !important; }
+
+    .link-comparison-score {
+      justify-self: start;
+      margin: -5px 0 1px;
+      color: var(--ink-faint);
+      font: 0.68rem/1.4 var(--sans);
+    }
+    .link-comparison-section { gap: 12px; }
+    .link-comparison-words { display: flex; flex-wrap: wrap; gap: 7px; }
+    .link-comparison-word {
+      padding: 8px 11px;
+      border-radius: 999px;
+      color: var(--forest-dark);
+      background: rgba(205, 224, 211, 0.62);
+      font: 700 0.75rem/1.25 var(--sans);
+    }
+    .link-contrast-list { display: grid; gap: 8px; }
+    .link-contrast {
+      display: grid;
+      gap: 4px;
+      padding: 12px 13px;
+      border-radius: 16px;
+      background: rgba(238, 230, 212, 0.5);
+    }
+    .link-contrast-pair { color: var(--ink) !important; font-weight: 750; overflow-wrap: anywhere; }
+    .link-contrast span { color: var(--ink-faint); font: 0.67rem/1.35 var(--sans); }
+    .link-question { border-color: rgba(196, 123, 86, 0.26); background: rgba(250, 238, 224, 0.84); }
+    .link-question p { color: var(--ink) !important; font: 700 0.88rem/1.5 var(--serif); }
+    .link-comparison-actions { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 8px; }
+
     .match-label-row {
       display: flex;
       align-items: baseline;
@@ -2537,6 +2631,10 @@
       .intersections-screen { padding-inline: 11px; }
       .intersections-screen .screen-head { margin-bottom: 15px; }
       .match-panel { margin-bottom: 13px; padding: 13px; border-radius: 17px; }
+      .friend-compare-entry { margin-bottom: 11px; }
+      .link-card { padding: 15px; border-radius: 19px; }
+      .link-share-actions { grid-template-columns: 1fr; }
+      .link-comparison-actions { grid-template-columns: 1fr; }
       .match-label { font-size: 0.74rem; }
       .match-value { font-size: 1.08rem; }
       .match-range { height: 48px; }
@@ -2830,6 +2928,10 @@
           <p class="lead">Настрой расстояние до учебных двойников. Это поиск для размышления, не оценка совместимости.</p>
         </header>
 
+        <div class="friend-compare-entry">
+          <button class="primary-button" id="openLinkShareButton" type="button">Сравниться с другом</button>
+        </div>
+
         <section class="match-panel" aria-labelledby="matchRangeLabel">
           <div class="match-label-row">
             <label class="match-label" id="matchRangeLabel" for="matchRange">Какую близость искать?</label>
@@ -2846,6 +2948,18 @@
         <article class="intersection-map" id="intersectionMap" aria-live="polite" hidden></article>
         <button class="secondary-button intersections-context-back" id="intersectionsBackButton" type="button" hidden>← К миру слова</button>
 
+      </section>
+
+      <section class="screen link-share-screen" id="linkShareScreen" aria-labelledby="linkShareTitle" hidden>
+        <div class="link-card-layout" id="linkShareContent" aria-live="polite"></div>
+      </section>
+
+      <section class="screen link-invite-screen" id="linkInviteScreen" aria-labelledby="linkInviteTitle" hidden>
+        <div class="link-card-layout" id="linkInviteContent" aria-live="polite"></div>
+      </section>
+
+      <section class="screen link-comparison-screen" id="linkComparisonScreen" aria-labelledby="linkComparisonTitle" hidden>
+        <div class="link-card-layout" id="linkComparisonContent" aria-live="polite"></div>
       </section>
 
       <section class="screen world-screen" id="wordWorldScreen" aria-labelledby="worldTitle" hidden>
@@ -2916,6 +3030,10 @@
       const FORKS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
       const SNAPSHOT_EXPORT_VERSION = 1;
       const SNAPSHOT_STORAGE_KEYS = [STORAGE_KEY, WORLD_STORAGE_KEY, FORKS_STORAGE_KEY];
+      const LINK_COMPARISON_FORMAT = 'hand-compass-link';
+      const LINK_COMPARISON_VERSION = 1;
+      const LINK_COMPARISON_HASH_PREFIX = 'compare=';
+      const LINK_COMPARISON_MAX_WORDS = 100;
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
       const DILEMMAS = JSON.parse(document.getElementById('dilemmasData').textContent);
@@ -3041,6 +3159,13 @@
       const worldsScreen = document.getElementById('worldsScreen');
       const worldsDirectory = document.getElementById('worldsDirectory');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
+      const openLinkShareButton = document.getElementById('openLinkShareButton');
+      const linkShareScreen = document.getElementById('linkShareScreen');
+      const linkShareContent = document.getElementById('linkShareContent');
+      const linkInviteScreen = document.getElementById('linkInviteScreen');
+      const linkInviteContent = document.getElementById('linkInviteContent');
+      const linkComparisonScreen = document.getElementById('linkComparisonScreen');
+      const linkComparisonContent = document.getElementById('linkComparisonContent');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
       const profileList = document.getElementById('profileList');
@@ -3076,6 +3201,12 @@
       let activeFork = null;
       let personalDilemmaComposerOpen = false;
       let lastPersonalDilemmaId = null;
+      let linkShareReturnView = 'intersections';
+      let linkShareNickname = '';
+      let linkShareResult = null;
+      let linkGuest = null;
+      let linkGuestError = '';
+      let pendingLinkComparison = false;
       let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -3516,6 +3647,482 @@
           sign: state.wordSigns?.[item.id] ?? item.sign ?? null,
           privacy: state.privacyByWord?.[item.id] ?? snapshotPrivacyFor(item)
         };
+      }
+
+      function normalizeLinkNickname(value) {
+        return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 20);
+      }
+
+      function buildLinkComparisonPayload(sourceState, nickname, words = WORDS, shelves = SHELVES) {
+        const wordIndex = new Map(words.map((item) => [item.id, item]));
+        const allowedShelfIds = new Set(shelves.map((item) => item.id));
+        const selectedIds = Array.isArray(sourceState?.selectedIds) ? [...new Set(sourceState.selectedIds)] : [];
+        const shareableWords = selectedIds
+          .map((id) => wordIndex.get(id))
+          .filter(Boolean)
+          .filter((item) => {
+            const savedPrivacy = sourceState?.privacyByWord?.[item.id];
+            const defaultPrivacy = (item.shelves || []).some((shelfId) => shelfId === 'stones' || shelfId === 'triggers')
+              ? 'only-me'
+              : 'on-match';
+            return (savedPrivacy || defaultPrivacy) !== 'only-me';
+          })
+          .slice(0, LINK_COMPARISON_MAX_WORDS)
+          .map((item) => ({
+            i: item.id,
+            s: (item.shelves || []).filter((shelfId) => allowedShelfIds.has(shelfId)),
+            g: typeof sourceState?.wordSigns?.[item.id] === 'string'
+              ? sourceState.wordSigns[item.id].trim().slice(0, 12) || null
+              : null
+          }));
+        return {
+          f: LINK_COMPARISON_FORMAT,
+          v: LINK_COMPARISON_VERSION,
+          n: normalizeLinkNickname(nickname),
+          w: shareableWords
+        };
+      }
+
+      function validateLinkComparisonPayload(payload) {
+        if (!isPlainObject(payload)
+          || payload.f !== LINK_COMPARISON_FORMAT
+          || payload.v !== LINK_COMPARISON_VERSION
+          || typeof payload.n !== 'string') {
+          throw new Error('Ссылка сравнения имеет неизвестный формат.');
+        }
+        const nickname = normalizeLinkNickname(payload.n);
+        if (!nickname) throw new Error('В ссылке не указано имя отправителя.');
+        if (!Array.isArray(payload.w) || payload.w.length > LINK_COMPARISON_MAX_WORDS) {
+          throw new Error('В ссылке слишком много слов или повреждён список.');
+        }
+        const seen = new Set();
+        const words = payload.w.map((record) => {
+          if (!isPlainObject(record) || typeof record.i !== 'string' || seen.has(record.i)) {
+            throw new Error('Список слов в ссылке повреждён.');
+          }
+          const dictionaryWord = WORD_BY_ID.get(record.i);
+          if (!dictionaryWord || !Array.isArray(record.s) || !record.s.length) {
+            throw new Error('В ссылке есть слово, которого нет в текущем словаре.');
+          }
+          const dictionaryShelves = new Set(dictionaryWord.shelves || []);
+          const shelves = [...new Set(record.s)].filter((shelfId) => SHELF_BY_ID.has(shelfId) && dictionaryShelves.has(shelfId));
+          if (shelves.length !== new Set(record.s).size) throw new Error('Полки слова в ссылке повреждены.');
+          const sign = record.g === null || record.g === undefined
+            ? null
+            : typeof record.g === 'string' && record.g.trim().length <= 12
+            ? record.g.trim() || null
+            : (() => { throw new Error('Знак слова в ссылке повреждён.'); })();
+          seen.add(record.i);
+          return { id: record.i, shelves, sign };
+        });
+        return { format: payload.f, version: payload.v, nickname, words };
+      }
+
+      function bytesToBase64Url(bytes) {
+        let binary = '';
+        for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+          binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+        }
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+      }
+
+      function base64UrlToBytes(value) {
+        if (typeof value !== 'string' || !value || value.length > 16_000 || !/^[A-Za-z0-9_-]+$/.test(value)) {
+          throw new Error('Код ссылки повреждён.');
+        }
+        const base64 = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
+        const binary = atob(base64);
+        return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+      }
+
+      async function compressLinkComparisonPayload(payload) {
+        if (typeof CompressionStream !== 'function') throw new Error('Этот браузер пока не умеет создавать сжатые ссылки.');
+        const input = new TextEncoder().encode(JSON.stringify(payload));
+        const stream = new Blob([input]).stream().pipeThrough(new CompressionStream('deflate'));
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+      }
+
+      async function decompressLinkComparisonPayload(bytes) {
+        if (typeof DecompressionStream !== 'function') throw new Error('Этот браузер пока не умеет открывать сжатые ссылки.');
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'));
+        const text = await new Response(stream).text();
+        if (text.length > 100_000) throw new Error('Ссылка содержит слишком много данных.');
+        return JSON.parse(text);
+      }
+
+      async function createLinkComparisonUrl(sourceState, nickname) {
+        const payload = buildLinkComparisonPayload(sourceState, nickname);
+        if (!payload.n) throw new Error('Напиши, как тебя подписать.');
+        if (!payload.w.length) throw new Error('В слепке пока нет слов, которыми можно поделиться.');
+        const encoded = bytesToBase64Url(await compressLinkComparisonPayload(payload));
+        const url = new URL(window.location.href);
+        url.hash = `${LINK_COMPARISON_HASH_PREFIX}${encoded}`;
+        return { url: url.href, payload, encoded };
+      }
+
+      async function readLinkComparisonFromHash(hash = window.location.hash) {
+        const rawHash = String(hash || '').replace(/^#/, '');
+        if (!rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)) return null;
+        try {
+          const encoded = rawHash.slice(LINK_COMPARISON_HASH_PREFIX.length);
+          const payload = await decompressLinkComparisonPayload(base64UrlToBytes(encoded));
+          return { guest: validateLinkComparisonPayload(payload), error: null };
+        } catch (error) {
+          return { guest: null, error: error instanceof Error ? error.message : 'Ссылка сравнения повреждена.' };
+        }
+      }
+
+      function renderLinkInvite() {
+        linkInviteContent.replaceChildren();
+        const header = document.createElement('header');
+        header.className = 'screen-head';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'eyebrow';
+        eyebrow.textContent = 'сравнение по ссылке';
+        const title = document.createElement('h1');
+        title.id = 'linkInviteTitle';
+        title.tabIndex = -1;
+        const lead = document.createElement('p');
+        lead.className = 'lead';
+        const action = document.createElement('button');
+        action.className = 'primary-button';
+        action.type = 'button';
+        action.dataset.linkInviteStart = 'true';
+        if (linkGuest) {
+          title.textContent = `${linkGuest.nickname} приглашает тебя сравнить карты.`;
+          lead.textContent = 'Сначала собери свою — это минут десять.';
+          action.textContent = 'Собрать свою карту';
+        } else {
+          title.textContent = 'Ссылка не открылась.';
+          lead.textContent = linkGuestError || 'Похоже, ссылка повреждена или создана в другой версии.';
+          action.textContent = 'Начать без ссылки';
+        }
+        header.append(eyebrow, title, lead);
+        const card = document.createElement('section');
+        card.className = 'link-card';
+        const note = document.createElement('p');
+        note.className = 'link-warning';
+        note.textContent = linkGuest
+          ? 'Карта гостя останется отдельно: её слова не попадут в твой слепок.'
+          : 'Твой выбор всё равно останется только в этом браузере.';
+        card.append(note, action);
+        linkInviteContent.append(header, card);
+      }
+
+      function linkComparisonContrasts(guestOnlyIds, mineOnlyIds) {
+        const guestOnly = guestOnlyIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const mineOnly = mineOnlyIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const pairs = [];
+        const usedGuest = new Set();
+        const usedMine = new Set();
+        const addPair = (guestWord, mineWord, note) => {
+          if (!guestWord || !mineWord || usedGuest.has(guestWord.id) || usedMine.has(mineWord.id) || pairs.length >= 2) return;
+          usedGuest.add(guestWord.id);
+          usedMine.add(mineWord.id);
+          pairs.push({ guestWord, mineWord, note });
+        };
+        guestOnly.forEach((guestWord) => {
+          const mineWord = mineOnly.find((word) => guestWord.antonym === word.id || word.antonym === guestWord.id);
+          if (mineWord) addPair(guestWord, mineWord, 'два разных полюса');
+        });
+        guestOnly.forEach((guestWord) => {
+          const activatedMine = (guestWord.activates || []).find((id) => mineOnly.some((word) => word.id === id));
+          if (activatedMine) addPair(guestWord, WORD_BY_ID.get(activatedMine), 'эта связка может звучать по-разному');
+          const mineTrigger = mineOnly.find((word) => (word.activates || []).includes(guestWord.id));
+          if (mineTrigger) addPair(guestWord, mineTrigger, 'эта связка может звучать по-разному');
+        });
+        guestOnly.forEach((guestWord) => {
+          const mineWord = mineOnly.find((word) => !usedMine.has(word.id)
+            && (word.shelves || []).some((shelfId) => (guestWord.shelves || []).includes(shelfId)));
+          if (mineWord) addPair(guestWord, mineWord, 'рядом на одной теме');
+        });
+        guestOnly.forEach((guestWord) => {
+          const mineWord = mineOnly.find((word) => !usedMine.has(word.id));
+          if (mineWord) addPair(guestWord, mineWord, 'разные акценты');
+        });
+        return pairs;
+      }
+
+      function linkComparisonWordChip(word) {
+        const chip = document.createElement('span');
+        chip.className = 'link-comparison-word';
+        chip.textContent = word.word;
+        return chip;
+      }
+
+      function renderLinkComparison() {
+        linkComparisonContent.replaceChildren();
+        const header = document.createElement('header');
+        header.className = 'screen-head';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'eyebrow';
+        eyebrow.textContent = 'сравнение по ссылке';
+        const title = document.createElement('h1');
+        title.id = 'linkComparisonTitle';
+        title.tabIndex = -1;
+        title.textContent = linkGuest ? `${linkGuest.nickname} и ты` : 'Карты готовы к сравнению.';
+        const lead = document.createElement('p');
+        lead.className = 'lead';
+        lead.textContent = 'Не вывод о вас, а несколько мест, с которых можно начать разговор.';
+        header.append(eyebrow, title, lead);
+        linkComparisonContent.append(header);
+        if (!linkGuest) return;
+
+        const mine = new Set(state.selectedIds.filter((id) => WORD_BY_ID.has(id)));
+        const theirs = new Set(linkGuest.words.map((record) => record.id).filter((id) => WORD_BY_ID.has(id)));
+        const commonIds = [...mine].filter((id) => theirs.has(id));
+        const guestOnlyIds = [...theirs].filter((id) => !mine.has(id));
+        const mineOnlyIds = [...mine].filter((id) => !theirs.has(id));
+        const score = weightedSimilarityBetween([...mine], [...theirs]);
+        const scoreLine = document.createElement('p');
+        scoreLine.className = 'link-comparison-score';
+        scoreLine.dataset.linkComparisonScore = String(score);
+        scoreLine.textContent = `По взвешенному пересечению — ${similarityLabel(score)}.`;
+        linkComparisonContent.append(scoreLine);
+
+        const common = document.createElement('section');
+        common.className = 'link-card link-comparison-section';
+        const commonTitle = document.createElement('h2');
+        commonTitle.textContent = 'Что вас связывает';
+        common.append(commonTitle);
+        const commonWords = commonIds
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean)
+          .sort((left, right) => (state.wordWeights?.[right.id] || 1) - (state.wordWeights?.[left.id] || 1)
+            || matchWordWeight(right.id) - matchWordWeight(left.id)
+            || left.word.localeCompare(right.word, 'ru'))
+          .slice(0, 3);
+        if (commonWords.length) {
+          const row = document.createElement('div');
+          row.className = 'link-comparison-words';
+          commonWords.forEach((word) => row.append(linkComparisonWordChip(word)));
+          common.append(row);
+        } else {
+          const empty = document.createElement('p');
+          empty.textContent = 'Одинаковых слов пока нет — можно начать с различий.';
+          common.append(empty);
+        }
+
+        const different = document.createElement('section');
+        different.className = 'link-card link-comparison-section';
+        const differentTitle = document.createElement('h2');
+        differentTitle.textContent = 'Где вы разные';
+        different.append(differentTitle);
+        const contrasts = linkComparisonContrasts(guestOnlyIds, mineOnlyIds);
+        if (contrasts.length) {
+          const list = document.createElement('div');
+          list.className = 'link-contrast-list';
+          contrasts.forEach(({ guestWord, mineWord, note }) => {
+            const item = document.createElement('div');
+            item.className = 'link-contrast';
+            const pair = document.createElement('p');
+            pair.className = 'link-contrast-pair';
+            pair.textContent = `${linkGuest.nickname}: «${guestWord.word}» · ты: «${mineWord.word}»`;
+            const hint = document.createElement('span');
+            hint.textContent = note;
+            item.append(pair, hint);
+            list.append(item);
+          });
+          different.append(list);
+        } else {
+          const empty = document.createElement('p');
+          empty.textContent = 'Явного контраста в выбранных словах пока не видно.';
+          different.append(empty);
+        }
+
+        const question = document.createElement('section');
+        question.className = 'link-card link-comparison-section link-question';
+        const questionTitle = document.createElement('h2');
+        questionTitle.textContent = `О чём спросить ${linkGuest.nickname}`;
+        const questionWord = (guestOnlyIds.length ? guestOnlyIds : [...theirs])
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean)
+          .sort((left, right) => profilesForWord(left.id).length - profilesForWord(right.id).length
+            || left.word.localeCompare(right.word, 'ru'))[0];
+        const questionText = document.createElement('p');
+        questionText.textContent = questionWord
+          ? `«Что для тебя стоит за словом “${questionWord.word}”?»`
+          : '«Какое слово в твоей карте сейчас самое живое?»';
+        question.append(questionTitle, questionText);
+
+        const actions = document.createElement('div');
+        actions.className = 'link-comparison-actions';
+        const answer = document.createElement('button');
+        answer.className = 'primary-button';
+        answer.type = 'button';
+        answer.dataset.linkComparisonReply = 'true';
+        answer.textContent = 'Отправить свою карту в ответ';
+        const back = document.createElement('button');
+        back.className = 'secondary-button';
+        back.type = 'button';
+        back.dataset.linkComparisonBack = 'true';
+        back.textContent = 'К пересечениям';
+        actions.append(answer, back);
+        linkComparisonContent.append(common, different, question, actions);
+      }
+
+      function appendLinkPreviewGroups(container, records) {
+        const groups = SHELVES.map((shelf) => ({
+          shelf,
+          words: records
+            .filter((record) => record.s.includes(shelf.id))
+            .map((record) => WORD_BY_ID.get(record.i))
+            .filter(Boolean)
+        })).filter((group) => group.words.length);
+        const list = document.createElement('div');
+        list.className = 'link-preview-groups';
+        groups.forEach(({ shelf, words }) => {
+          const group = document.createElement('div');
+          group.className = `link-preview-shelf shelf-${shelf.id}`;
+          const title = document.createElement('span');
+          title.className = 'link-preview-shelf-title';
+          title.textContent = `${shelf.emoji} ${shelf.title}`;
+          const wordList = document.createElement('div');
+          wordList.className = 'link-preview-words';
+          words.forEach((word) => {
+            const chip = document.createElement('span');
+            chip.className = 'link-preview-word';
+            chip.textContent = word.word;
+            wordList.append(chip);
+          });
+          group.append(title, wordList);
+          list.append(group);
+        });
+        container.append(list);
+      }
+
+      function renderLinkSharePreview() {
+        linkShareContent.replaceChildren();
+        const back = document.createElement('button');
+        back.className = 'secondary-button profile-intersection-back';
+        back.type = 'button';
+        back.dataset.linkShareBack = 'true';
+        back.textContent = '← Назад';
+
+        const header = document.createElement('header');
+        header.className = 'screen-head';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'eyebrow';
+        eyebrow.textContent = 'сравнение по ссылке';
+        const title = document.createElement('h1');
+        title.id = 'linkShareTitle';
+        title.tabIndex = -1;
+        title.textContent = 'Покажи другу только выбранную часть карты.';
+        const lead = document.createElement('p');
+        lead.className = 'lead';
+        lead.textContent = 'Перед созданием проверь слова, которые окажутся в ссылке.';
+        header.append(eyebrow, title, lead);
+
+        const card = document.createElement('section');
+        card.className = 'link-card';
+        const cardTitle = document.createElement('h2');
+        cardTitle.textContent = 'Что увидит друг';
+        card.append(cardTitle);
+        const previewPayload = buildLinkComparisonPayload(state, linkShareNickname || 'Предпросмотр');
+        appendLinkPreviewGroups(card, previewPayload.w);
+        const warning = document.createElement('p');
+        warning.className = 'link-warning';
+        warning.textContent = 'ссылка = твоя карта в словах, отправляй тому, кому доверяешь; отозвать её нельзя';
+        card.append(warning);
+
+        const form = document.createElement('form');
+        form.className = 'link-share-form';
+        form.dataset.linkShareForm = 'true';
+        const label = document.createElement('label');
+        label.className = 'link-share-label';
+        label.textContent = 'Как тебя подписать';
+        const input = document.createElement('input');
+        input.className = 'link-share-input';
+        input.name = 'nickname';
+        input.maxLength = 20;
+        input.autocomplete = 'nickname';
+        input.placeholder = 'Короткое имя или псевдоним';
+        input.value = linkShareNickname;
+        input.required = true;
+        label.append(input);
+        const create = document.createElement('button');
+        create.className = 'primary-button';
+        create.type = 'submit';
+        create.textContent = 'Создать ссылку';
+        const status = document.createElement('p');
+        status.className = 'link-share-status';
+        status.dataset.linkShareStatus = 'true';
+        status.role = 'status';
+        form.append(label, create, status);
+
+        if (linkShareResult) {
+          const result = document.createElement('div');
+          result.className = 'link-share-result';
+          const resultTitle = document.createElement('h2');
+          resultTitle.textContent = 'Ссылка готова';
+          const url = document.createElement('textarea');
+          url.className = 'link-share-url';
+          url.readOnly = true;
+          url.value = linkShareResult.url;
+          url.setAttribute('aria-label', 'Готовая ссылка сравнения');
+          const actions = document.createElement('div');
+          actions.className = 'link-share-actions';
+          const share = document.createElement('button');
+          share.className = 'primary-button';
+          share.type = 'button';
+          share.dataset.linkShareAction = 'share';
+          share.textContent = 'Поделиться';
+          const copy = document.createElement('button');
+          copy.className = 'secondary-button';
+          copy.type = 'button';
+          copy.dataset.linkShareAction = 'copy';
+          copy.textContent = 'Копировать';
+          actions.append(share, copy);
+          result.append(resultTitle, url, actions);
+          form.append(result);
+        }
+        card.append(form);
+        linkShareContent.append(back, header, card);
+      }
+
+      function openLinkSharePreview(returnView = 'intersections') {
+        linkShareReturnView = returnView === 'link-comparison' ? returnView : 'intersections';
+        linkShareResult = null;
+        renderLinkSharePreview();
+        showView('link-share', true, false);
+      }
+
+      async function copyComparisonLink(url) {
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(url);
+            return true;
+          }
+        } catch { /* Continue to the local textarea fallback. */ }
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.append(textarea);
+        textarea.select();
+        let copied = false;
+        try { copied = document.execCommand('copy'); }
+        catch { copied = false; }
+        textarea.remove();
+        return copied;
+      }
+
+      async function shareComparisonLink(url, nickname) {
+        if (typeof navigator.share === 'function') {
+          try {
+            await navigator.share({
+              title: 'Сравнить карты в Hand & Compass',
+              text: `${nickname} приглашает тебя сравнить карты.`,
+              url
+            });
+            return 'Ссылка открыта в системном меню отправки.';
+          } catch (error) {
+            if (error?.name === 'AbortError') return 'Ссылка готова — можно вернуться к ней здесь.';
+          }
+        }
+        return await copyComparisonLink(url)
+          ? 'Ссылка скопирована — можно отправить её другу.'
+          : 'Ссылка готова — скопируй её из поля.';
       }
 
       function storedSnapshotValue(key, fallback) {
@@ -4428,9 +5035,9 @@
         return Math.max(0, ...(item.shelves || []).map((shelfId) => SHELF_WEIGHTS[shelfId] || 0));
       }
 
-      function weightedSimilarity(profile) {
-        const mine = new Set(state.selectedIds.filter((id) => WORD_BY_ID.has(id)));
-        const theirs = new Set((profile.words || []).filter((id) => WORD_BY_ID.has(id)));
+      function weightedSimilarityBetween(mineIds, theirIds) {
+        const mine = new Set((mineIds || []).filter((id) => WORD_BY_ID.has(id)));
+        const theirs = new Set((theirIds || []).filter((id) => WORD_BY_ID.has(id)));
         const union = new Set([...mine, ...theirs]);
         let sharedWeight = 0;
         let unionWeight = 0;
@@ -4440,6 +5047,10 @@
           if (mine.has(id) && theirs.has(id)) sharedWeight += weight;
         });
         return unionWeight ? Math.round(sharedWeight / unionWeight * 100) : 0;
+      }
+
+      function weightedSimilarity(profile) {
+        return weightedSimilarityBetween(state.selectedIds, profile.words || []);
       }
 
       function similarityLabel(score) {
@@ -7273,7 +7884,7 @@
           lockedNote: 'после слепка'
         },
         intersections: {
-          views: ['intersections', 'profile-intersection'],
+          views: ['intersections', 'profile-intersection', 'link-share', 'link-invite', 'link-comparison'],
           lockedNote: 'после слепка'
         },
         forks: {
@@ -7294,6 +7905,7 @@
         const activeScreen = [
           lightIntroScreen, scatterScreen, darkIntroScreen, customShelfScreen, snapshotScreen,
           graphIntroScreen, graphScreen, worldsScreen, intersectionsScreen,
+          linkShareScreen, linkInviteScreen, linkComparisonScreen,
           wordWorldScreen, profileIntersectionScreen, forksScreen
         ].find((screen) => !screen.hidden);
         document.querySelectorAll('.is-chapter-entering-forward, .is-chapter-entering-backward').forEach((screen) => {
@@ -7362,6 +7974,9 @@
         const isGraph = view === 'graph';
         const isWorlds = view === 'worlds';
         const isIntersections = view === 'intersections';
+        const isLinkShare = view === 'link-share';
+        const isLinkInvite = view === 'link-invite';
+        const isLinkComparison = view === 'link-comparison';
         const isWordWorld = view === 'word-world';
         const isProfileIntersection = view === 'profile-intersection';
         const isForks = view === 'forks';
@@ -7381,11 +7996,17 @@
         graphScreen.hidden = !isGraph;
         worldsScreen.hidden = !isWorlds;
         intersectionsScreen.hidden = !isIntersections;
+        linkShareScreen.hidden = !isLinkShare;
+        linkInviteScreen.hidden = !isLinkInvite;
+        linkComparisonScreen.hidden = !isLinkComparison;
         wordWorldScreen.hidden = !isWordWorld;
         profileIntersectionScreen.hidden = !isProfileIntersection;
         forksScreen.hidden = !isForks;
         state.view = isIntersections ? 'intersections'
           : isProfileIntersection ? 'profile-intersection'
+          : isLinkShare ? 'link-share'
+          : isLinkInvite ? 'link-invite'
+          : isLinkComparison ? 'link-comparison'
           : isWorlds ? 'worlds'
           : isGraph ? 'graph'
           : isGraphIntro ? 'graph-intro'
@@ -7405,6 +8026,9 @@
         if (isIntersections) {
           renderProfileMatches();
         }
+        if (isLinkShare) renderLinkSharePreview();
+        if (isLinkInvite) renderLinkInvite();
+        if (isLinkComparison) renderLinkComparison();
         if (isWordWorld) renderWordWorld();
         if (isProfileIntersection) renderProfileIntersection();
         if (isForks) {
@@ -7414,13 +8038,17 @@
           forksContent.hidden = personalDilemmaComposerOpen;
         }
         animateChapterEntry(previousView, state.view);
+        pathNav.hidden = isLinkInvite;
         updatePathNavigation(state.view);
         updateContextNavigation(state.view);
-        if (shouldPersist) persistState();
+        if (shouldPersist && !isLinkInvite && !isLinkComparison && !isLinkShare) persistState();
         if (focus) {
           window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
           const titleId = isIntersections ? 'intersectionsTitle'
             : isProfileIntersection ? 'profileIntersectionTitle'
+            : isLinkShare ? 'linkShareTitle'
+            : isLinkInvite ? 'linkInviteTitle'
+            : isLinkComparison ? 'linkComparisonTitle'
             : isWorlds ? 'worldsTitle'
             : isGraph ? 'graphTitle'
             : isGraphIntro ? 'graphIntroTitle'
@@ -7483,6 +8111,18 @@
         if (button) chooseCustomShelf(button.dataset.chooseShelf);
       });
 
+      function finishRitual() {
+        state.ritualComplete = true;
+        state.personalityReturning = true;
+        if (linkGuest && pendingLinkComparison) {
+          pendingLinkComparison = false;
+          persistState();
+          showView('link-comparison', true, false);
+          return;
+        }
+        showView('snapshot');
+      }
+
       doneButton.addEventListener('click', () => {
         if (isSupplementingShelf()) {
           finishShelfSupplement();
@@ -7494,16 +8134,12 @@
           showView('dark-intro');
           return;
         }
-        state.ritualComplete = true;
-        state.personalityReturning = true;
-        showView('snapshot');
+        finishRitual();
       });
 
       skipButton.addEventListener('click', () => {
         if (state.wave === 2) {
-          state.ritualComplete = true;
-          state.personalityReturning = true;
-          showView('snapshot');
+          finishRitual();
         }
       });
 
@@ -7771,6 +8407,68 @@
         const word = event.target.closest('[data-world-directory-word]');
         if (word) openWordWorld(word.dataset.worldDirectoryWord, 'worlds');
       });
+      openLinkShareButton.addEventListener('click', () => openLinkSharePreview('intersections'));
+      linkInviteContent.addEventListener('click', (event) => {
+        if (!event.target.closest('[data-link-invite-start]')) return;
+        if (!linkGuest) {
+          history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+          linkGuestError = '';
+        }
+        pendingLinkComparison = Boolean(linkGuest);
+        state.wave = 1;
+        state.personalityReturning = false;
+        showView('scatter');
+      });
+      linkComparisonContent.addEventListener('click', (event) => {
+        if (event.target.closest('[data-link-comparison-reply]')) {
+          openLinkSharePreview('link-comparison');
+          return;
+        }
+        if (event.target.closest('[data-link-comparison-back]')) {
+          history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+          linkGuest = null;
+          pendingLinkComparison = false;
+          showView('intersections');
+        }
+      });
+      linkShareContent.addEventListener('input', (event) => {
+        if (event.target.matches('[name="nickname"]')) linkShareNickname = normalizeLinkNickname(event.target.value);
+      });
+      linkShareContent.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-link-share-form]');
+        if (!form) return;
+        event.preventDefault();
+        linkShareNickname = normalizeLinkNickname(form.elements.nickname?.value);
+        const status = form.querySelector('[data-link-share-status]');
+        const submit = form.querySelector('button[type="submit"]');
+        submit.disabled = true;
+        status.textContent = 'Собираем слова в ссылку…';
+        try {
+          linkShareResult = await createLinkComparisonUrl(state, linkShareNickname);
+          renderLinkSharePreview();
+          const message = await shareComparisonLink(linkShareResult.url, linkShareNickname);
+          linkShareContent.querySelector('[data-link-share-status]').textContent = message;
+        } catch (error) {
+          status.textContent = error instanceof Error ? error.message : 'Не удалось создать ссылку.';
+          submit.disabled = false;
+        }
+      });
+      linkShareContent.addEventListener('click', async (event) => {
+        if (event.target.closest('[data-link-share-back]')) {
+          showView(linkShareReturnView, true, false);
+          return;
+        }
+        const action = event.target.closest('[data-link-share-action]')?.dataset.linkShareAction;
+        if (!action || !linkShareResult) return;
+        const status = linkShareContent.querySelector('[data-link-share-status]');
+        if (action === 'copy') {
+          status.textContent = await copyComparisonLink(linkShareResult.url)
+            ? 'Ссылка скопирована.'
+            : 'Не получилось скопировать автоматически — выдели ссылку в поле.';
+        } else if (action === 'share') {
+          status.textContent = await shareComparisonLink(linkShareResult.url, linkShareNickname);
+        }
+      });
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
       profileList.addEventListener('click', (event) => {
@@ -7908,20 +8606,41 @@
         });
       });
 
-      renderScatter();
-      if (state.view === 'profile-intersection' && state.profileIntersectionId && totalSelected() >= 3) showView('profile-intersection', false, false);
-      else if (state.view === 'forks' && totalSelected() >= 3) showView('forks', false, false);
-      else if (state.view === 'worlds' && totalSelected() >= 3) showView('worlds', false, false);
-      else if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
-      else if (state.view === 'word-world' && state.worldWordId) showView('word-world', false, false);
-      else if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
-      else if (state.view === 'graph-intro' && totalSelected() >= 3) showView('graph-intro', false, false);
-      else if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
-      else if (state.view === 'custom-shelf' && state.pendingCustomId) showView('custom-shelf', false, false);
-      else if (state.view === 'dark-intro') showView('dark-intro', false, false);
-      else if (state.view === 'scatter') showView('scatter', false, false);
-      else showView('light-intro', false, false);
-      document.body.classList.remove('is-booting');
+      async function bootstrap() {
+        renderScatter();
+        const incomingComparison = await readLinkComparisonFromHash();
+        if (incomingComparison) {
+          linkGuest = incomingComparison.guest;
+          linkGuestError = incomingComparison.error || '';
+          pendingLinkComparison = Boolean(linkGuest);
+          if (linkGuest && state.ritualComplete && totalSelected() >= 3) {
+            pendingLinkComparison = false;
+            showView('link-comparison', false, false);
+          } else {
+            showView('link-invite', false, false);
+          }
+        } else if (state.view === 'profile-intersection' && state.profileIntersectionId && totalSelected() >= 3) showView('profile-intersection', false, false);
+        else if (state.view === 'forks' && totalSelected() >= 3) showView('forks', false, false);
+        else if (state.view === 'worlds' && totalSelected() >= 3) showView('worlds', false, false);
+        else if (state.view === 'intersections' && totalSelected() >= 3) showView('intersections', false, false);
+        else if (state.view === 'word-world' && state.worldWordId) showView('word-world', false, false);
+        else if (state.view === 'graph' && totalSelected()) showView('graph', false, false);
+        else if (state.view === 'graph-intro' && totalSelected() >= 3) showView('graph-intro', false, false);
+        else if (state.view === 'snapshot' && totalSelected() >= 3) showView('snapshot', false, false);
+        else if (state.view === 'custom-shelf' && state.pendingCustomId) showView('custom-shelf', false, false);
+        else if (state.view === 'dark-intro') showView('dark-intro', false, false);
+        else if (state.view === 'scatter') showView('scatter', false, false);
+        else showView('light-intro', false, false);
+        document.body.classList.remove('is-booting');
+      }
+
+      bootstrap().catch(() => {
+        linkGuest = null;
+        linkGuestError = 'Ссылку не удалось прочитать в этом браузере.';
+        renderScatter();
+        showView(window.location.hash.startsWith(`#${LINK_COMPARISON_HASH_PREFIX}`) ? 'link-invite' : 'light-intro', false, false);
+        document.body.classList.remove('is-booting');
+      });
     })();
   </script>
 </body>
