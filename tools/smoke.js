@@ -517,6 +517,8 @@ async function main() {
 
     await click(client, '[data-path-chapter="worlds"]');
     await waitFor(client, `${visible('#worldsScreen')} && document.querySelectorAll('#worldsDirectory [data-world-directory-word]').length > 0`, 'world directory');
+    const worldsLead = await evaluate(client, `document.querySelector('#worldsScreen .lead').textContent.trim()`);
+    assert(worldsLead === 'Нажми на слово, чтобы войти глубже.', 'word worlds still repeat the shelf explanation');
     await click(client, '#worldsDirectory [data-world-directory-word]');
     await waitFor(client, `${visible('#wordWorldScreen')} && document.querySelector('#wordWorldContent h1')`, 'word world');
     completed.push('мир слова');
