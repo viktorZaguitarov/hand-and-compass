@@ -2000,6 +2000,71 @@
       font-family: var(--sans);
     }
 
+    .friend-compare-entry {
+      display: flex;
+      justify-content: center;
+      max-width: 780px;
+      margin: 0 auto 14px;
+    }
+
+    .friend-compare-entry .primary-button { width: min(100%, 360px); }
+
+    .link-share-screen,
+    .link-invite-screen,
+    .link-comparison-screen { padding-bottom: 42px; }
+
+    .link-card-layout {
+      display: grid;
+      gap: 16px;
+      width: min(760px, 100%);
+      margin: 0 auto;
+    }
+
+    .link-card {
+      display: grid;
+      gap: 14px;
+      padding: 19px;
+      border: 1px solid rgba(83, 104, 96, 0.2);
+      border-radius: 23px;
+      background: rgba(255, 253, 247, 0.9);
+      box-shadow: var(--shadow-soft);
+      font-family: var(--sans);
+    }
+
+    .link-card h2 { margin: 0; color: var(--forest-dark); font-size: 1.08rem; }
+    .link-card p { margin: 0; color: var(--ink-soft); font-size: 0.8rem; line-height: 1.5; }
+    .link-preview-groups { display: grid; gap: 10px; }
+    .link-preview-shelf { display: grid; gap: 8px; padding: 11px; border-radius: 15px; background: rgba(238, 230, 212, 0.46); }
+    .link-preview-shelf-title { color: var(--ink-soft); font-size: 0.67rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .link-preview-words { display: flex; flex-wrap: wrap; gap: 6px; }
+    .link-preview-word { padding: 6px 9px; border-radius: 999px; color: var(--ink); background: rgba(255, 253, 247, 0.84); font-size: 0.72rem; }
+
+    .link-warning {
+      padding: 13px 14px;
+      border: 1px solid rgba(170, 102, 87, 0.24);
+      border-radius: 15px;
+      color: #764a42 !important;
+      background: rgba(242, 224, 214, 0.62);
+      font-weight: 700;
+    }
+
+    .link-share-form { display: grid; gap: 11px; }
+    .link-share-label { display: grid; gap: 7px; color: var(--forest-dark); font-size: 0.78rem; font-weight: 800; }
+    .link-share-input,
+    .link-share-url {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid rgba(83, 104, 96, 0.28);
+      border-radius: 14px;
+      color: var(--ink);
+      background: rgba(255, 253, 247, 0.94);
+      font: 0.82rem/1.45 var(--sans);
+    }
+    .link-share-url { min-height: 92px; resize: vertical; overflow-wrap: anywhere; }
+    .link-share-result { display: grid; gap: 10px; padding-top: 13px; border-top: 1px solid var(--line); }
+    .link-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .link-share-status { min-height: 1.4em; color: var(--forest-dark) !important; }
+
     .match-label-row {
       display: flex;
       align-items: baseline;
@@ -2537,6 +2602,9 @@
       .intersections-screen { padding-inline: 11px; }
       .intersections-screen .screen-head { margin-bottom: 15px; }
       .match-panel { margin-bottom: 13px; padding: 13px; border-radius: 17px; }
+      .friend-compare-entry { margin-bottom: 11px; }
+      .link-card { padding: 15px; border-radius: 19px; }
+      .link-share-actions { grid-template-columns: 1fr; }
       .match-label { font-size: 0.74rem; }
       .match-value { font-size: 1.08rem; }
       .match-range { height: 48px; }
@@ -2830,6 +2898,10 @@
           <p class="lead">Настрой расстояние до учебных двойников. Это поиск для размышления, не оценка совместимости.</p>
         </header>
 
+        <div class="friend-compare-entry">
+          <button class="primary-button" id="openLinkShareButton" type="button">Сравниться с другом</button>
+        </div>
+
         <section class="match-panel" aria-labelledby="matchRangeLabel">
           <div class="match-label-row">
             <label class="match-label" id="matchRangeLabel" for="matchRange">Какую близость искать?</label>
@@ -2846,6 +2918,10 @@
         <article class="intersection-map" id="intersectionMap" aria-live="polite" hidden></article>
         <button class="secondary-button intersections-context-back" id="intersectionsBackButton" type="button" hidden>← К миру слова</button>
 
+      </section>
+
+      <section class="screen link-share-screen" id="linkShareScreen" aria-labelledby="linkShareTitle" hidden>
+        <div class="link-card-layout" id="linkShareContent" aria-live="polite"></div>
       </section>
 
       <section class="screen world-screen" id="wordWorldScreen" aria-labelledby="worldTitle" hidden>
@@ -3045,6 +3121,9 @@
       const worldsScreen = document.getElementById('worldsScreen');
       const worldsDirectory = document.getElementById('worldsDirectory');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
+      const openLinkShareButton = document.getElementById('openLinkShareButton');
+      const linkShareScreen = document.getElementById('linkShareScreen');
+      const linkShareContent = document.getElementById('linkShareContent');
       const matchRange = document.getElementById('matchRange');
       const matchValue = document.getElementById('matchValue');
       const profileList = document.getElementById('profileList');
@@ -3080,6 +3159,9 @@
       let activeFork = null;
       let personalDilemmaComposerOpen = false;
       let lastPersonalDilemmaId = null;
+      let linkShareReturnView = 'intersections';
+      let linkShareNickname = '';
+      let linkShareResult = null;
       let focusedShelfId = state.supplementShelfId || null;
       let activeGraphNodeId = null;
       let graphChainIds = new Set();
@@ -3643,6 +3725,170 @@
         } catch (error) {
           return { guest: null, error: error instanceof Error ? error.message : 'Ссылка сравнения повреждена.' };
         }
+      }
+
+      function appendLinkPreviewGroups(container, records) {
+        const groups = SHELVES.map((shelf) => ({
+          shelf,
+          words: records
+            .filter((record) => record.s.includes(shelf.id))
+            .map((record) => WORD_BY_ID.get(record.i))
+            .filter(Boolean)
+        })).filter((group) => group.words.length);
+        const list = document.createElement('div');
+        list.className = 'link-preview-groups';
+        groups.forEach(({ shelf, words }) => {
+          const group = document.createElement('div');
+          group.className = `link-preview-shelf shelf-${shelf.id}`;
+          const title = document.createElement('span');
+          title.className = 'link-preview-shelf-title';
+          title.textContent = `${shelf.emoji} ${shelf.title}`;
+          const wordList = document.createElement('div');
+          wordList.className = 'link-preview-words';
+          words.forEach((word) => {
+            const chip = document.createElement('span');
+            chip.className = 'link-preview-word';
+            chip.textContent = word.word;
+            wordList.append(chip);
+          });
+          group.append(title, wordList);
+          list.append(group);
+        });
+        container.append(list);
+      }
+
+      function renderLinkSharePreview() {
+        linkShareContent.replaceChildren();
+        const back = document.createElement('button');
+        back.className = 'secondary-button profile-intersection-back';
+        back.type = 'button';
+        back.dataset.linkShareBack = 'true';
+        back.textContent = '← Назад';
+
+        const header = document.createElement('header');
+        header.className = 'screen-head';
+        const eyebrow = document.createElement('p');
+        eyebrow.className = 'eyebrow';
+        eyebrow.textContent = 'сравнение по ссылке';
+        const title = document.createElement('h1');
+        title.id = 'linkShareTitle';
+        title.tabIndex = -1;
+        title.textContent = 'Покажи другу только выбранную часть карты.';
+        const lead = document.createElement('p');
+        lead.className = 'lead';
+        lead.textContent = 'Перед созданием проверь слова, которые окажутся в ссылке.';
+        header.append(eyebrow, title, lead);
+
+        const card = document.createElement('section');
+        card.className = 'link-card';
+        const cardTitle = document.createElement('h2');
+        cardTitle.textContent = 'Что увидит друг';
+        card.append(cardTitle);
+        const previewPayload = buildLinkComparisonPayload(state, linkShareNickname || 'Предпросмотр');
+        appendLinkPreviewGroups(card, previewPayload.w);
+        const warning = document.createElement('p');
+        warning.className = 'link-warning';
+        warning.textContent = 'ссылка = твоя карта в словах, отправляй тому, кому доверяешь; отозвать её нельзя';
+        card.append(warning);
+
+        const form = document.createElement('form');
+        form.className = 'link-share-form';
+        form.dataset.linkShareForm = 'true';
+        const label = document.createElement('label');
+        label.className = 'link-share-label';
+        label.textContent = 'Как тебя подписать';
+        const input = document.createElement('input');
+        input.className = 'link-share-input';
+        input.name = 'nickname';
+        input.maxLength = 20;
+        input.autocomplete = 'nickname';
+        input.placeholder = 'Короткое имя или псевдоним';
+        input.value = linkShareNickname;
+        input.required = true;
+        label.append(input);
+        const create = document.createElement('button');
+        create.className = 'primary-button';
+        create.type = 'submit';
+        create.textContent = 'Создать ссылку';
+        const status = document.createElement('p');
+        status.className = 'link-share-status';
+        status.dataset.linkShareStatus = 'true';
+        status.role = 'status';
+        form.append(label, create, status);
+
+        if (linkShareResult) {
+          const result = document.createElement('div');
+          result.className = 'link-share-result';
+          const resultTitle = document.createElement('h2');
+          resultTitle.textContent = 'Ссылка готова';
+          const url = document.createElement('textarea');
+          url.className = 'link-share-url';
+          url.readOnly = true;
+          url.value = linkShareResult.url;
+          url.setAttribute('aria-label', 'Готовая ссылка сравнения');
+          const actions = document.createElement('div');
+          actions.className = 'link-share-actions';
+          const share = document.createElement('button');
+          share.className = 'primary-button';
+          share.type = 'button';
+          share.dataset.linkShareAction = 'share';
+          share.textContent = 'Поделиться';
+          const copy = document.createElement('button');
+          copy.className = 'secondary-button';
+          copy.type = 'button';
+          copy.dataset.linkShareAction = 'copy';
+          copy.textContent = 'Копировать';
+          actions.append(share, copy);
+          result.append(resultTitle, url, actions);
+          form.append(result);
+        }
+        card.append(form);
+        linkShareContent.append(back, header, card);
+      }
+
+      function openLinkSharePreview(returnView = 'intersections') {
+        linkShareReturnView = returnView === 'intersections' ? returnView : 'intersections';
+        linkShareResult = null;
+        renderLinkSharePreview();
+        showView('link-share', true, false);
+      }
+
+      async function copyComparisonLink(url) {
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(url);
+            return true;
+          }
+        } catch { /* Continue to the local textarea fallback. */ }
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.append(textarea);
+        textarea.select();
+        let copied = false;
+        try { copied = document.execCommand('copy'); }
+        catch { copied = false; }
+        textarea.remove();
+        return copied;
+      }
+
+      async function shareComparisonLink(url, nickname) {
+        if (typeof navigator.share === 'function') {
+          try {
+            await navigator.share({
+              title: 'Сравнить карты в Hand & Compass',
+              text: `${nickname} приглашает тебя сравнить карты.`,
+              url
+            });
+            return 'Ссылка открыта в системном меню отправки.';
+          } catch (error) {
+            if (error?.name === 'AbortError') return 'Ссылка готова — можно вернуться к ней здесь.';
+          }
+        }
+        return await copyComparisonLink(url)
+          ? 'Ссылка скопирована — можно отправить её другу.'
+          : 'Ссылка готова — скопируй её из поля.';
       }
 
       function storedSnapshotValue(key, fallback) {
@@ -7400,7 +7646,7 @@
           lockedNote: 'после слепка'
         },
         intersections: {
-          views: ['intersections', 'profile-intersection'],
+          views: ['intersections', 'profile-intersection', 'link-share'],
           lockedNote: 'после слепка'
         },
         forks: {
@@ -7421,7 +7667,7 @@
         const activeScreen = [
           lightIntroScreen, scatterScreen, darkIntroScreen, customShelfScreen, snapshotScreen,
           graphIntroScreen, graphScreen, worldsScreen, intersectionsScreen,
-          wordWorldScreen, profileIntersectionScreen, forksScreen
+          linkShareScreen, wordWorldScreen, profileIntersectionScreen, forksScreen
         ].find((screen) => !screen.hidden);
         document.querySelectorAll('.is-chapter-entering-forward, .is-chapter-entering-backward').forEach((screen) => {
           screen.classList.remove('is-chapter-entering-forward', 'is-chapter-entering-backward');
@@ -7489,6 +7735,7 @@
         const isGraph = view === 'graph';
         const isWorlds = view === 'worlds';
         const isIntersections = view === 'intersections';
+        const isLinkShare = view === 'link-share';
         const isWordWorld = view === 'word-world';
         const isProfileIntersection = view === 'profile-intersection';
         const isForks = view === 'forks';
@@ -7508,11 +7755,13 @@
         graphScreen.hidden = !isGraph;
         worldsScreen.hidden = !isWorlds;
         intersectionsScreen.hidden = !isIntersections;
+        linkShareScreen.hidden = !isLinkShare;
         wordWorldScreen.hidden = !isWordWorld;
         profileIntersectionScreen.hidden = !isProfileIntersection;
         forksScreen.hidden = !isForks;
         state.view = isIntersections ? 'intersections'
           : isProfileIntersection ? 'profile-intersection'
+          : isLinkShare ? 'link-share'
           : isWorlds ? 'worlds'
           : isGraph ? 'graph'
           : isGraphIntro ? 'graph-intro'
@@ -7532,6 +7781,7 @@
         if (isIntersections) {
           renderProfileMatches();
         }
+        if (isLinkShare) renderLinkSharePreview();
         if (isWordWorld) renderWordWorld();
         if (isProfileIntersection) renderProfileIntersection();
         if (isForks) {
@@ -7548,6 +7798,7 @@
           window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
           const titleId = isIntersections ? 'intersectionsTitle'
             : isProfileIntersection ? 'profileIntersectionTitle'
+            : isLinkShare ? 'linkShareTitle'
             : isWorlds ? 'worldsTitle'
             : isGraph ? 'graphTitle'
             : isGraphIntro ? 'graphIntroTitle'
@@ -7897,6 +8148,45 @@
       worldsDirectory.addEventListener('click', (event) => {
         const word = event.target.closest('[data-world-directory-word]');
         if (word) openWordWorld(word.dataset.worldDirectoryWord, 'worlds');
+      });
+      openLinkShareButton.addEventListener('click', () => openLinkSharePreview('intersections'));
+      linkShareContent.addEventListener('input', (event) => {
+        if (event.target.matches('[name="nickname"]')) linkShareNickname = normalizeLinkNickname(event.target.value);
+      });
+      linkShareContent.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-link-share-form]');
+        if (!form) return;
+        event.preventDefault();
+        linkShareNickname = normalizeLinkNickname(form.elements.nickname?.value);
+        const status = form.querySelector('[data-link-share-status]');
+        const submit = form.querySelector('button[type="submit"]');
+        submit.disabled = true;
+        status.textContent = 'Собираем слова в ссылку…';
+        try {
+          linkShareResult = await createLinkComparisonUrl(state, linkShareNickname);
+          renderLinkSharePreview();
+          const message = await shareComparisonLink(linkShareResult.url, linkShareNickname);
+          linkShareContent.querySelector('[data-link-share-status]').textContent = message;
+        } catch (error) {
+          status.textContent = error instanceof Error ? error.message : 'Не удалось создать ссылку.';
+          submit.disabled = false;
+        }
+      });
+      linkShareContent.addEventListener('click', async (event) => {
+        if (event.target.closest('[data-link-share-back]')) {
+          showView(linkShareReturnView, true, false);
+          return;
+        }
+        const action = event.target.closest('[data-link-share-action]')?.dataset.linkShareAction;
+        if (!action || !linkShareResult) return;
+        const status = linkShareContent.querySelector('[data-link-share-status]');
+        if (action === 'copy') {
+          status.textContent = await copyComparisonLink(linkShareResult.url)
+            ? 'Ссылка скопирована.'
+            : 'Не получилось скопировать автоматически — выдели ссылку в поле.';
+        } else if (action === 'share') {
+          status.textContent = await shareComparisonLink(linkShareResult.url, linkShareNickname);
+        }
       });
       matchRange.addEventListener('input', () => setMatchTarget(matchRange.value, false));
       matchRange.addEventListener('change', () => persistState());
