@@ -2916,6 +2916,10 @@
       const FORKS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
       const SNAPSHOT_EXPORT_VERSION = 1;
       const SNAPSHOT_STORAGE_KEYS = [STORAGE_KEY, WORLD_STORAGE_KEY, FORKS_STORAGE_KEY];
+      const LINK_COMPARISON_FORMAT = 'hand-compass-link';
+      const LINK_COMPARISON_VERSION = 1;
+      const LINK_COMPARISON_HASH_PREFIX = 'compare=';
+      const LINK_COMPARISON_MAX_WORDS = 100;
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
       const DILEMMAS = JSON.parse(document.getElementById('dilemmasData').textContent);
@@ -3516,6 +3520,129 @@
           sign: state.wordSigns?.[item.id] ?? item.sign ?? null,
           privacy: state.privacyByWord?.[item.id] ?? snapshotPrivacyFor(item)
         };
+      }
+
+      function normalizeLinkNickname(value) {
+        return String(value || '').trim().replace(/\s+/g, ' ').slice(0, 20);
+      }
+
+      function buildLinkComparisonPayload(sourceState, nickname, words = WORDS, shelves = SHELVES) {
+        const wordIndex = new Map(words.map((item) => [item.id, item]));
+        const allowedShelfIds = new Set(shelves.map((item) => item.id));
+        const selectedIds = Array.isArray(sourceState?.selectedIds) ? [...new Set(sourceState.selectedIds)] : [];
+        const shareableWords = selectedIds
+          .map((id) => wordIndex.get(id))
+          .filter(Boolean)
+          .filter((item) => {
+            const savedPrivacy = sourceState?.privacyByWord?.[item.id];
+            const defaultPrivacy = (item.shelves || []).some((shelfId) => shelfId === 'stones' || shelfId === 'triggers')
+              ? 'only-me'
+              : 'on-match';
+            return (savedPrivacy || defaultPrivacy) !== 'only-me';
+          })
+          .slice(0, LINK_COMPARISON_MAX_WORDS)
+          .map((item) => ({
+            i: item.id,
+            s: (item.shelves || []).filter((shelfId) => allowedShelfIds.has(shelfId)),
+            g: typeof sourceState?.wordSigns?.[item.id] === 'string'
+              ? sourceState.wordSigns[item.id].trim().slice(0, 12) || null
+              : null
+          }));
+        return {
+          f: LINK_COMPARISON_FORMAT,
+          v: LINK_COMPARISON_VERSION,
+          n: normalizeLinkNickname(nickname),
+          w: shareableWords
+        };
+      }
+
+      function validateLinkComparisonPayload(payload) {
+        if (!isPlainObject(payload)
+          || payload.f !== LINK_COMPARISON_FORMAT
+          || payload.v !== LINK_COMPARISON_VERSION
+          || typeof payload.n !== 'string') {
+          throw new Error('Ссылка сравнения имеет неизвестный формат.');
+        }
+        const nickname = normalizeLinkNickname(payload.n);
+        if (!nickname) throw new Error('В ссылке не указано имя отправителя.');
+        if (!Array.isArray(payload.w) || payload.w.length > LINK_COMPARISON_MAX_WORDS) {
+          throw new Error('В ссылке слишком много слов или повреждён список.');
+        }
+        const seen = new Set();
+        const words = payload.w.map((record) => {
+          if (!isPlainObject(record) || typeof record.i !== 'string' || seen.has(record.i)) {
+            throw new Error('Список слов в ссылке повреждён.');
+          }
+          const dictionaryWord = WORD_BY_ID.get(record.i);
+          if (!dictionaryWord || !Array.isArray(record.s) || !record.s.length) {
+            throw new Error('В ссылке есть слово, которого нет в текущем словаре.');
+          }
+          const dictionaryShelves = new Set(dictionaryWord.shelves || []);
+          const shelves = [...new Set(record.s)].filter((shelfId) => SHELF_BY_ID.has(shelfId) && dictionaryShelves.has(shelfId));
+          if (shelves.length !== new Set(record.s).size) throw new Error('Полки слова в ссылке повреждены.');
+          const sign = record.g === null || record.g === undefined
+            ? null
+            : typeof record.g === 'string' && record.g.trim().length <= 12
+            ? record.g.trim() || null
+            : (() => { throw new Error('Знак слова в ссылке повреждён.'); })();
+          seen.add(record.i);
+          return { id: record.i, shelves, sign };
+        });
+        return { format: payload.f, version: payload.v, nickname, words };
+      }
+
+      function bytesToBase64Url(bytes) {
+        let binary = '';
+        for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+          binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+        }
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+      }
+
+      function base64UrlToBytes(value) {
+        if (typeof value !== 'string' || !value || value.length > 16_000 || !/^[A-Za-z0-9_-]+$/.test(value)) {
+          throw new Error('Код ссылки повреждён.');
+        }
+        const base64 = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
+        const binary = atob(base64);
+        return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+      }
+
+      async function compressLinkComparisonPayload(payload) {
+        if (typeof CompressionStream !== 'function') throw new Error('Этот браузер пока не умеет создавать сжатые ссылки.');
+        const input = new TextEncoder().encode(JSON.stringify(payload));
+        const stream = new Blob([input]).stream().pipeThrough(new CompressionStream('deflate'));
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+      }
+
+      async function decompressLinkComparisonPayload(bytes) {
+        if (typeof DecompressionStream !== 'function') throw new Error('Этот браузер пока не умеет открывать сжатые ссылки.');
+        const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate'));
+        const text = await new Response(stream).text();
+        if (text.length > 100_000) throw new Error('Ссылка содержит слишком много данных.');
+        return JSON.parse(text);
+      }
+
+      async function createLinkComparisonUrl(sourceState, nickname) {
+        const payload = buildLinkComparisonPayload(sourceState, nickname);
+        if (!payload.n) throw new Error('Напиши, как тебя подписать.');
+        if (!payload.w.length) throw new Error('В слепке пока нет слов, которыми можно поделиться.');
+        const encoded = bytesToBase64Url(await compressLinkComparisonPayload(payload));
+        const url = new URL(window.location.href);
+        url.hash = `${LINK_COMPARISON_HASH_PREFIX}${encoded}`;
+        return { url: url.href, payload, encoded };
+      }
+
+      async function readLinkComparisonFromHash(hash = window.location.hash) {
+        const rawHash = String(hash || '').replace(/^#/, '');
+        if (!rawHash.startsWith(LINK_COMPARISON_HASH_PREFIX)) return null;
+        try {
+          const encoded = rawHash.slice(LINK_COMPARISON_HASH_PREFIX.length);
+          const payload = await decompressLinkComparisonPayload(base64UrlToBytes(encoded));
+          return { guest: validateLinkComparisonPayload(payload), error: null };
+        } catch (error) {
+          return { guest: null, error: error instanceof Error ? error.message : 'Ссылка сравнения повреждена.' };
+        }
       }
 
       function storedSnapshotValue(key, fallback) {

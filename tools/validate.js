@@ -9,6 +9,7 @@
 
 const { readFile } = require('node:fs/promises');
 const { join, resolve } = require('node:path');
+const { deflateSync, inflateSync } = require('node:zlib');
 
 const ROOT = resolve(__dirname, '..');
 const WORDS_PATH = join(ROOT, 'draft/words_v3.json');
@@ -45,6 +46,57 @@ function sameJson(left, right) {
 
 function requireDraftFeature(html, expression, message) {
   if (!expression.test(html)) fail(message);
+}
+
+function functionDeclarationSource(source, name) {
+  const start = source.indexOf(`function ${name}(`);
+  if (start < 0) return null;
+  const bodyStart = source.indexOf('{', start);
+  if (bodyStart < 0) return null;
+  let depth = 0;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    if (source[index] === '{') depth += 1;
+    if (source[index] === '}') depth -= 1;
+    if (depth === 0) return source.slice(start, index + 1);
+  }
+  return null;
+}
+
+function validateLinkComparisonPrivacyFilter(draftHtml, dictionary) {
+  const normalizeSource = functionDeclarationSource(draftHtml, 'normalizeLinkNickname');
+  const builderSource = functionDeclarationSource(draftHtml, 'buildLinkComparisonPayload');
+  if (!normalizeSource || !builderSource) {
+    fail('draft has no extractable link-comparison payload builder');
+    return;
+  }
+  try {
+    const normalizeNickname = Function(`"use strict"; return (${normalizeSource});`)();
+    const buildPayload = Function(
+      'LINK_COMPARISON_MAX_WORDS', 'LINK_COMPARISON_FORMAT', 'LINK_COMPARISON_VERSION', 'normalizeLinkNickname',
+      `"use strict"; return (${builderSource});`
+    )(100, 'hand-compass-link', 1, normalizeNickname);
+    const sourceState = {
+      selectedIds: ['chestnost', 'blizost', 'predatelstvo'],
+      privacyByWord: { blizost: 'only-me' },
+      wordSigns: { chestnost: '+', blizost: '±', predatelstvo: '-' }
+    };
+    const shelves = [
+      { id: 'values' }, { id: 'goals' }, { id: 'action' }, { id: 'foresight' },
+      { id: 'stones' }, { id: 'supports' }, { id: 'triggers' }
+    ];
+    const payload = buildPayload(sourceState, 'Друг', dictionary.words, shelves);
+    const encoded = deflateSync(Buffer.from(JSON.stringify(payload))).toString('base64url');
+    const decoded = JSON.parse(inflateSync(Buffer.from(encoded, 'base64url')).toString('utf8'));
+    const encodedIds = decoded.w.map((word) => word.i);
+    if (encodedIds.join('|') !== 'chestnost') {
+      fail(`link payload leaked private words (${encodedIds.join(', ') || 'empty payload'})`);
+    }
+    if (decoded.w.some((word) => Object.keys(word).sort().join(',') !== 'g,i,s')) {
+      fail('link payload exposes fields beyond word id, shelves, and sign');
+    }
+  } catch (error) {
+    fail(`link privacy filter could not be executed (${error.message})`);
+  }
 }
 
 function validateWordReference(ids, owner, field, reference) {
@@ -152,6 +204,10 @@ async function main() {
   if (/to-choice|fork-step-choice/.test(draftHtml)) {
     fail('system dilemma still splits scene and choice across screens');
   }
+  requireDraftFeature(draftHtml, /new CompressionStream\('deflate'\)/, 'link comparison does not use deflate compression');
+  requireDraftFeature(draftHtml, /new DecompressionStream\('deflate'\)/, 'link comparison cannot open deflate payloads');
+  requireDraftFeature(draftHtml, /url\.hash = `\$\{LINK_COMPARISON_HASH_PREFIX\}/, 'link comparison data is not placed in the URL hash');
+  validateLinkComparisonPrivacyFilter(draftHtml, dictionary);
 
   if (!sameJson(dictionary, embeddedWords)) fail('embedded #wordsData differs from draft/words_v3.json');
   if (!sameJson(dilemmas, embeddedDilemmas)) fail('embedded #dilemmasData differs from draft/dilemmas_v1.json');
