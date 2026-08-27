@@ -2065,6 +2065,35 @@
     .link-share-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .link-share-status { min-height: 1.4em; color: var(--forest-dark) !important; }
 
+    .link-comparison-score {
+      justify-self: start;
+      margin: -5px 0 1px;
+      color: var(--ink-faint);
+      font: 0.68rem/1.4 var(--sans);
+    }
+    .link-comparison-section { gap: 12px; }
+    .link-comparison-words { display: flex; flex-wrap: wrap; gap: 7px; }
+    .link-comparison-word {
+      padding: 8px 11px;
+      border-radius: 999px;
+      color: var(--forest-dark);
+      background: rgba(205, 224, 211, 0.62);
+      font: 700 0.75rem/1.25 var(--sans);
+    }
+    .link-contrast-list { display: grid; gap: 8px; }
+    .link-contrast {
+      display: grid;
+      gap: 4px;
+      padding: 12px 13px;
+      border-radius: 16px;
+      background: rgba(238, 230, 212, 0.5);
+    }
+    .link-contrast-pair { color: var(--ink) !important; font-weight: 750; overflow-wrap: anywhere; }
+    .link-contrast span { color: var(--ink-faint); font: 0.67rem/1.35 var(--sans); }
+    .link-question { border-color: rgba(196, 123, 86, 0.26); background: rgba(250, 238, 224, 0.84); }
+    .link-question p { color: var(--ink) !important; font: 700 0.88rem/1.5 var(--serif); }
+    .link-comparison-actions { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 8px; }
+
     .match-label-row {
       display: flex;
       align-items: baseline;
@@ -2605,6 +2634,7 @@
       .friend-compare-entry { margin-bottom: 11px; }
       .link-card { padding: 15px; border-radius: 19px; }
       .link-share-actions { grid-template-columns: 1fr; }
+      .link-comparison-actions { grid-template-columns: 1fr; }
       .match-label { font-size: 0.74rem; }
       .match-value { font-size: 1.08rem; }
       .match-range { height: 48px; }
@@ -3779,7 +3809,48 @@
         linkInviteContent.append(header, card);
       }
 
-      function renderLinkComparisonPending() {
+      function linkComparisonContrasts(guestOnlyIds, mineOnlyIds) {
+        const guestOnly = guestOnlyIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const mineOnly = mineOnlyIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+        const pairs = [];
+        const usedGuest = new Set();
+        const usedMine = new Set();
+        const addPair = (guestWord, mineWord, note) => {
+          if (!guestWord || !mineWord || usedGuest.has(guestWord.id) || usedMine.has(mineWord.id) || pairs.length >= 2) return;
+          usedGuest.add(guestWord.id);
+          usedMine.add(mineWord.id);
+          pairs.push({ guestWord, mineWord, note });
+        };
+        guestOnly.forEach((guestWord) => {
+          const mineWord = mineOnly.find((word) => guestWord.antonym === word.id || word.antonym === guestWord.id);
+          if (mineWord) addPair(guestWord, mineWord, 'два разных полюса');
+        });
+        guestOnly.forEach((guestWord) => {
+          const activatedMine = (guestWord.activates || []).find((id) => mineOnly.some((word) => word.id === id));
+          if (activatedMine) addPair(guestWord, WORD_BY_ID.get(activatedMine), 'эта связка может звучать по-разному');
+          const mineTrigger = mineOnly.find((word) => (word.activates || []).includes(guestWord.id));
+          if (mineTrigger) addPair(guestWord, mineTrigger, 'эта связка может звучать по-разному');
+        });
+        guestOnly.forEach((guestWord) => {
+          const mineWord = mineOnly.find((word) => !usedMine.has(word.id)
+            && (word.shelves || []).some((shelfId) => (guestWord.shelves || []).includes(shelfId)));
+          if (mineWord) addPair(guestWord, mineWord, 'рядом на одной теме');
+        });
+        guestOnly.forEach((guestWord) => {
+          const mineWord = mineOnly.find((word) => !usedMine.has(word.id));
+          if (mineWord) addPair(guestWord, mineWord, 'разные акценты');
+        });
+        return pairs;
+      }
+
+      function linkComparisonWordChip(word) {
+        const chip = document.createElement('span');
+        chip.className = 'link-comparison-word';
+        chip.textContent = word.word;
+        return chip;
+      }
+
+      function renderLinkComparison() {
         linkComparisonContent.replaceChildren();
         const header = document.createElement('header');
         header.className = 'screen-head';
@@ -3792,9 +3863,102 @@
         title.textContent = linkGuest ? `${linkGuest.nickname} и ты` : 'Карты готовы к сравнению.';
         const lead = document.createElement('p');
         lead.className = 'lead';
-        lead.textContent = 'Собираем общее и различия только в этом браузере.';
+        lead.textContent = 'Не вывод о вас, а несколько мест, с которых можно начать разговор.';
         header.append(eyebrow, title, lead);
         linkComparisonContent.append(header);
+        if (!linkGuest) return;
+
+        const mine = new Set(state.selectedIds.filter((id) => WORD_BY_ID.has(id)));
+        const theirs = new Set(linkGuest.words.map((record) => record.id).filter((id) => WORD_BY_ID.has(id)));
+        const commonIds = [...mine].filter((id) => theirs.has(id));
+        const guestOnlyIds = [...theirs].filter((id) => !mine.has(id));
+        const mineOnlyIds = [...mine].filter((id) => !theirs.has(id));
+        const score = weightedSimilarityBetween([...mine], [...theirs]);
+        const scoreLine = document.createElement('p');
+        scoreLine.className = 'link-comparison-score';
+        scoreLine.dataset.linkComparisonScore = String(score);
+        scoreLine.textContent = `По взвешенному пересечению — ${similarityLabel(score)}.`;
+        linkComparisonContent.append(scoreLine);
+
+        const common = document.createElement('section');
+        common.className = 'link-card link-comparison-section';
+        const commonTitle = document.createElement('h2');
+        commonTitle.textContent = 'Что вас связывает';
+        common.append(commonTitle);
+        const commonWords = commonIds
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean)
+          .sort((left, right) => (state.wordWeights?.[right.id] || 1) - (state.wordWeights?.[left.id] || 1)
+            || matchWordWeight(right.id) - matchWordWeight(left.id)
+            || left.word.localeCompare(right.word, 'ru'))
+          .slice(0, 3);
+        if (commonWords.length) {
+          const row = document.createElement('div');
+          row.className = 'link-comparison-words';
+          commonWords.forEach((word) => row.append(linkComparisonWordChip(word)));
+          common.append(row);
+        } else {
+          const empty = document.createElement('p');
+          empty.textContent = 'Одинаковых слов пока нет — можно начать с различий.';
+          common.append(empty);
+        }
+
+        const different = document.createElement('section');
+        different.className = 'link-card link-comparison-section';
+        const differentTitle = document.createElement('h2');
+        differentTitle.textContent = 'Где вы разные';
+        different.append(differentTitle);
+        const contrasts = linkComparisonContrasts(guestOnlyIds, mineOnlyIds);
+        if (contrasts.length) {
+          const list = document.createElement('div');
+          list.className = 'link-contrast-list';
+          contrasts.forEach(({ guestWord, mineWord, note }) => {
+            const item = document.createElement('div');
+            item.className = 'link-contrast';
+            const pair = document.createElement('p');
+            pair.className = 'link-contrast-pair';
+            pair.textContent = `${linkGuest.nickname}: «${guestWord.word}» · ты: «${mineWord.word}»`;
+            const hint = document.createElement('span');
+            hint.textContent = note;
+            item.append(pair, hint);
+            list.append(item);
+          });
+          different.append(list);
+        } else {
+          const empty = document.createElement('p');
+          empty.textContent = 'Явного контраста в выбранных словах пока не видно.';
+          different.append(empty);
+        }
+
+        const question = document.createElement('section');
+        question.className = 'link-card link-comparison-section link-question';
+        const questionTitle = document.createElement('h2');
+        questionTitle.textContent = `О чём спросить ${linkGuest.nickname}`;
+        const questionWord = (guestOnlyIds.length ? guestOnlyIds : [...theirs])
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean)
+          .sort((left, right) => profilesForWord(left.id).length - profilesForWord(right.id).length
+            || left.word.localeCompare(right.word, 'ru'))[0];
+        const questionText = document.createElement('p');
+        questionText.textContent = questionWord
+          ? `«Что для тебя стоит за словом “${questionWord.word}”?»`
+          : '«Какое слово в твоей карте сейчас самое живое?»';
+        question.append(questionTitle, questionText);
+
+        const actions = document.createElement('div');
+        actions.className = 'link-comparison-actions';
+        const answer = document.createElement('button');
+        answer.className = 'primary-button';
+        answer.type = 'button';
+        answer.dataset.linkComparisonReply = 'true';
+        answer.textContent = 'Отправить свою карту в ответ';
+        const back = document.createElement('button');
+        back.className = 'secondary-button';
+        back.type = 'button';
+        back.dataset.linkComparisonBack = 'true';
+        back.textContent = 'К пересечениям';
+        actions.append(answer, back);
+        linkComparisonContent.append(common, different, question, actions);
       }
 
       function appendLinkPreviewGroups(container, records) {
@@ -3917,7 +4081,7 @@
       }
 
       function openLinkSharePreview(returnView = 'intersections') {
-        linkShareReturnView = returnView === 'intersections' ? returnView : 'intersections';
+        linkShareReturnView = returnView === 'link-comparison' ? returnView : 'intersections';
         linkShareResult = null;
         renderLinkSharePreview();
         showView('link-share', true, false);
@@ -4871,9 +5035,9 @@
         return Math.max(0, ...(item.shelves || []).map((shelfId) => SHELF_WEIGHTS[shelfId] || 0));
       }
 
-      function weightedSimilarity(profile) {
-        const mine = new Set(state.selectedIds.filter((id) => WORD_BY_ID.has(id)));
-        const theirs = new Set((profile.words || []).filter((id) => WORD_BY_ID.has(id)));
+      function weightedSimilarityBetween(mineIds, theirIds) {
+        const mine = new Set((mineIds || []).filter((id) => WORD_BY_ID.has(id)));
+        const theirs = new Set((theirIds || []).filter((id) => WORD_BY_ID.has(id)));
         const union = new Set([...mine, ...theirs]);
         let sharedWeight = 0;
         let unionWeight = 0;
@@ -4883,6 +5047,10 @@
           if (mine.has(id) && theirs.has(id)) sharedWeight += weight;
         });
         return unionWeight ? Math.round(sharedWeight / unionWeight * 100) : 0;
+      }
+
+      function weightedSimilarity(profile) {
+        return weightedSimilarityBetween(state.selectedIds, profile.words || []);
       }
 
       function similarityLabel(score) {
@@ -7860,7 +8028,7 @@
         }
         if (isLinkShare) renderLinkSharePreview();
         if (isLinkInvite) renderLinkInvite();
-        if (isLinkComparison) renderLinkComparisonPending();
+        if (isLinkComparison) renderLinkComparison();
         if (isWordWorld) renderWordWorld();
         if (isProfileIntersection) renderProfileIntersection();
         if (isForks) {
@@ -8250,6 +8418,13 @@
         state.wave = 1;
         state.personalityReturning = false;
         showView('scatter');
+      });
+      linkComparisonContent.addEventListener('click', (event) => {
+        if (event.target.closest('[data-link-comparison-reply]')) {
+          openLinkSharePreview('link-comparison');
+          return;
+        }
+        if (event.target.closest('[data-link-comparison-back]')) showView('intersections');
       });
       linkShareContent.addEventListener('input', (event) => {
         if (event.target.matches('[name="nickname"]')) linkShareNickname = normalizeLinkNickname(event.target.value);
