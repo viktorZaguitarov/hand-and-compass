@@ -453,6 +453,11 @@ async function main() {
     await click(client, '[data-word-id="predatelstvo"]');
     await click(client, '#doneButton');
     await waitFor(client, `${visible('#snapshotScreen')} && document.querySelectorAll('#shelfGrid .shelf-card').length > 0`, 'snapshot render');
+    const snapshotHeading = await evaluate(client, `(() => ({
+      title: document.getElementById('snapshotTitle').textContent.trim(),
+      subtitle: document.querySelector('#snapshotScreen .snapshot-head .lead').textContent.trim()
+    }))()`);
+    assert(snapshotHeading.title === 'Это гипотезы из твоих слов' && snapshotHeading.subtitle === 'Править их можешь только ты', 'snapshot heading is stale');
     const initialWeights = await evaluate(client, `(() => {
       const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
       return saved.selectedIds.map((id) => saved.wordWeights[id]);
