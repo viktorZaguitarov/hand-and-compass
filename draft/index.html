@@ -2009,6 +2009,49 @@
 
     .friend-compare-entry .primary-button { width: min(100%, 360px); }
 
+    .meeting-people {
+      display: grid;
+      gap: 11px;
+      max-width: 940px;
+      margin: 0 auto 16px;
+      padding: 16px;
+      border: 1px solid rgba(83, 104, 96, 0.18);
+      border-radius: 22px;
+      background: rgba(255, 253, 247, 0.68);
+      box-shadow: 0 11px 26px rgba(38, 54, 46, 0.07);
+      font-family: var(--sans);
+    }
+    .meeting-people-head { display: grid; gap: 4px; }
+    .meeting-people-title { margin: 0; color: var(--forest-dark); font-family: var(--serif); font-size: 1.28rem; font-weight: 600; }
+    .meeting-people-note { margin: 0; color: var(--ink-soft); font-size: 0.7rem; line-height: 1.42; }
+    .meeting-people-list { display: grid; gap: 8px; }
+    .meeting-people-empty { margin: 0; color: var(--ink-faint); font-size: 0.73rem; line-height: 1.42; }
+    .meeting-card {
+      display: grid;
+      gap: 9px;
+      width: 100%;
+      padding: 13px;
+      border: 1px solid rgba(83, 104, 96, 0.18);
+      border-radius: 17px;
+      color: var(--ink);
+      background: rgba(255, 253, 247, 0.9);
+      text-align: left;
+    }
+    .meeting-card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .meeting-card-name { color: var(--forest-dark); font-family: var(--serif); font-size: 1.08rem; font-weight: 600; overflow-wrap: anywhere; }
+    .meeting-card-date { flex: 0 0 auto; color: var(--ink-faint); font-size: 0.64rem; }
+    .meeting-card-words { display: flex; flex-wrap: wrap; gap: 6px; }
+    .meeting-card-word {
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: var(--forest-dark);
+      background: rgba(205, 224, 211, 0.58);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+    .meeting-card-no-common { color: var(--ink-soft); font-size: 0.69rem; }
+    .meeting-trace-detail .meeting-card-words { margin-top: -2px; }
+
     .link-share-screen,
     .link-invite-screen,
     .link-comparison-screen { padding-bottom: 42px; }
@@ -2640,6 +2683,11 @@
       .intersections-screen .screen-head { margin-bottom: 15px; }
       .match-panel { margin-bottom: 13px; padding: 13px; border-radius: 17px; }
       .friend-compare-entry { margin-bottom: 11px; }
+      .meeting-people { margin-bottom: 13px; padding: 13px; border-radius: 17px; }
+      .meeting-card { padding: 11px; border-radius: 15px; }
+      .meeting-card-top { align-items: flex-start; }
+      .meeting-card-name { font-size: 1rem; }
+      .meeting-card-date { padding-top: 2px; font-size: 0.59rem; }
       .link-card { padding: 15px; border-radius: 19px; }
       .link-share-actions { grid-template-columns: 1fr; }
       .link-comparison-actions { grid-template-columns: 1fr; }
@@ -2940,6 +2988,14 @@
           <button class="primary-button" id="openLinkShareButton" type="button">Сравниться с другом</button>
         </div>
 
+        <section class="meeting-people" aria-labelledby="meetingPeopleTitle">
+          <div class="meeting-people-head">
+            <h2 class="meeting-people-title" id="meetingPeopleTitle">Люди</h2>
+            <p class="meeting-people-note">Только следы встреч: имя, дата и ваши общие слова.</p>
+          </div>
+          <div class="meeting-people-list" id="meetingPeopleList" aria-live="polite"></div>
+        </section>
+
         <section class="match-panel" aria-labelledby="matchRangeLabel">
           <div class="match-label-row">
             <label class="match-label" id="matchRangeLabel" for="matchRange">Какую близость искать?</label>
@@ -3034,6 +3090,7 @@
       const GRAPH_INTRO_SESSION_KEY = 'hand_compass_graph_intro_seen_v1';
       const FORKS_STORAGE_KEY = 'hand_compass_forks_v1';
       const PERSONAL_DILEMMAS_STORAGE_KEY = 'hand_compass_personal_dilemmas_v1';
+      const MEETING_TRACES_STORAGE_KEY = 'hand_compass_meeting_traces_v1';
       const FORKS_SESSION_KEY = 'hand_compass_fork_seen_v1';
       const FORKS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
       const SNAPSHOT_EXPORT_VERSION = 1;
@@ -3171,6 +3228,7 @@
       const worldsDirectory = document.getElementById('worldsDirectory');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
       const openLinkShareButton = document.getElementById('openLinkShareButton');
+      const meetingPeopleList = document.getElementById('meetingPeopleList');
       const linkShareScreen = document.getElementById('linkShareScreen');
       const linkShareContent = document.getElementById('linkShareContent');
       const linkInviteScreen = document.getElementById('linkInviteScreen');
@@ -3209,6 +3267,7 @@
       let worldData = restoreWorldData();
       let forksData = restoreForksData();
       let personalDilemmasData = restorePersonalDilemmasData();
+      let meetingTracesData = restoreMeetingTracesData();
       let activeFork = null;
       let personalDilemmaComposerOpen = false;
       let lastPersonalDilemmaId = null;
@@ -3218,6 +3277,9 @@
       let linkGuest = null;
       let linkGuestError = '';
       let pendingLinkComparison = false;
+      let activeMeetingTraceId = null;
+      let linkMeetingTraceId = null;
+      const meetingGuestCache = new Map();
       let linkPasteValue = '';
       let linkPasteStatus = '';
       let focusedShelfId = state.supplementShelfId || null;
@@ -3635,6 +3697,50 @@
         }
       }
 
+      function emptyMeetingTracesData() {
+        return { version: 1, items: [] };
+      }
+
+      function restoreMeetingTracesData() {
+        try {
+          const raw = localStorage.getItem(MEETING_TRACES_STORAGE_KEY);
+          if (!raw) return emptyMeetingTracesData();
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') throw new Error('invalid meeting traces');
+          const items = Array.isArray(parsed.items) ? parsed.items
+            .filter((item) => item && typeof item.id === 'string' && typeof item.nickname === 'string')
+            .slice(-100)
+            .map((item) => {
+              const viewedAt = typeof item.viewedAt === 'string' && Number.isFinite(Date.parse(item.viewedAt))
+                ? new Date(item.viewedAt).toISOString()
+                : null;
+              const commonWordIds = Array.isArray(item.commonWordIds)
+                ? [...new Set(item.commonWordIds.filter((id) => WORD_BY_ID.has(id)))]
+                : [];
+              return {
+                id: item.id.slice(0, 120),
+                nickname: normalizeLinkNickname(item.nickname),
+                viewedAt,
+                commonWordIds
+              };
+            })
+            .filter((item) => item.id && item.nickname && item.viewedAt)
+            : [];
+          return { version: 1, items };
+        } catch {
+          showStorageNotice('Следы встреч не удалось прочитать. Исходная запись пока не изменена.');
+          return emptyMeetingTracesData();
+        }
+      }
+
+      function persistMeetingTracesData() {
+        try {
+          localStorage.setItem(MEETING_TRACES_STORAGE_KEY, JSON.stringify(meetingTracesData));
+        } catch {
+          showStorageNotice('Браузер не дал сохранить след встречи. Пока он останется только на этом экране.');
+        }
+      }
+
       function isPlainObject(value) {
         return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
       }
@@ -3943,8 +4049,97 @@
         return chip;
       }
 
+      function meetingTraceForId(traceId) {
+        return meetingTracesData.items.find((item) => item.id === traceId) || null;
+      }
+
+      function meetingTraceIdForGuest(guest) {
+        const signature = (guest?.words || [])
+          .map((record) => `${record.id}:${record.sign || ''}:${[...(record.shelves || [])].sort().join(',')}`)
+          .sort()
+          .join('|');
+        return `meeting-${Math.abs(hashValue(`${guest?.nickname || ''}|${signature}`)).toString(36)}`;
+      }
+
+      function rememberLinkMeeting(commonWordIds) {
+        if (!linkGuest) return null;
+        if (linkMeetingTraceId) {
+          meetingGuestCache.set(linkMeetingTraceId, linkGuest);
+          activeMeetingTraceId = linkMeetingTraceId;
+          return meetingTraceForId(linkMeetingTraceId);
+        }
+        const id = meetingTraceIdForGuest(linkGuest);
+        const trace = {
+          id,
+          nickname: normalizeLinkNickname(linkGuest.nickname),
+          viewedAt: new Date().toISOString(),
+          commonWordIds: [...new Set(commonWordIds.filter((wordId) => WORD_BY_ID.has(wordId)))]
+        };
+        meetingTracesData.items = [...meetingTracesData.items.filter((item) => item.id !== id), trace].slice(-100);
+        linkMeetingTraceId = id;
+        activeMeetingTraceId = id;
+        meetingGuestCache.set(id, linkGuest);
+        persistMeetingTracesData();
+        return trace;
+      }
+
+      function meetingTraceDate(value) {
+        const date = new Date(value);
+        if (!Number.isFinite(date.getTime())) return '';
+        return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+      }
+
+      function meetingTraceCommonWords(trace) {
+        return (trace?.commonWordIds || [])
+          .map((id) => WORD_BY_ID.get(id))
+          .filter(Boolean)
+          .sort((left, right) => personalWordWeight(right.id) - personalWordWeight(left.id)
+            || matchWordWeight(right.id) - matchWordWeight(left.id)
+            || left.word.localeCompare(right.word, 'ru'));
+      }
+
+      function appendMeetingWordChips(container, trace) {
+        const words = meetingTraceCommonWords(trace).slice(0, 3);
+        if (!words.length) {
+          const empty = document.createElement('span');
+          empty.className = 'meeting-card-no-common';
+          empty.textContent = 'Общих слов тогда не нашлось.';
+          container.append(empty);
+          return;
+        }
+        words.forEach((word) => {
+          const chip = document.createElement('span');
+          chip.className = 'meeting-card-word';
+          chip.textContent = word.word;
+          container.append(chip);
+        });
+      }
+
+      function renderMeetingTraceFallback(trace) {
+        const card = document.createElement('section');
+        card.className = 'link-card meeting-trace-detail';
+        card.dataset.meetingTraceDetail = trace.id;
+        const title = document.createElement('h2');
+        title.textContent = 'След встречи';
+        const date = document.createElement('p');
+        date.textContent = meetingTraceDate(trace.viewedAt);
+        const words = document.createElement('div');
+        words.className = 'meeting-card-words';
+        appendMeetingWordChips(words, trace);
+        const note = document.createElement('p');
+        note.textContent = 'Чужая карта целиком не сохранялась, поэтому здесь остались только имя, дата и общие слова.';
+        const back = document.createElement('button');
+        back.className = 'secondary-button';
+        back.type = 'button';
+        back.dataset.linkComparisonBack = 'true';
+        back.textContent = 'К пересечениям';
+        card.append(title, date, words, note, back);
+        linkComparisonContent.append(card);
+      }
+
       function renderLinkComparison() {
         linkComparisonContent.replaceChildren();
+        const activeMeetingTrace = meetingTraceForId(activeMeetingTraceId);
         const header = document.createElement('header');
         header.className = 'screen-head';
         const eyebrow = document.createElement('p');
@@ -3953,13 +4148,20 @@
         const title = document.createElement('h1');
         title.id = 'linkComparisonTitle';
         title.tabIndex = -1;
-        title.textContent = linkGuest ? `${linkGuest.nickname} и ты` : 'Карты готовы к сравнению.';
+        title.textContent = linkGuest
+          ? `${linkGuest.nickname} и ты`
+          : activeMeetingTrace
+          ? `${activeMeetingTrace.nickname} и ты`
+          : 'Карты готовы к сравнению.';
         const lead = document.createElement('p');
         lead.className = 'lead';
         lead.textContent = 'Не вывод о вас, а несколько мест, с которых можно начать разговор.';
         header.append(eyebrow, title, lead);
         linkComparisonContent.append(header);
-        if (!linkGuest) return;
+        if (!linkGuest) {
+          if (activeMeetingTrace) renderMeetingTraceFallback(activeMeetingTrace);
+          return;
+        }
 
         const mine = new Set(state.selectedIds.filter((id) => WORD_BY_ID.has(id)));
         const theirs = new Set(linkGuest.words.map((record) => record.id).filter((id) => WORD_BY_ID.has(id)));
@@ -4052,6 +4254,7 @@
         back.textContent = 'К пересечениям';
         actions.append(answer, back);
         linkComparisonContent.append(common, different, question, actions);
+        rememberLinkMeeting(commonIds);
       }
 
       function appendLinkPreviewGroups(container, records) {
@@ -5704,7 +5907,46 @@
         return button;
       }
 
+      function createMeetingCard(trace) {
+        const button = document.createElement('button');
+        button.className = 'meeting-card';
+        button.type = 'button';
+        button.dataset.meetingTraceId = trace.id;
+        button.setAttribute('aria-label', `Открыть след встречи с ${trace.nickname} от ${meetingTraceDate(trace.viewedAt)}`);
+
+        const top = document.createElement('span');
+        top.className = 'meeting-card-top';
+        const name = document.createElement('span');
+        name.className = 'meeting-card-name';
+        name.textContent = trace.nickname;
+        const date = document.createElement('time');
+        date.className = 'meeting-card-date';
+        date.dateTime = trace.viewedAt;
+        date.textContent = meetingTraceDate(trace.viewedAt);
+        top.append(name, date);
+
+        const words = document.createElement('span');
+        words.className = 'meeting-card-words';
+        appendMeetingWordChips(words, trace);
+        button.append(top, words);
+        return button;
+      }
+
+      function renderMeetingPeople() {
+        const traces = [...meetingTracesData.items]
+          .sort((left, right) => Date.parse(right.viewedAt) - Date.parse(left.viewedAt));
+        if (!traces.length) {
+          const empty = document.createElement('p');
+          empty.className = 'meeting-people-empty';
+          empty.textContent = 'Здесь появятся люди, с которыми ты уже сравнивал карты.';
+          meetingPeopleList.replaceChildren(empty);
+          return;
+        }
+        meetingPeopleList.replaceChildren(...traces.map(createMeetingCard));
+      }
+
       function renderProfileMatches() {
+        renderMeetingPeople();
         const scored = scoredProfiles();
         matchRange.value = String(state.matchTarget);
         matchValue.textContent = similarityLabel(state.matchTarget);
@@ -8499,6 +8741,18 @@
         const word = event.target.closest('[data-world-directory-word]');
         if (word) openWordWorld(word.dataset.worldDirectoryWord, 'worlds');
       });
+      meetingPeopleList.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-meeting-trace-id]');
+        if (!button) return;
+        const trace = meetingTraceForId(button.dataset.meetingTraceId);
+        if (!trace) return;
+        activeMeetingTraceId = trace.id;
+        const availableGuest = meetingGuestCache.get(trace.id) || null;
+        linkGuest = availableGuest;
+        linkMeetingTraceId = availableGuest ? trace.id : null;
+        pendingLinkComparison = false;
+        showView('link-comparison');
+      });
       openLinkShareButton.addEventListener('click', () => openLinkSharePreview('intersections'));
       linkInviteContent.addEventListener('input', (event) => {
         if (event.target.matches('[name="linkMessage"]')) linkPasteValue = event.target.value;
@@ -8522,6 +8776,8 @@
         }
         try {
           linkGuest = await decodeLinkComparisonEncoded(encoded);
+          activeMeetingTraceId = null;
+          linkMeetingTraceId = null;
           linkGuestError = '';
           pendingLinkComparison = !(state.ritualComplete && totalSelected() >= 3);
           linkPasteValue = '';
@@ -8553,6 +8809,8 @@
         if (event.target.closest('[data-link-comparison-back]')) {
           clearLinkComparisonLocation();
           linkGuest = null;
+          activeMeetingTraceId = null;
+          linkMeetingTraceId = null;
           pendingLinkComparison = false;
           showView('intersections');
         }
@@ -8737,6 +8995,8 @@
         const incomingComparison = await readLinkComparisonFromLocation();
         if (incomingComparison) {
           linkGuest = incomingComparison.guest;
+          activeMeetingTraceId = null;
+          linkMeetingTraceId = null;
           linkGuestError = incomingComparison.error || '';
           pendingLinkComparison = Boolean(linkGuest);
           if (linkGuest && state.ritualComplete && totalSelected() >= 3) {
@@ -8762,6 +9022,8 @@
 
       bootstrap().catch(() => {
         linkGuest = null;
+        activeMeetingTraceId = null;
+        linkMeetingTraceId = null;
         linkGuestError = 'Ссылку не удалось прочитать в этом браузере.';
         renderScatter();
         showView(hasLinkComparisonIntent() ? 'link-invite' : 'light-intro', false, false);

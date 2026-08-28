@@ -612,6 +612,23 @@ async function main() {
     assert(recipientComparison.headings.join('|') === 'Что вас связывает|Где вы разные|О чём спросить Отправитель', 'comparison structure is incomplete');
     assert(!recipientComparison.selectedIds.includes('knigi') && !recipientComparison.selectedIds.includes('vernost'), 'guest words were imported into the recipient snapshot');
     assert(!recipientComparison.storedGuest && !recipientComparison.overflow, 'guest data was stored or comparison overflows at 390px');
+    const recipientMeetingTrace = await evaluate(client, `(() => {
+      const stored = JSON.parse(localStorage.getItem('hand_compass_meeting_traces_v1'));
+      const trace = stored.items.at(-1);
+      return {
+        count: stored.items.length,
+        nickname: trace.nickname,
+        commonWordIds: trace.commonWordIds,
+        fields: Object.keys(trace).sort(),
+        foreignWordLeaked: JSON.stringify(stored).includes('knigi') || JSON.stringify(stored).includes('vernost'),
+        guestShapeLeaked: Object.hasOwn(trace, 'words') || Object.hasOwn(trace, 'guest') || Object.hasOwn(trace, 'encoded')
+      };
+    })()`);
+    assert(recipientMeetingTrace.count === 1 && recipientMeetingTrace.nickname === 'Отправитель', 'comparison did not save one meeting trace');
+    assert(recipientMeetingTrace.commonWordIds.sort().join('|') === 'chestnost|muzyka', 'meeting trace saved the wrong common words');
+    assert(recipientMeetingTrace.fields.join('|') === 'commonWordIds|id|nickname|viewedAt'
+      && !recipientMeetingTrace.foreignWordLeaked && !recipientMeetingTrace.guestShapeLeaked,
+      'meeting trace stored data beyond nickname, date, and common words');
     await click(client, '[data-link-comparison-reply]');
     await waitFor(client, visible('#linkShareScreen'), 'reply-link preview');
     await evaluate(client, `(() => {
@@ -702,7 +719,41 @@ async function main() {
     assert(!await evaluate(client, visible('#scatterScreen')), 'legacy hash link fell back to the ritual');
     await click(client, '[data-link-comparison-back]');
     await waitFor(client, visible('#intersectionsScreen'), 'return from friend comparison');
-    completed.push(`ссылка query + ручная вставка + старый hash (${responseBundle.length} символов)`);
+    await waitFor(client, `document.querySelectorAll('#meetingPeopleList [data-meeting-trace-id]').length === 1`, 'People meeting list');
+    const peopleBlock = await evaluate(client, `(() => {
+      const card = document.querySelector('#meetingPeopleList [data-meeting-trace-id]');
+      const people = document.querySelector('.meeting-people');
+      const matchPanel = document.querySelector('.match-panel');
+      return {
+        name: card.querySelector('.meeting-card-name')?.textContent.trim(),
+        chips: [...card.querySelectorAll('.meeting-card-word')].map((node) => node.textContent.trim()),
+        dateTime: card.querySelector('time')?.dateTime,
+        beforeTwins: Boolean(people.compareDocumentPosition(matchPanel) & Node.DOCUMENT_POSITION_FOLLOWING),
+        overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+      };
+    })()`);
+    assert(peopleBlock.name === 'Друг' && peopleBlock.chips.length > 0 && peopleBlock.chips.length <= 3
+      && peopleBlock.dateTime && peopleBlock.beforeTwins && !peopleBlock.overflow,
+      'People card is incomplete, misplaced, or overflows at 390px');
+    await click(client, '#meetingPeopleList [data-meeting-trace-id]');
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.querySelectorAll('#linkComparisonContent .link-comparison-section').length === 3`, 'available saved comparison');
+    await click(client, '[data-link-comparison-back]');
+    await waitFor(client, visible('#intersectionsScreen'), 'return from available saved comparison');
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, `${visible('#intersectionsScreen')} && document.querySelector('#meetingPeopleList [data-meeting-trace-id]')`, 'persisted People meeting list');
+    await click(client, '#meetingPeopleList [data-meeting-trace-id]');
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.querySelector('[data-meeting-trace-detail]')`, 'minimal meeting trace without guest payload');
+    const unavailableTrace = await evaluate(client, `(() => ({
+      note: document.querySelector('[data-meeting-trace-detail] p:last-of-type')?.textContent.trim(),
+      fullSections: document.querySelectorAll('#linkComparisonContent .link-comparison-section').length,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(unavailableTrace.note.startsWith('Чужая карта целиком не сохранялась')
+      && unavailableTrace.fullSections === 0 && !unavailableTrace.overflow,
+      'unavailable comparison does not degrade to the minimal meeting card');
+    await click(client, '[data-link-comparison-back]');
+    await waitFor(client, visible('#intersectionsScreen'), 'return from minimal meeting trace');
+    completed.push(`ссылка query + ручная вставка + старый hash + след встречи (${responseBundle.length} символов)`);
 
     await click(client, '[data-path-chapter="worlds"]');
     await waitFor(client, `${visible('#worldsScreen')} && document.querySelectorAll('#worldsDirectory [data-world-directory-word]').length > 0`, 'world directory');
