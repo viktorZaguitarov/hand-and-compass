@@ -2067,6 +2067,11 @@
     .link-paste-form { display: grid; gap: 11px; }
     .link-paste-input { min-height: 108px; resize: vertical; overflow-wrap: anywhere; }
     .link-paste-card { background: rgba(255, 253, 247, 0.74); }
+    .link-browser-hint {
+      margin: -6px 6px 0;
+      color: var(--ink-faint);
+      font: 0.68rem/1.45 var(--sans);
+    }
 
     .link-comparison-score {
       justify-self: start;
@@ -3862,6 +3867,10 @@
           : linkGuestError || 'В адресе не хватает данных карты.';
         card.append(note, action);
 
+        const browserHint = document.createElement('p');
+        browserHint.className = 'link-browser-hint';
+        browserHint.textContent = 'Если у тебя уже есть карта — открой ссылку в обычном браузере: меню ⋯ → "Открыть в Safari" (или Chrome).';
+
         const pasteCard = document.createElement('section');
         pasteCard.className = 'link-card link-paste-card';
         const pasteForm = document.createElement('form');
@@ -3888,7 +3897,9 @@
         pasteStatus.textContent = linkPasteStatus;
         pasteForm.append(pasteLabel, pasteOpen, pasteStatus);
         pasteCard.append(pasteForm);
-        linkInviteContent.append(header, card, pasteCard);
+        linkInviteContent.append(header, card);
+        if (linkGuest) linkInviteContent.append(browserHint);
+        linkInviteContent.append(pasteCard);
       }
 
       function linkComparisonContrasts(guestOnlyIds, mineOnlyIds) {
