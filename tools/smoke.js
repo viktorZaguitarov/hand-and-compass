@@ -568,10 +568,14 @@ async function main() {
     const invitation = await evaluate(client, `(() => ({
       title: document.getElementById('linkInviteTitle').textContent.trim(),
       pathHidden: document.getElementById('pathNav').hidden,
+      browserHint: document.querySelector('#linkInviteContent .link-browser-hint')?.textContent.trim(),
+      browserHintTag: document.querySelector('#linkInviteContent .link-browser-hint')?.tagName,
       overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
     }))()`);
     assert(invitation.title === 'Отправитель приглашает тебя сравнить карты.', 'friend invitation has the wrong sender');
     assert(invitation.pathHidden && !invitation.overflow, 'friend invitation navigation or 390px layout is broken');
+    assert(invitation.browserHint === 'Если у тебя уже есть карта — открой ссылку в обычном браузере: меню ⋯ → "Открыть в Safari" (или Chrome).'
+      && invitation.browserHintTag === 'P', 'friend invitation has no plain-text regular-browser hint');
     assert(await evaluate(client, `Boolean(document.querySelector('#linkInviteContent [data-link-paste-form] [name="linkMessage"]'))`),
       'friend invitation has no manual message field');
     await click(client, '[data-link-invite-start]');
