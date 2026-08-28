@@ -36,7 +36,8 @@
       "neighbors": [
         "zabota",
         "prinyatie",
-        "schedrost"
+        "schedrost",
+        "int_volonterstvo"
       ],
       "antonym": "zhestokost"
     },
@@ -49,7 +50,8 @@
       "neighbors": [
         "blizost",
         "prinyatie",
-        "zabota"
+        "zabota",
+        "int_zhivotnye_dom"
       ],
       "antonym": null
     },
@@ -76,7 +78,11 @@
       "neighbors": [
         "otkrytost",
         "blizost",
-        "yumor"
+        "yumor",
+        "int_igry",
+        "int_yazyki",
+        "int_nastolki",
+        "int_blogi"
       ],
       "antonym": "zamknutost"
     },
@@ -90,7 +96,11 @@
       "neighbors": [
         "dvizhenie",
         "vdohnovenie",
-        "tonus"
+        "tonus",
+        "int_tyazhelaya_muzyka",
+        "int_sport",
+        "int_beg",
+        "int_tanec"
       ],
       "antonym": "apathy"
     },
@@ -104,7 +114,10 @@
       "neighbors": [
         "energiya",
         "preodolenie",
-        "novoe"
+        "novoe",
+        "int_beg",
+        "int_progulki",
+        "int_tanec"
       ],
       "antonym": "otkladyvanie"
     },
@@ -131,7 +144,8 @@
       "neighbors": [
         "novoe",
         "granicy",
-        "tvorchestvo"
+        "tvorchestvo",
+        "int_pohody"
       ],
       "antonym": null
     },
@@ -172,7 +186,8 @@
       "neighbors": [
         "dobrota",
         "blizost",
-        "pokoy"
+        "pokoy",
+        "int_meditaciya"
       ],
       "antonym": "osuzhdenie"
     },
@@ -200,7 +215,15 @@
       "neighbors": [
         "muzyka",
         "idei",
-        "novoe"
+        "novoe",
+        "int_tyazhelaya_muzyka",
+        "int_anime",
+        "int_kino",
+        "int_gotovka",
+        "int_foto",
+        "int_risovanie",
+        "int_tanec",
+        "int_blogi"
       ],
       "antonym": null
     },
@@ -228,7 +251,8 @@
       "neighbors": [
         "plan",
         "effektivnost",
-        "distsiplina"
+        "distsiplina",
+        "int_kolekcii"
       ],
       "antonym": "khaos"
     },
@@ -255,7 +279,10 @@
       "neighbors": [
         "tonus",
         "pokoy",
-        "energiya"
+        "energiya",
+        "int_sport",
+        "int_beg",
+        "int_banya"
       ],
       "antonym": null
     },
@@ -268,7 +295,10 @@
       "neighbors": [
         "zdorovie",
         "energiya",
-        "distsiplina"
+        "distsiplina",
+        "int_sport",
+        "int_beg",
+        "int_tanec"
       ],
       "antonym": "apathy"
     },
@@ -295,7 +325,8 @@
       "neighbors": [
         "otsenka_usiliy",
         "delo",
-        "samootsenka"
+        "samootsenka",
+        "int_blogi"
       ],
       "antonym": "obestsenivanie"
     },
@@ -309,7 +340,11 @@
       "neighbors": [
         "prinyatie",
         "zdorovie",
-        "fin_nezavisimost"
+        "fin_nezavisimost",
+        "int_progulki",
+        "int_meditaciya",
+        "int_banya",
+        "int_rybalka"
       ],
       "antonym": "khaos"
     },
@@ -322,7 +357,8 @@
       "neighbors": [
         "idei",
         "gotovo",
-        "preodolenie"
+        "preodolenie",
+        "int_blogi"
       ],
       "antonym": "otkladyvanie"
     },
@@ -336,7 +372,8 @@
       "neighbors": [
         "zabota",
         "dobrota",
-        "schedrost"
+        "schedrost",
+        "int_volonterstvo"
       ],
       "antonym": null
     },
@@ -350,7 +387,10 @@
       "neighbors": [
         "pomogat",
         "lyubov",
-        "dobrota"
+        "dobrota",
+        "int_gotovka",
+        "int_zhivotnye_dom",
+        "int_sad_ogorod"
       ],
       "antonym": "zhestokost"
     },
@@ -363,7 +403,8 @@
       "neighbors": [
         "vyzovy",
         "distsiplina",
-        "dvizhenie"
+        "dvizhenie",
+        "int_pohody"
       ],
       "antonym": "obrushenie_planov"
     },
@@ -376,7 +417,8 @@
       "neighbors": [
         "preodolenie",
         "risk",
-        "novoe"
+        "novoe",
+        "int_igry"
       ],
       "antonym": null
     },
@@ -404,7 +446,8 @@
       "neighbors": [
         "struktura",
         "tonus",
-        "plan"
+        "plan",
+        "int_sport"
       ],
       "antonym": "nesderzhannost"
     },
@@ -417,7 +460,11 @@
       "neighbors": [
         "realizatsiya",
         "vyzovy",
-        "novoe"
+        "novoe",
+        "int_gotovka",
+        "int_risovanie",
+        "int_remont",
+        "int_avto"
       ],
       "antonym": "razdumya"
     },
@@ -431,7 +478,9 @@
       "neighbors": [
         "fantazii",
         "vdohnovenie",
-        "plan"
+        "plan",
+        "int_anime",
+        "int_kino"
       ],
       "antonym": null
     },
@@ -484,7 +533,8 @@
       "neighbors": [
         "analiz",
         "plan",
-        "ostorozhnost"
+        "ostorozhnost",
+        "int_nastolki"
       ],
       "antonym": "naporistost"
     },
@@ -497,7 +547,9 @@
       "neighbors": [
         "raschet",
         "razdumya",
-        "yasnost"
+        "yasnost",
+        "int_nauka",
+        "int_istoriya"
       ],
       "antonym": null
     },
@@ -511,7 +563,10 @@
       "neighbors": [
         "plan",
         "fin_nezavisimost",
-        "raschet"
+        "raschet",
+        "int_igry",
+        "int_nastolki",
+        "int_kolekcii"
       ],
       "antonym": null
     },
@@ -537,7 +592,10 @@
       "neighbors": [
         "analiz",
         "fantazii",
-        "pokoy"
+        "pokoy",
+        "int_kino",
+        "int_istoriya",
+        "int_rybalka"
       ],
       "antonym": "praktika"
     },
@@ -746,7 +804,9 @@
       "neighbors": [
         "zamknutost",
         "blizost",
-        "pokoy"
+        "pokoy",
+        "int_progulki",
+        "int_rybalka"
       ],
       "antonym": "obshchenie"
     },
@@ -811,7 +871,8 @@
       "neighbors": [
         "zdorovie",
         "tonus",
-        "pokoy"
+        "pokoy",
+        "int_banya"
       ],
       "antonym": null
     },
@@ -824,7 +885,8 @@
       "neighbors": [
         "zabota",
         "pokoy",
-        "prinyatie"
+        "prinyatie",
+        "int_zhivotnye_dom"
       ],
       "antonym": null
     },
@@ -837,7 +899,8 @@
       "neighbors": [
         "pokoy",
         "zhivotnye",
-        "dom"
+        "dom",
+        "int_sad_ogorod"
       ],
       "antonym": null,
       "interest": "zabota"
@@ -852,7 +915,8 @@
       "neighbors": [
         "tvorchestvo",
         "vdohnovenie",
-        "yumor"
+        "yumor",
+        "int_tyazhelaya_muzyka"
       ],
       "antonym": null,
       "interest": "vdohnovenie"
@@ -866,7 +930,8 @@
       "neighbors": [
         "obshchenie",
         "muzyka",
-        "legkost"
+        "legkost",
+        "int_nastolki"
       ],
       "antonym": null
     },
@@ -907,7 +972,8 @@
       "neighbors": [
         "fin_blagopoluchie",
         "pokoy",
-        "struktura"
+        "struktura",
+        "int_sad_ogorod"
       ],
       "antonym": "khaos"
     },
@@ -920,7 +986,9 @@
       "neighbors": [
         "rasteniya",
         "pokoy",
-        "stabilnost"
+        "stabilnost",
+        "int_gotovka",
+        "int_zhivotnye_dom"
       ],
       "antonym": null
     },
@@ -1106,7 +1174,8 @@
       "neighbors": [
         "dobrota",
         "pomogat",
-        "fin_blagopoluchie"
+        "fin_blagopoluchie",
+        "int_volonterstvo"
       ],
       "antonym": null
     },
@@ -1162,7 +1231,10 @@
       "neighbors": [
         "tvorchestvo",
         "delo",
-        "pokoy"
+        "pokoy",
+        "int_foto",
+        "int_risovanie",
+        "int_kolekcii"
       ],
       "antonym": null
     },
@@ -1231,7 +1303,9 @@
       "neighbors": [
         "novoe",
         "svoboda",
-        "vdohnovenie"
+        "vdohnovenie",
+        "int_pohody",
+        "int_yazyki"
       ],
       "antonym": null,
       "interest": "novoe"
@@ -1259,7 +1333,8 @@
       "neighbors": [
         "analiz",
         "ne_priznavat_oshibki",
-        "uroki"
+        "uroki",
+        "int_istoriya"
       ],
       "antonym": "ne_priznavat_oshibki"
     },
@@ -1375,7 +1450,12 @@
       "neighbors": [
         "pokoy",
         "zhivotnye",
-        "rasteniya"
+        "rasteniya",
+        "int_pohody",
+        "int_foto",
+        "int_progulki",
+        "int_rybalka",
+        "int_sad_ogorod"
       ],
       "antonym": null
     },
@@ -1388,7 +1468,8 @@
       "neighbors": [
         "razdumya",
         "idei",
-        "yumor"
+        "yumor",
+        "int_istoriya"
       ],
       "antonym": null,
       "interest": "razdumya"
@@ -1403,7 +1484,9 @@
       "neighbors": [
         "novoe",
         "idei",
-        "puteshestviya"
+        "puteshestviya",
+        "int_avto",
+        "int_kolekcii"
       ],
       "antonym": null
     },
@@ -1414,7 +1497,8 @@
         "action"
       ],
       "neighbors": [
-        "distsiplina"
+        "distsiplina",
+        "int_remont"
       ],
       "antonym": "otkladyvanie"
     },
@@ -1493,7 +1577,9 @@
         "action"
       ],
       "neighbors": [
-        "praktika"
+        "praktika",
+        "int_remont",
+        "int_avto"
       ]
     },
     {
@@ -1504,7 +1590,8 @@
       ],
       "neighbors": [
         "obshchenie",
-        "pomogat"
+        "pomogat",
+        "int_volonterstvo"
       ]
     },
     {
@@ -1549,7 +1636,11 @@
         "foresight"
       ],
       "neighbors": [
-        "mechty"
+        "mechty",
+        "int_anime",
+        "int_igry",
+        "int_kino",
+        "int_risovanie"
       ]
     },
     {
@@ -1561,7 +1652,9 @@
       ],
       "neighbors": [
         "idei",
-        "novoe"
+        "novoe",
+        "int_nauka",
+        "int_yazyki"
       ]
     },
     {
@@ -1572,7 +1665,9 @@
       ],
       "neighbors": [
         "struktura",
-        "analiz"
+        "analiz",
+        "int_avto",
+        "int_nauka"
       ]
     },
     {
@@ -1593,7 +1688,8 @@
       ],
       "neighbors": [
         "razdumya",
-        "uroki"
+        "uroki",
+        "int_meditaciya"
       ]
     },
     {
@@ -1604,7 +1700,8 @@
       ],
       "neighbors": [
         "analiz",
-        "raschet"
+        "raschet",
+        "int_nauka"
       ]
     },
     {
@@ -1628,7 +1725,8 @@
       ],
       "neighbors": [
         "novoe",
-        "lyuboznatelnost"
+        "lyuboznatelnost",
+        "int_yazyki"
       ]
     },
     {
@@ -1639,7 +1737,8 @@
       ],
       "neighbors": [
         "refleksiya",
-        "razdumya"
+        "razdumya",
+        "int_meditaciya"
       ]
     },
     {
@@ -1648,7 +1747,12 @@
       "shelves": [
         "supports"
       ],
-      "interest": "muzyka"
+      "interest": "muzyka",
+      "neighbors": [
+        "muzyka",
+        "energiya",
+        "tvorchestvo"
+      ]
     },
     {
       "id": "int_anime",
@@ -1656,7 +1760,12 @@
       "shelves": [
         "supports"
       ],
-      "interest": "voobrazhenie"
+      "interest": "voobrazhenie",
+      "neighbors": [
+        "voobrazhenie",
+        "mechty",
+        "tvorchestvo"
+      ]
     },
     {
       "id": "int_igry",
@@ -1664,7 +1773,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "voobrazhenie"
+      "interest": "voobrazhenie",
+      "neighbors": [
+        "voobrazhenie",
+        "strategiya",
+        "vyzovy",
+        "obshchenie"
+      ]
     },
     {
       "id": "int_kino",
@@ -1672,7 +1787,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "mechty"
+      "interest": "mechty",
+      "neighbors": [
+        "mechty",
+        "voobrazhenie",
+        "tvorchestvo",
+        "razdumya"
+      ]
     },
     {
       "id": "int_gotovka",
@@ -1680,7 +1801,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "zabota"
+      "interest": "zabota",
+      "neighbors": [
+        "zabota",
+        "praktika",
+        "dom",
+        "tvorchestvo"
+      ]
     },
     {
       "id": "int_zhivotnye_dom",
@@ -1688,7 +1815,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "lyubov"
+      "interest": "lyubov",
+      "neighbors": [
+        "lyubov",
+        "zabota",
+        "zhivotnye",
+        "dom"
+      ]
     },
     {
       "id": "int_sport",
@@ -1696,7 +1829,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "energiya"
+      "interest": "energiya",
+      "neighbors": [
+        "energiya",
+        "tonus",
+        "zdorovie",
+        "distsiplina"
+      ]
     },
     {
       "id": "int_beg",
@@ -1704,7 +1843,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "energiya"
+      "interest": "energiya",
+      "neighbors": [
+        "energiya",
+        "dvizhenie",
+        "tonus",
+        "zdorovie"
+      ]
     },
     {
       "id": "int_pohody",
@@ -1712,7 +1857,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "svoboda"
+      "interest": "svoboda",
+      "neighbors": [
+        "svoboda",
+        "priroda",
+        "puteshestviya",
+        "preodolenie"
+      ]
     },
     {
       "id": "int_foto",
@@ -1720,7 +1871,12 @@
       "shelves": [
         "supports"
       ],
-      "interest": "tvorchestvo"
+      "interest": "tvorchestvo",
+      "neighbors": [
+        "tvorchestvo",
+        "krasota",
+        "priroda"
+      ]
     },
     {
       "id": "int_risovanie",
@@ -1728,7 +1884,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "tvorchestvo"
+      "interest": "tvorchestvo",
+      "neighbors": [
+        "tvorchestvo",
+        "krasota",
+        "voobrazhenie",
+        "praktika"
+      ]
     },
     {
       "id": "int_remont",
@@ -1736,7 +1898,12 @@
       "shelves": [
         "supports"
       ],
-      "interest": "praktika"
+      "interest": "praktika",
+      "neighbors": [
+        "praktika",
+        "masterstvo_ruk",
+        "dovedenie"
+      ]
     },
     {
       "id": "int_avto",
@@ -1744,7 +1911,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "praktika"
+      "interest": "praktika",
+      "neighbors": [
+        "praktika",
+        "masterstvo_ruk",
+        "sistemnost",
+        "lyubopytstvo"
+      ]
     },
     {
       "id": "int_progulki",
@@ -1752,13 +1925,25 @@
       "shelves": [
         "supports"
       ],
-      "interest": "odinochestvo"
+      "interest": "odinochestvo",
+      "neighbors": [
+        "odinochestvo",
+        "priroda",
+        "pokoy",
+        "dvizhenie"
+      ]
     },
     {
       "id": "int_meditaciya",
       "word": "медитация",
       "shelves": [
         "supports"
+      ],
+      "neighbors": [
+        "pokoy",
+        "refleksiya",
+        "voprosy_sebe",
+        "prinyatie"
       ]
     },
     {
@@ -1767,7 +1952,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "pomogat"
+      "interest": "pomogat",
+      "neighbors": [
+        "pomogat",
+        "dobrota",
+        "schedrost",
+        "komanda"
+      ]
     },
     {
       "id": "int_nauka",
@@ -1775,7 +1966,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "analiz"
+      "interest": "analiz",
+      "neighbors": [
+        "analiz",
+        "lyuboznatelnost",
+        "kritmyshl",
+        "sistemnost"
+      ]
     },
     {
       "id": "int_istoriya",
@@ -1783,7 +1980,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "razdumya"
+      "interest": "razdumya",
+      "neighbors": [
+        "razdumya",
+        "uroki",
+        "knigi",
+        "analiz"
+      ]
     },
     {
       "id": "int_yazyki",
@@ -1791,7 +1994,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "obuchenie"
+      "interest": "obuchenie",
+      "neighbors": [
+        "obuchenie",
+        "lyuboznatelnost",
+        "obshchenie",
+        "puteshestviya"
+      ]
     },
     {
       "id": "int_tanec",
@@ -1799,13 +2008,24 @@
       "shelves": [
         "supports"
       ],
-      "interest": "energiya"
+      "interest": "energiya",
+      "neighbors": [
+        "energiya",
+        "dvizhenie",
+        "tvorchestvo",
+        "tonus"
+      ]
     },
     {
       "id": "int_banya",
       "word": "баня",
       "shelves": [
         "supports"
+      ],
+      "neighbors": [
+        "pokoy",
+        "fiz_udovletvorenie",
+        "zdorovie"
       ]
     },
     {
@@ -1813,6 +2033,12 @@
       "word": "рыбалка",
       "shelves": [
         "supports"
+      ],
+      "neighbors": [
+        "priroda",
+        "pokoy",
+        "razdumya",
+        "odinochestvo"
       ]
     },
     {
@@ -1821,7 +2047,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "stabilnost"
+      "interest": "stabilnost",
+      "neighbors": [
+        "stabilnost",
+        "priroda",
+        "rasteniya",
+        "zabota"
+      ]
     },
     {
       "id": "int_nastolki",
@@ -1829,7 +2061,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "obshchenie"
+      "interest": "obshchenie",
+      "neighbors": [
+        "obshchenie",
+        "strategiya",
+        "yumor",
+        "raschet"
+      ]
     },
     {
       "id": "int_kolekcii",
@@ -1837,7 +2075,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "strategiya"
+      "interest": "strategiya",
+      "neighbors": [
+        "strategiya",
+        "struktura",
+        "krasota",
+        "lyubopytstvo"
+      ]
     },
     {
       "id": "int_blogi",
@@ -1845,7 +2089,13 @@
       "shelves": [
         "supports"
       ],
-      "interest": "priznanie"
+      "interest": "priznanie",
+      "neighbors": [
+        "priznanie",
+        "tvorchestvo",
+        "obshchenie",
+        "realizatsiya"
+      ]
     },
     {
       "id": "pryamost",

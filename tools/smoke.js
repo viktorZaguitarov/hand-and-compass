@@ -1057,6 +1057,7 @@ async function main() {
     const auditReport = await evaluate(client, `window.hncAudit()`);
     assert(auditReport?.snapshot?.words === 70
       && Array.isArray(auditReport?.dictionary?.orphaned)
+      && auditReport.dictionary.orphaned.length === 0
       && auditReport?.dictionary?.total === 151
       && auditReport?.dictionary?.duplicates?.length === 0
       && Number(auditReport?.localStorage?.snapshotBytes) > 0

@@ -159,6 +159,16 @@ async function main() {
     ids.add(word.id);
   }
 
+  const wordsById = new Map(dictionary.words.map((word) => [word.id, word]));
+  const orphanedWords = dictionary.words.filter((word) => (
+    !(Array.isArray(word.neighbors) && word.neighbors.length)
+    && !word.antonym
+    && !(Array.isArray(word.activates) && word.activates.length)
+  ));
+  if (orphanedWords.length) {
+    fail(`dictionary has orphaned words: ${orphanedWords.map((word) => word.id).join(', ')}`);
+  }
+
   for (const word of dictionary.words) {
     const owner = `word:${word.id}`;
     if (word.synonyms !== undefined
@@ -169,6 +179,20 @@ async function main() {
     validateWordReference(ids, owner, 'antonym', word.antonym);
     validateReferenceArray(ids, owner, 'activates', word.activates);
     validateWordReference(ids, owner, 'interest', word.interest);
+    if (Array.isArray(word.neighbors) && new Set(word.neighbors).size !== word.neighbors.length) {
+      fail(`${owner}.neighbors must not contain duplicates`);
+    }
+    if (word.id.startsWith('int_') && (!Array.isArray(word.neighbors)
+      || word.neighbors.length < 2 || word.neighbors.length > 4)) {
+      fail(`${owner}.neighbors must contain 2-4 meaningful links`);
+    }
+    for (const neighborId of word.neighbors || []) {
+      if (!word.id.startsWith('int_') && !neighborId.startsWith('int_')) continue;
+      const neighbor = wordsById.get(neighborId);
+      if (neighbor && !(neighbor.neighbors || []).includes(word.id)) {
+        fail(`${owner}.neighbors link to "${neighborId}" must be reciprocal`);
+      }
+    }
   }
 
   const dilemmaIds = new Set();
@@ -255,7 +279,7 @@ async function main() {
   if (!sameJson(dictionary, embeddedWords)) fail('embedded #wordsData differs from draft/words_v3.json');
   if (!sameJson(dilemmas, embeddedDilemmas)) fail('embedded #dilemmasData differs from draft/dilemmas_v1.json');
   if (process.exitCode) return;
-  process.stdout.write(`VALIDATE PASS: ${dictionary.words.length} words, ${dilemmas.length} dilemmas, embedded data matches.\n`);
+  process.stdout.write(`VALIDATE PASS: ${dictionary.words.length} words, 0 orphaned, ${dilemmas.length} dilemmas, embedded data matches.\n`);
 }
 
 main().catch((error) => {
