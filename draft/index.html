@@ -2131,6 +2131,16 @@
       background: rgba(205, 224, 211, 0.62);
       font: 700 0.75rem/1.25 var(--sans);
     }
+    .link-antonym-alignment {
+      display: grid;
+      gap: 5px;
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 15px;
+      background: rgba(205, 224, 211, 0.46);
+    }
+    .link-antonym-alignment strong { color: var(--forest-dark); font-size: 0.78rem; line-height: 1.35; }
+    .link-antonym-alignment span { color: var(--ink-soft); font-size: 0.67rem; line-height: 1.4; overflow-wrap: anywhere; }
     .link-contrast-list { display: grid; gap: 8px; }
     .link-contrast {
       display: grid;
@@ -3122,6 +3132,12 @@
         seeker: { A: 'Я попробую честно посмотреть, что тут моё.', B: 'Я выберу путь, который оставляет больше воздуха.' }
       });
       const WORD_BY_ID = new Map(WORDS.map((item) => [item.id, item]));
+      const ANTONYM_IDS_BY_ID = new Map(WORDS.map((item) => [item.id, new Set()]));
+      WORDS.forEach((item) => {
+        if (!item.antonym || !WORD_BY_ID.has(item.antonym)) return;
+        ANTONYM_IDS_BY_ID.get(item.id).add(item.antonym);
+        ANTONYM_IDS_BY_ID.get(item.antonym).add(item.id);
+      });
       const WORD_ID_ALIASES = Object.freeze({
         int_muzyka: 'muzyka',
         int_knigi: 'knigi',
@@ -3790,9 +3806,15 @@
           .map((item) => ({
             i: item.id,
             s: (item.shelves || []).filter((shelfId) => allowedShelfIds.has(shelfId)),
-            g: typeof sourceState?.wordSigns?.[item.id] === 'string'
-              ? sourceState.wordSigns[item.id].trim().slice(0, 12) || null
-              : null
+            g: normalizeComparisonSign(
+              sourceState?.wordSigns?.[item.id],
+              item,
+              Number(sourceState?.selectionWaves?.[item.id]) === 2
+                ? 2
+                : Number(sourceState?.selectionWaves?.[item.id]) === 1 || (sourceState?.waveOneIds || []).includes(item.id)
+                ? 1
+                : null
+            )
           }));
         return {
           f: LINK_COMPARISON_FORMAT,
@@ -4008,45 +4030,56 @@
         linkInviteContent.append(pasteCard);
       }
 
-      function linkComparisonContrasts(guestOnlyIds, mineOnlyIds) {
-        const guestOnly = guestOnlyIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
-        const mineOnly = mineOnlyIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean);
+      function linkComparisonContrasts(analysis) {
+        const guestOnly = analysis.theirOnly;
+        const mineOnly = analysis.mineOnly;
         const pairs = [];
         const usedGuest = new Set();
         const usedMine = new Set();
-        const addPair = (guestWord, mineWord, note) => {
-          if (!guestWord || !mineWord || usedGuest.has(guestWord.id) || usedMine.has(mineWord.id) || pairs.length >= 2) return;
-          usedGuest.add(guestWord.id);
-          usedMine.add(mineWord.id);
-          pairs.push({ guestWord, mineWord, note });
+        const addPair = (guestRecord, mineRecord, note) => {
+          if (!guestRecord || !mineRecord || usedGuest.has(guestRecord.id) || usedMine.has(mineRecord.id) || pairs.length >= 2) return;
+          usedGuest.add(guestRecord.id);
+          usedMine.add(mineRecord.id);
+          pairs.push({ guestRecord, mineRecord, note });
         };
-        guestOnly.forEach((guestWord) => {
-          const mineWord = mineOnly.find((word) => guestWord.antonym === word.id || word.antonym === guestWord.id);
-          if (mineWord) addPair(guestWord, mineWord, 'два разных полюса');
+        analysis.opposites.forEach((pair) => addPair(pair.their, pair.mine, 'два разных полюса'));
+        guestOnly.forEach((guestRecord) => {
+          const activatedMine = (guestRecord.word.activates || []).find((id) => mineOnly.some((record) => record.id === id));
+          if (activatedMine) addPair(guestRecord, mineOnly.find((record) => record.id === activatedMine), 'эта связка может звучать по-разному');
+          const mineTrigger = mineOnly.find((record) => (record.word.activates || []).includes(guestRecord.id));
+          if (mineTrigger) addPair(guestRecord, mineTrigger, 'эта связка может звучать по-разному');
         });
-        guestOnly.forEach((guestWord) => {
-          const activatedMine = (guestWord.activates || []).find((id) => mineOnly.some((word) => word.id === id));
-          if (activatedMine) addPair(guestWord, WORD_BY_ID.get(activatedMine), 'эта связка может звучать по-разному');
-          const mineTrigger = mineOnly.find((word) => (word.activates || []).includes(guestWord.id));
-          if (mineTrigger) addPair(guestWord, mineTrigger, 'эта связка может звучать по-разному');
+        guestOnly.forEach((guestRecord) => {
+          const mineRecord = mineOnly.find((record) => !usedMine.has(record.id)
+            && (record.word.shelves || []).some((shelfId) => (guestRecord.word.shelves || []).includes(shelfId)));
+          if (mineRecord) addPair(guestRecord, mineRecord, 'рядом на одной теме');
         });
-        guestOnly.forEach((guestWord) => {
-          const mineWord = mineOnly.find((word) => !usedMine.has(word.id)
-            && (word.shelves || []).some((shelfId) => (guestWord.shelves || []).includes(shelfId)));
-          if (mineWord) addPair(guestWord, mineWord, 'рядом на одной теме');
-        });
-        guestOnly.forEach((guestWord) => {
-          const mineWord = mineOnly.find((word) => !usedMine.has(word.id));
-          if (mineWord) addPair(guestWord, mineWord, 'разные акценты');
+        guestOnly.forEach((guestRecord) => {
+          const mineRecord = mineOnly.find((record) => !usedMine.has(record.id));
+          if (mineRecord) addPair(guestRecord, mineRecord, 'разные акценты');
         });
         return pairs;
       }
 
-      function linkComparisonWordChip(word) {
+      function linkComparisonWordChip(record) {
         const chip = document.createElement('span');
         chip.className = 'link-comparison-word';
-        chip.textContent = word.word;
+        chip.textContent = comparisonWordLabel(record);
         return chip;
+      }
+
+      function comparisonMatchElement(pair, otherName) {
+        if (pair.kind === 'same-word') return linkComparisonWordChip(pair.mine);
+        const block = document.createElement('div');
+        block.className = 'link-antonym-alignment';
+        block.dataset.antonymAlignment = 'true';
+        const negative = pair.mine.sign === '-' ? pair.mine : pair.their.sign === '-' ? pair.their : null;
+        const summary = document.createElement('strong');
+        summary.textContent = negative ? `Оба против «${negative.word.word}».` : 'Одна и та же позиция через разные слова.';
+        const signs = document.createElement('span');
+        signs.textContent = `${otherName}: «${comparisonWordLabel(pair.their)}» · ты: «${comparisonWordLabel(pair.mine)}»`;
+        block.append(summary, signs);
+        return block;
       }
 
       function meetingTraceForId(traceId) {
@@ -4163,12 +4196,10 @@
           return;
         }
 
-        const mine = new Set(state.selectedIds.filter((id) => WORD_BY_ID.has(id)));
-        const theirs = new Set(linkGuest.words.map((record) => record.id).filter((id) => WORD_BY_ID.has(id)));
-        const commonIds = [...mine].filter((id) => theirs.has(id));
-        const guestOnlyIds = [...theirs].filter((id) => !mine.has(id));
-        const mineOnlyIds = [...mine].filter((id) => !theirs.has(id));
-        const score = weightedSimilarityBetween([...mine], [...theirs]);
+        const mineRecords = currentComparisonRecords();
+        const theirRecords = guestComparisonRecords();
+        const analysis = comparisonAnalysis(mineRecords, theirRecords);
+        const score = weightedSimilarityBetween(mineRecords, theirRecords);
         const scoreLine = document.createElement('p');
         scoreLine.className = 'link-comparison-score';
         scoreLine.dataset.linkComparisonScore = String(score);
@@ -4180,21 +4211,19 @@
         const commonTitle = document.createElement('h2');
         commonTitle.textContent = 'Что вас связывает';
         common.append(commonTitle);
-        const commonWords = commonIds
-          .map((id) => WORD_BY_ID.get(id))
-          .filter(Boolean)
-          .sort((left, right) => (state.wordWeights?.[right.id] || 1) - (state.wordWeights?.[left.id] || 1)
-            || matchWordWeight(right.id) - matchWordWeight(left.id)
-            || left.word.localeCompare(right.word, 'ru'))
+        const commonMatches = [...analysis.matches]
+          .sort((left, right) => (state.wordWeights?.[right.mine.id] || 1) - (state.wordWeights?.[left.mine.id] || 1)
+            || comparisonPositionWeight(right.mine) - comparisonPositionWeight(left.mine)
+            || left.mine.word.word.localeCompare(right.mine.word.word, 'ru'))
           .slice(0, 3);
-        if (commonWords.length) {
+        if (commonMatches.length) {
           const row = document.createElement('div');
           row.className = 'link-comparison-words';
-          commonWords.forEach((word) => row.append(linkComparisonWordChip(word)));
+          commonMatches.forEach((pair) => row.append(comparisonMatchElement(pair, linkGuest.nickname)));
           common.append(row);
         } else {
           const empty = document.createElement('p');
-          empty.textContent = 'Одинаковых слов пока нет — можно начать с различий.';
+          empty.textContent = 'Совпадающих позиций пока нет — можно начать с различий.';
           common.append(empty);
         }
 
@@ -4203,16 +4232,16 @@
         const differentTitle = document.createElement('h2');
         differentTitle.textContent = 'Где вы разные';
         different.append(differentTitle);
-        const contrasts = linkComparisonContrasts(guestOnlyIds, mineOnlyIds);
+        const contrasts = linkComparisonContrasts(analysis);
         if (contrasts.length) {
           const list = document.createElement('div');
           list.className = 'link-contrast-list';
-          contrasts.forEach(({ guestWord, mineWord, note }) => {
+          contrasts.forEach(({ guestRecord, mineRecord, note }) => {
             const item = document.createElement('div');
             item.className = 'link-contrast';
             const pair = document.createElement('p');
             pair.className = 'link-contrast-pair';
-            pair.textContent = `${linkGuest.nickname}: «${guestWord.word}» · ты: «${mineWord.word}»`;
+            pair.textContent = `${linkGuest.nickname}: «${comparisonWordLabel(guestRecord)}» · ты: «${comparisonWordLabel(mineRecord)}»`;
             const hint = document.createElement('span');
             hint.textContent = note;
             item.append(pair, hint);
@@ -4229,14 +4258,12 @@
         question.className = 'link-card link-comparison-section link-question';
         const questionTitle = document.createElement('h2');
         questionTitle.textContent = `О чём спросить ${linkGuest.nickname}`;
-        const questionWord = (guestOnlyIds.length ? guestOnlyIds : [...theirs])
-          .map((id) => WORD_BY_ID.get(id))
-          .filter(Boolean)
+        const questionRecord = (analysis.theirOnly.length ? analysis.theirOnly : theirRecords)
           .sort((left, right) => profilesForWord(left.id).length - profilesForWord(right.id).length
-            || left.word.localeCompare(right.word, 'ru'))[0];
+            || left.word.word.localeCompare(right.word.word, 'ru'))[0];
         const questionText = document.createElement('p');
-        questionText.textContent = questionWord
-          ? `«Что для тебя стоит за словом “${questionWord.word}”?»`
+        questionText.textContent = questionRecord
+          ? `«Что для тебя стоит за “${comparisonWordLabel(questionRecord)}”?»`
           : '«Какое слово в твоей карте сейчас самое живое?»';
         question.append(questionTitle, questionText);
 
@@ -4254,7 +4281,7 @@
         back.textContent = 'К пересечениям';
         actions.append(answer, back);
         linkComparisonContent.append(common, different, question, actions);
-        rememberLinkMeeting(commonIds);
+        rememberLinkMeeting(analysis.matches.flatMap((pair) => [pair.mine.id, pair.their.id]));
       }
 
       function appendLinkPreviewGroups(container, records) {
@@ -5330,22 +5357,156 @@
         return Math.max(0, ...(item.shelves || []).map((shelfId) => SHELF_WEIGHTS[shelfId] || 0));
       }
 
-      function weightedSimilarityBetween(mineIds, theirIds) {
-        const mine = new Set((mineIds || []).filter((id) => WORD_BY_ID.has(id)));
-        const theirs = new Set((theirIds || []).filter((id) => WORD_BY_ID.has(id)));
-        const union = new Set([...mine, ...theirs]);
+      function normalizeComparisonSign(value, item, wave = null) {
+        const raw = typeof value === 'string' ? value.trim() : '';
+        if (raw === '+' || raw === '＋') return '+';
+        if (raw === '-' || raw === '−' || raw === '–' || raw === '—') return '-';
+        if (raw === '±') return '±';
+        if (wave === 2) return '-';
+        if (wave === 1) return '+';
+        return (item?.shelves || []).some((shelfId) => shelfId === 'stones' || shelfId === 'triggers') ? '-' : '+';
+      }
+
+      function comparisonSignLabel(sign) {
+        return sign === '-' ? 'отталкивает' : sign === '±' ? 'двояко' : 'тянет';
+      }
+
+      function comparisonRecord(id, sign = null, wave = null) {
+        const word = WORD_BY_ID.get(id);
+        if (!word) return null;
+        return { id, word, sign: normalizeComparisonSign(sign, word, wave) };
+      }
+
+      function currentComparisonRecords(ids = state.selectedIds) {
+        return [...new Set(ids || [])]
+          .map((id) => comparisonRecord(id, state.wordSigns?.[id], selectionWave(id)))
+          .filter(Boolean);
+      }
+
+      function guestComparisonRecords(records = linkGuest?.words || []) {
+        return (records || []).map((record) => comparisonRecord(record.id, record.sign)).filter(Boolean);
+      }
+
+      function profileComparisonRecords(profile) {
+        return [...new Set(profile?.words || [])].map((id) => comparisonRecord(id)).filter(Boolean);
+      }
+
+      const comparisonPositionCache = new Map();
+
+      function comparisonPositionComponent(id, sign) {
+        const startKey = `${id}:${sign}`;
+        if (comparisonPositionCache.has(startKey)) return comparisonPositionCache.get(startKey);
+        const queue = [{ id, sign }];
+        const visited = new Set();
+        while (queue.length) {
+          const current = queue.shift();
+          const nodeKey = `${current.id}:${current.sign}`;
+          if (visited.has(nodeKey)) continue;
+          visited.add(nodeKey);
+          const oppositeSign = current.sign === '+' ? '-' : current.sign === '-' ? '+' : '±';
+          (ANTONYM_IDS_BY_ID.get(current.id) || []).forEach((antonymId) => {
+            const nextKey = `${antonymId}:${oppositeSign}`;
+            if (!visited.has(nextKey)) queue.push({ id: antonymId, sign: oppositeSign });
+          });
+        }
+        const nodes = [...visited].sort();
+        const component = {
+          key: nodes[0] || startKey,
+          ids: [...new Set(nodes.map((node) => node.slice(0, node.lastIndexOf(':'))))]
+        };
+        nodes.forEach((node) => comparisonPositionCache.set(node, component));
+        return component;
+      }
+
+      function comparisonPositionKey(record) {
+        return comparisonPositionComponent(record.id, record.sign).key;
+      }
+
+      function comparisonPositionWeight(record) {
+        return Math.max(0, ...comparisonPositionComponent(record.id, record.sign).ids.map(matchWordWeight));
+      }
+
+      function comparisonPositionsMatch(left, right) {
+        return comparisonPositionKey(left) === comparisonPositionKey(right);
+      }
+
+      function comparisonPositionsOpposite(left, right) {
+        if (left.sign === '±' || right.sign === '±') return false;
+        const flipped = { ...left, sign: left.sign === '+' ? '-' : '+' };
+        return comparisonPositionKey(flipped) === comparisonPositionKey(right);
+      }
+
+      function comparisonAnalysis(mineRecords, theirRecords) {
+        const mine = (mineRecords || []).filter(Boolean);
+        const theirs = (theirRecords || []).filter(Boolean);
+        const unusedTheirs = new Set(theirs.map((_, index) => index));
+        const matchedMine = new Set();
+        const matches = [];
+        mine.forEach((mineRecord, mineIndex) => {
+          const candidates = [...unusedTheirs].filter((index) => comparisonPositionsMatch(mineRecord, theirs[index]));
+          const theirIndex = candidates.find((index) => theirs[index].id === mineRecord.id) ?? candidates[0];
+          if (theirIndex === undefined) return;
+          unusedTheirs.delete(theirIndex);
+          matchedMine.add(mineIndex);
+          matches.push({
+            mine: mineRecord,
+            their: theirs[theirIndex],
+            kind: mineRecord.id === theirs[theirIndex].id ? 'same-word' : 'antonym-alignment'
+          });
+        });
+        const opposites = [];
+        mine.forEach((mineRecord, mineIndex) => {
+          if (matchedMine.has(mineIndex)) return;
+          const theirIndex = [...unusedTheirs].find((index) => comparisonPositionsOpposite(mineRecord, theirs[index]));
+          if (theirIndex === undefined) return;
+          unusedTheirs.delete(theirIndex);
+          matchedMine.add(mineIndex);
+          opposites.push({ mine: mineRecord, their: theirs[theirIndex] });
+        });
+        return {
+          mine,
+          theirs,
+          matches,
+          opposites,
+          mineOnly: mine.filter((_, index) => !matchedMine.has(index)),
+          theirOnly: theirs.filter((_, index) => unusedTheirs.has(index))
+        };
+      }
+
+      function comparisonWordLabel(record) {
+        return `${record.word.word} — ${comparisonSignLabel(record.sign)}`;
+      }
+
+      function comparisonMatchSummary(pair) {
+        if (pair.kind === 'same-word') return comparisonWordLabel(pair.mine);
+        const negative = pair.mine.sign === '-' ? pair.mine : pair.their.sign === '-' ? pair.their : null;
+        return negative ? `оба против «${negative.word.word} — ${comparisonSignLabel(negative.sign)}»` : `одна позиция: ${comparisonWordLabel(pair.mine)}`;
+      }
+
+      function weightedSimilarityBetween(mineRecords, theirRecords) {
+        const mine = new Map();
+        const theirs = new Map();
+        (mineRecords || []).filter(Boolean).forEach((record) => {
+          const key = comparisonPositionKey(record);
+          mine.set(key, Math.max(mine.get(key) || 0, comparisonPositionWeight(record)));
+        });
+        (theirRecords || []).filter(Boolean).forEach((record) => {
+          const key = comparisonPositionKey(record);
+          theirs.set(key, Math.max(theirs.get(key) || 0, comparisonPositionWeight(record)));
+        });
+        const union = new Set([...mine.keys(), ...theirs.keys()]);
         let sharedWeight = 0;
         let unionWeight = 0;
-        union.forEach((id) => {
-          const weight = matchWordWeight(id);
+        union.forEach((key) => {
+          const weight = Math.max(mine.get(key) || 0, theirs.get(key) || 0);
           unionWeight += weight;
-          if (mine.has(id) && theirs.has(id)) sharedWeight += weight;
+          if (mine.has(key) && theirs.has(key)) sharedWeight += weight;
         });
         return unionWeight ? Math.round(sharedWeight / unionWeight * 100) : 0;
       }
 
       function weightedSimilarity(profile) {
-        return weightedSimilarityBetween(state.selectedIds, profile.words || []);
+        return weightedSimilarityBetween(currentComparisonRecords(), profileComparisonRecords(profile));
       }
 
       function similarityLabel(score) {
@@ -5867,15 +6028,12 @@
       }
 
       function commonProfileWords(profile, limit = 3) {
-        const mine = new Set(state.selectedIds);
-        return (profile.words || [])
-          .filter((id) => mine.has(id) && WORD_BY_ID.has(id))
-          .sort((leftId, rightId) => {
-            const weightDifference = matchWordWeight(rightId) - matchWordWeight(leftId);
-            return weightDifference || WORD_BY_ID.get(leftId).word.localeCompare(WORD_BY_ID.get(rightId).word, 'ru');
-          })
+        const analysis = comparisonAnalysis(currentComparisonRecords(), profileComparisonRecords(profile));
+        return analysis.matches
+          .sort((left, right) => comparisonPositionWeight(right.mine) - comparisonPositionWeight(left.mine)
+            || left.mine.word.word.localeCompare(right.mine.word.word, 'ru'))
           .slice(0, limit)
-          .map((id) => WORD_BY_ID.get(id).word);
+          .map(comparisonMatchSummary);
       }
 
       function createProfileCard(profile, score) {
@@ -5979,25 +6137,59 @@
         if (shouldPersist) persistState();
       }
 
-      function profileQuestionLines(commonItems, theirsOnlyItems, mineOnlyItems) {
+      function profileQuestionLines(matches, theirsOnlyRecords, mineOnlyRecords) {
         const questions = [];
-        if (commonItems[0]) questions.push(`Похоже ли, что «${commonItems[0].word}» значит для вас одно и то же?`);
-        if (theirsOnlyItems[0]) questions.push(`Что для тебя стоит за словом «${theirsOnlyItems[0].word}»?`);
-        if (mineOnlyItems[0]) questions.push(`Как ты относишься к тому, что для меня важно «${mineOnlyItems[0].word}»?`);
+        if (matches[0]) questions.push(`Похоже ли, что «${comparisonMatchSummary(matches[0])}» значит для вас одно и то же?`);
+        if (theirsOnlyRecords[0]) questions.push(`Что для тебя стоит за «${comparisonWordLabel(theirsOnlyRecords[0])}»?`);
+        if (mineOnlyRecords[0]) questions.push(`Как ты относишься к моему «${comparisonWordLabel(mineOnlyRecords[0])}»?`);
         return questions.length ? questions : ['С какого слова тебе хотелось бы начать знакомство?'];
+      }
+
+      function appendSignedComparisonRecords(container, records) {
+        if (!records.length) {
+          const empty = document.createElement('p');
+          empty.className = 'intersection-empty';
+          empty.textContent = 'Пока пусто.';
+          container.append(empty);
+          return;
+        }
+        const words = document.createElement('div');
+        words.className = 'intersection-words';
+        records
+          .sort((left, right) => comparisonPositionWeight(right) - comparisonPositionWeight(left)
+            || left.word.word.localeCompare(right.word.word, 'ru'))
+          .forEach((record) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = `intersection-word shelf-${primaryShelf(record.word)}`;
+            chip.dataset.openWorldFromIntersection = record.id;
+            chip.textContent = comparisonWordLabel(record);
+            chip.setAttribute('aria-label', `Войти в мир слова «${comparisonWordLabel(record)}»`);
+            words.append(chip);
+          });
+        container.append(words);
+      }
+
+      function appendComparisonMatches(container, matches, otherName) {
+        if (!matches.length) {
+          const empty = document.createElement('p');
+          empty.className = 'intersection-empty';
+          empty.textContent = 'Совпадающих позиций пока нет.';
+          container.append(empty);
+          return;
+        }
+        const list = document.createElement('div');
+        list.className = 'link-comparison-words';
+        matches.forEach((pair) => list.append(comparisonMatchElement(pair, otherName)));
+        container.append(list);
       }
 
       function renderProfileIntersection() {
         const profile = FAKE_PROFILES.find((item) => item.id === state.profileIntersectionId);
         if (!profile) return;
-        const mine = new Set(state.selectedIds);
-        const theirs = new Set((profile.words || []).filter((id) => WORD_BY_ID.has(id)));
-        const commonIds = [...mine].filter((id) => theirs.has(id));
-        const theirsOnlyIds = [...theirs].filter((id) => !mine.has(id));
-        const mineOnlyIds = [...mine].filter((id) => !theirs.has(id));
-        const commonItems = intersectionItems(commonIds);
-        const theirsOnlyItems = intersectionItems(theirsOnlyIds);
-        const mineOnlyItems = intersectionItems(mineOnlyIds, state.customWords);
+        const analysis = comparisonAnalysis(currentComparisonRecords(), profileComparisonRecords(profile));
+        const theirDifferenceRecords = [...analysis.opposites.map((pair) => pair.their), ...analysis.theirOnly];
+        const mineDifferenceRecords = [...analysis.opposites.map((pair) => pair.mine), ...analysis.mineOnly];
 
         const back = document.createElement('button');
         back.className = 'secondary-button profile-intersection-back';
@@ -6024,7 +6216,7 @@
         const commonTitle = document.createElement('h2');
         commonTitle.textContent = 'Что общего';
         common.append(commonTitle);
-        appendIntersectionShelfGroups(common, commonIds);
+        appendComparisonMatches(common, analysis.matches, profile.name);
 
         const difference = document.createElement('section');
         difference.className = 'profile-intersection-section';
@@ -6037,13 +6229,13 @@
         const theirsTitle = document.createElement('h3');
         theirsTitle.textContent = `У ${profile.name}`;
         theirsColumn.append(theirsTitle);
-        appendIntersectionShelfGroups(theirsColumn, theirsOnlyIds);
+        appendSignedComparisonRecords(theirsColumn, theirDifferenceRecords);
         const mineColumn = document.createElement('div');
         mineColumn.className = 'profile-intersection-column';
         const mineTitle = document.createElement('h3');
         mineTitle.textContent = 'У тебя';
         mineColumn.append(mineTitle);
-        appendIntersectionShelfGroups(mineColumn, mineOnlyIds, state.customWords);
+        appendSignedComparisonRecords(mineColumn, mineDifferenceRecords);
         columns.append(theirsColumn, mineColumn);
         difference.append(differenceTitle, columns);
 
@@ -6053,7 +6245,7 @@
         askTitle.textContent = 'О чём спросить';
         const questions = document.createElement('ul');
         questions.className = 'profile-questions';
-        profileQuestionLines(commonItems, theirsOnlyItems, mineOnlyItems).forEach((line) => {
+        profileQuestionLines(analysis.matches, analysis.theirOnly, analysis.mineOnly).forEach((line) => {
           const item = document.createElement('li');
           item.textContent = line;
           questions.append(item);

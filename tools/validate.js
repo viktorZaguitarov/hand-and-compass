@@ -64,17 +64,19 @@ function functionDeclarationSource(source, name) {
 
 function validateLinkComparisonPrivacyFilter(draftHtml, dictionary) {
   const normalizeSource = functionDeclarationSource(draftHtml, 'normalizeLinkNickname');
+  const normalizeSignSource = functionDeclarationSource(draftHtml, 'normalizeComparisonSign');
   const builderSource = functionDeclarationSource(draftHtml, 'buildLinkComparisonPayload');
-  if (!normalizeSource || !builderSource) {
+  if (!normalizeSource || !normalizeSignSource || !builderSource) {
     fail('draft has no extractable link-comparison payload builder');
     return;
   }
   try {
     const normalizeNickname = Function(`"use strict"; return (${normalizeSource});`)();
+    const normalizeSign = Function(`"use strict"; return (${normalizeSignSource});`)();
     const buildPayload = Function(
-      'LINK_COMPARISON_MAX_WORDS', 'LINK_COMPARISON_FORMAT', 'LINK_COMPARISON_VERSION', 'normalizeLinkNickname',
+      'LINK_COMPARISON_MAX_WORDS', 'LINK_COMPARISON_FORMAT', 'LINK_COMPARISON_VERSION', 'normalizeLinkNickname', 'normalizeComparisonSign',
       `"use strict"; return (${builderSource});`
-    )(100, 'hand-compass-link', 1, normalizeNickname);
+    )(100, 'hand-compass-link', 1, normalizeNickname, normalizeSign);
     const sourceState = {
       selectedIds: ['chestnost', 'blizost', 'predatelstvo'],
       privacyByWord: { blizost: 'only-me' },
@@ -222,6 +224,10 @@ async function main() {
   requireDraftFeature(draftHtml, /function weightedSimilarityBetween/, 'friend comparison does not reuse weighted Jaccard');
   requireDraftFeature(draftHtml, /Что вас связывает[\s\S]+Где вы разные[\s\S]+О чём спросить/, 'friend comparison has an incomplete structure');
   requireDraftFeature(draftHtml, /dataset\.linkComparisonReply/, 'friend comparison has no reverse-link action');
+  requireDraftFeature(draftHtml, /function comparisonPositionsMatch[\s\S]+function comparisonPositionsOpposite/,
+    'comparison does not normalize signed antonym positions');
+  requireDraftFeature(draftHtml, /comparisonWordLabel[\s\S]+отталкивает[\s\S]+тянет/,
+    'comparison words do not expose human-readable signs');
   requireDraftFeature(draftHtml, /MEETING_TRACES_STORAGE_KEY\s*=\s*'hand_compass_meeting_traces_v1'/,
     'friend comparison has no local meeting-trace storage');
   requireDraftFeature(draftHtml, /id="meetingPeopleList"/, 'intersections have no People meeting list');

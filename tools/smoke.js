@@ -11,10 +11,11 @@ const { createServer, request: httpRequest } = require('node:http');
 const net = require('node:net');
 const { randomBytes } = require('node:crypto');
 const { existsSync } = require('node:fs');
-const { readFile, mkdtemp, rm, stat } = require('node:fs/promises');
+const { readFile, writeFile, mkdtemp, rm, stat } = require('node:fs/promises');
 const { tmpdir } = require('node:os');
 const { join, resolve, extname, sep } = require('node:path');
 const { spawn } = require('node:child_process');
+const { deflateSync } = require('node:zlib');
 
 const ROOT = resolve(__dirname, '..');
 const DEFAULT_CHROME_BIN = process.platform === 'darwin'
@@ -754,6 +755,80 @@ async function main() {
     await click(client, '[data-link-comparison-back]');
     await waitFor(client, visible('#intersectionsScreen'), 'return from minimal meeting trace');
     completed.push(`ссылка query + ручная вставка + старый hash + след встречи (${responseBundle.length} символов)`);
+
+    const signedComparisonStorage = await evaluate(client, `Object.fromEntries(Object.entries(localStorage))`);
+    await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      saved.selectedIds = ['vernost', 'chestnost', 'muzyka'];
+      saved.customWords = [];
+      saved.selectionWaves = { vernost: 1, chestnost: 1, muzyka: 1 };
+      saved.wordWeights = { vernost: 1, chestnost: 1, muzyka: 1 };
+      saved.waveOneIds = ['vernost', 'chestnost', 'muzyka'];
+      saved.waveOneCustomIds = [];
+      saved.wordSigns = { vernost: '+', chestnost: '+', muzyka: '+' };
+      saved.privacyByWord = {};
+      saved.ritualComplete = true;
+      saved.view = 'intersections';
+      localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
+    })()`);
+    const signedComparisonLink = (guestSign, caseName) => {
+      const payload = {
+        f: 'hand-compass-link', v: 1, n: 'Гость',
+        w: [{ i: 'predatelstvo', s: ['triggers'], g: guestSign }]
+      };
+      const encoded = deflateSync(Buffer.from(JSON.stringify(payload))).toString('base64url');
+      return `http://127.0.0.1:${serverPort}/draft/index.html?signed-antonym=${caseName}&c=${encoded}`;
+    };
+    await client.call('Page.navigate', { url: signedComparisonLink('-', 'aligned') });
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.querySelector('[data-antonym-alignment]')`, 'aligned signed antonyms');
+    const alignedAntonyms = await evaluate(client, `(() => ({
+      summary: document.querySelector('[data-antonym-alignment] strong')?.textContent.trim(),
+      signs: document.querySelector('[data-antonym-alignment] span')?.textContent.trim(),
+      differences: document.querySelectorAll('#linkComparisonContent .link-contrast').length,
+      score: Number(document.querySelector('[data-link-comparison-score]')?.dataset.linkComparisonScore),
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(alignedAntonyms.summary === 'Оба против «предательство».'
+      && alignedAntonyms.signs.includes('предательство — отталкивает')
+      && alignedAntonyms.signs.includes('верность — тянет')
+      && alignedAntonyms.differences === 0 && alignedAntonyms.score > 0 && !alignedAntonyms.overflow,
+      'vernost+ vs predatelstvo- is not shown as one signed position');
+    if (process.env.HAC_SMOKE_SCREENSHOT) {
+      await client.call('Emulation.setDeviceMetricsOverride', {
+        width: 390, height: 844, deviceScaleFactor: 1, mobile: true
+      });
+      await sleep(100);
+      const screenshot = await client.call('Page.captureScreenshot', {
+        format: 'png', fromSurface: true, captureBeyondViewport: false
+      });
+      await writeFile(resolve(process.env.HAC_SMOKE_SCREENSHOT), Buffer.from(screenshot.data, 'base64'));
+      await client.call('Emulation.setDeviceMetricsOverride', {
+        width: 390, height: 844, deviceScaleFactor: 3, mobile: true
+      });
+    }
+
+    await client.call('Page.navigate', { url: signedComparisonLink('+', 'opposite') });
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.querySelector('#linkComparisonContent .link-contrast')`, 'opposite signed antonyms');
+    const oppositeAntonyms = await evaluate(client, `(() => ({
+      commonAlignment: document.querySelectorAll('[data-antonym-alignment]').length,
+      pair: document.querySelector('#linkComparisonContent .link-contrast-pair')?.textContent.trim(),
+      note: document.querySelector('#linkComparisonContent .link-contrast span')?.textContent.trim(),
+      score: Number(document.querySelector('[data-link-comparison-score]')?.dataset.linkComparisonScore),
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(oppositeAntonyms.commonAlignment === 0
+      && oppositeAntonyms.pair.includes('предательство — тянет')
+      && oppositeAntonyms.pair.includes('верность — тянет')
+      && oppositeAntonyms.note === 'два разных полюса' && oppositeAntonyms.score === 0 && !oppositeAntonyms.overflow,
+      'vernost+ vs predatelstvo+ is not shown as opposite signed positions');
+    await evaluate(client, `(() => {
+      localStorage.clear();
+      Object.entries(${JSON.stringify(signedComparisonStorage)}).forEach(([key, value]) => localStorage.setItem(key, value));
+      sessionStorage.clear();
+    })()`);
+    await client.call('Page.navigate', { url: `http://127.0.0.1:${serverPort}/draft/index.html?smoke=1` });
+    await waitFor(client, visible('#intersectionsScreen'), 'intersections after signed-antonym cases');
+    completed.push('знаки антонимов: совпадение и противоположность');
 
     await click(client, '[data-path-chapter="worlds"]');
     await waitFor(client, `${visible('#worldsScreen')} && document.querySelectorAll('#worldsDirectory [data-world-directory-word]').length > 0`, 'world directory');
