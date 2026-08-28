@@ -1054,6 +1054,87 @@ async function main() {
     fullSnapshotLinkLength = await evaluate(client, `document.querySelector('#linkShareContent .link-share-url').value.length`);
     completed.push(`ссылка на 70 слов: ${fullSnapshotLinkLength} символов`);
 
+    const auditReport = await evaluate(client, `window.hncAudit()`);
+    assert(auditReport?.snapshot?.words === 70
+      && Array.isArray(auditReport?.dictionary?.orphaned)
+      && auditReport?.dictionary?.total === 151
+      && auditReport?.dictionary?.duplicates?.length === 0
+      && Number(auditReport?.localStorage?.snapshotBytes) > 0
+      && Object.keys(auditReport?.shelves || {}).length === 8,
+      `hncAudit report is incomplete (${JSON.stringify(auditReport)})`);
+    console.log(`HNC AUDIT: ${JSON.stringify({
+      snapshot: auditReport.snapshot,
+      shelves: auditReport.shelves,
+      dictionary: {
+        total: auditReport.dictionary.total,
+        orphaned: auditReport.dictionary.orphaned.length,
+        duplicates: auditReport.dictionary.duplicates.length
+      },
+      localStorage: auditReport.localStorage
+    })}`);
+
+    const runtimeStorageBackup = await evaluate(client, `Object.fromEntries(Object.entries(localStorage))`);
+    await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      saved.selectedIds.push('missing_runtime_word');
+      saved.wordSigns[saved.selectedIds[0]] = '?';
+      localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
+      localStorage.setItem('hnc_runtime_probe', '{broken');
+      localStorage.setItem('hand_compass_journeys_v02', 'archive-sentinel');
+    })()`);
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, visible('#runtimeStorageBanner'), 'runtime storage warning');
+    const runtimeBanner = await evaluate(client, `(() => ({
+      count: document.querySelectorAll('#runtimeStorageBanner:not([hidden])').length,
+      text: document.getElementById('runtimeStorageBanner').textContent.replace(/\\s+/g, ' ').trim(),
+      errors: Number(document.getElementById('runtimeStorageBanner').dataset.errorCount),
+      pathVisible: !document.getElementById('pathNav').hidden,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(runtimeBanner.count === 1
+      && runtimeBanner.text.includes('сохранённые данные устарели или повреждены')
+      && runtimeBanner.text.includes('Сбросить и начать заново')
+      && runtimeBanner.errors >= 3 && runtimeBanner.pathVisible && !runtimeBanner.overflow,
+      `runtime storage warning is incomplete or breaks 390px (${JSON.stringify(runtimeBanner)})`);
+    if (process.env.HAC_RUNTIME_SCREENSHOT) {
+      await client.call('Emulation.setDeviceMetricsOverride', {
+        width: 390, height: 844, deviceScaleFactor: 1, mobile: true
+      });
+      await sleep(100);
+      const screenshot = await client.call('Page.captureScreenshot', {
+        format: 'png', fromSurface: true, captureBeyondViewport: false
+      });
+      await writeFile(resolve(process.env.HAC_RUNTIME_SCREENSHOT), Buffer.from(screenshot.data, 'base64'));
+      await client.call('Emulation.setDeviceMetricsOverride', {
+        width: 390, height: 844, deviceScaleFactor: 3, mobile: true
+      });
+    }
+    await click(client, '#runtimeStorageClose');
+    assert(await evaluate(client, `document.getElementById('runtimeStorageBanner').hidden`), 'runtime storage warning cannot be closed');
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, visible('#runtimeStorageBanner'), 'runtime storage warning after reload');
+    await click(client, '#runtimeStorageReset');
+    await waitFor(client, `document.readyState === 'complete' && document.getElementById('runtimeStorageBanner').hidden`, 'runtime storage reset reload');
+    const remainingRuntimeKeys = await evaluate(client, `(() => {
+      const currentDraftKeys = new Set([
+        'hand_compass_snapshot_v2_draft', 'hand_compass_word_worlds_v1', 'hand_compass_forks_v1',
+        'hand_compass_personal_dilemmas_v1', 'hand_compass_meeting_traces_v1'
+      ]);
+      return [...Array(localStorage.length)].map((_, index) => localStorage.key(index))
+        .filter((key) => key.startsWith('hnc_') || currentDraftKeys.has(key));
+    })()`);
+    assert(remainingRuntimeKeys.length === 0, `runtime reset left managed keys: ${remainingRuntimeKeys.join(', ')}`);
+    assert(await evaluate(client, `localStorage.getItem('hand_compass_journeys_v02') === 'archive-sentinel'`),
+      'runtime reset removed archive localStorage outside the current draft');
+    await evaluate(client, `(() => {
+      localStorage.removeItem('hand_compass_journeys_v02');
+      Object.entries(${JSON.stringify(runtimeStorageBackup)}).forEach(([key, value]) => localStorage.setItem(key, value));
+    })()`);
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, visible('#intersectionsScreen'), 'runtime storage test restore');
+    assert(await evaluate(client, `document.getElementById('runtimeStorageBanner').hidden`), 'runtime warning remains after valid restore');
+    completed.push(`runtime-баннер + hncAudit (${auditReport.snapshot.words} слов, ${auditReport.localStorage.snapshotBytes} байт)`);
+
     assert(consoleErrors.length === 0, `console errors: ${consoleErrors.join(' | ')}`);
     console.log(`SMOKE PASS (${Date.now() - startedAt} ms): ${completed.join(' · ')}`);
   } finally {

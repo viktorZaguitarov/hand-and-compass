@@ -608,6 +608,61 @@
       line-height: 1.45;
     }
 
+    .runtime-storage-banner {
+      position: fixed;
+      z-index: 80;
+      right: max(12px, env(safe-area-inset-right));
+      bottom: max(12px, env(safe-area-inset-bottom));
+      left: max(12px, env(safe-area-inset-left));
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px 12px;
+      width: min(720px, calc(100vw - 24px));
+      max-height: calc(100svh - 24px);
+      margin: 0 auto;
+      padding: 15px 48px 15px 16px;
+      overflow: auto;
+      border: 1px solid rgba(152, 95, 99, 0.3);
+      border-radius: 20px;
+      color: #633d40;
+      background: rgba(255, 248, 238, 0.97);
+      box-shadow: 0 18px 46px rgba(42, 42, 36, 0.18);
+      font-family: var(--sans);
+    }
+    .runtime-storage-banner p {
+      align-self: center;
+      margin: 0;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+    .runtime-storage-reset {
+      align-self: center;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid rgba(152, 95, 99, 0.3);
+      border-radius: 13px;
+      color: #75464a;
+      background: rgba(255, 255, 255, 0.68);
+      font-size: 0.7rem;
+      font-weight: 750;
+      line-height: 1.25;
+    }
+    .runtime-storage-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: var(--ink-soft);
+      background: transparent;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+    .runtime-storage-close:hover { background: rgba(152, 95, 99, 0.08); }
+
     .selection-bar {
       position: sticky;
       top: 10px;
@@ -2664,6 +2719,14 @@
       .snapshot-transfer { margin-top: 14px; }
       .snapshot-transfer-button { min-height: 32px; padding: 7px 8px; font-size: 0.64rem; }
       .snapshot-transfer-status { font-size: 0.64rem; }
+      .runtime-storage-banner {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 14px 46px 14px 14px;
+        border-radius: 18px;
+      }
+      .runtime-storage-banner p { font-size: 0.72rem; }
+      .runtime-storage-reset { justify-self: stretch; min-height: 42px; }
       .shelf-grid { gap: 9px; margin-bottom: 16px; }
       .shelf-card { min-height: 146px; padding: 13px; border-radius: 17px; }
       .shelf-title-row { margin-bottom: 10px; }
@@ -2849,6 +2912,12 @@
         </button>
       </div>
     </nav>
+
+    <aside class="runtime-storage-banner" id="runtimeStorageBanner" role="status" aria-live="polite" hidden>
+      <p>Похоже, сохранённые данные устарели или повреждены. Попробуй экспортировать слепок и обновить страницу.</p>
+      <button class="runtime-storage-reset" id="runtimeStorageReset" type="button">Сбросить и начать заново</button>
+      <button class="runtime-storage-close" id="runtimeStorageClose" type="button" aria-label="Закрыть предупреждение">×</button>
+    </aside>
 
     <main class="page">
       <div class="notice" id="storageNotice" role="status" hidden></div>
@@ -3102,6 +3171,11 @@
       const PERSONAL_DILEMMAS_STORAGE_KEY = 'hand_compass_personal_dilemmas_v1';
       const MEETING_TRACES_STORAGE_KEY = 'hand_compass_meeting_traces_v1';
       const FORKS_SESSION_KEY = 'hand_compass_fork_seen_v1';
+      const RUNTIME_STORAGE_PREFIXES = Object.freeze(['hnc_']);
+      const RUNTIME_STORAGE_KEYS = Object.freeze([
+        STORAGE_KEY, WORLD_STORAGE_KEY, FORKS_STORAGE_KEY,
+        PERSONAL_DILEMMAS_STORAGE_KEY, MEETING_TRACES_STORAGE_KEY
+      ]);
       const FORKS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
       const SNAPSHOT_EXPORT_VERSION = 1;
       const SNAPSHOT_STORAGE_KEYS = [STORAGE_KEY, WORLD_STORAGE_KEY, FORKS_STORAGE_KEY];
@@ -3274,10 +3348,14 @@
       const personalDilemmaListCount = document.getElementById('personalDilemmaListCount');
       const personalDilemmaList = document.getElementById('personalDilemmaList');
       const storageNotice = document.getElementById('storageNotice');
+      const runtimeStorageBanner = document.getElementById('runtimeStorageBanner');
+      const runtimeStorageReset = document.getElementById('runtimeStorageReset');
+      const runtimeStorageClose = document.getElementById('runtimeStorageClose');
       const pathNav = document.getElementById('pathNav');
       const pathTrack = document.getElementById('pathTrack');
       const intersectionsBackButton = document.getElementById('intersectionsBackButton');
 
+      const runtimeStorageCheck = validateRuntimeLocalStorage();
       let storageWasBroken = false;
       let state = restoreState();
       let worldData = restoreWorldData();
@@ -3325,12 +3403,189 @@
       let worldStoryComposerOpen = false;
       let worldFormMessage = '';
 
+      if (!runtimeStorageCheck.ok) showRuntimeStorageBanner();
+
       document.addEventListener('pointerdown', () => {
         document.body.classList.add('is-pointer-input');
       }, true);
       document.addEventListener('keydown', () => {
         document.body.classList.remove('is-pointer-input');
       }, true);
+
+      function applicationLocalStorageKeys() {
+        const keys = [];
+        try {
+          for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index);
+            if (key && (RUNTIME_STORAGE_KEYS.includes(key)
+              || RUNTIME_STORAGE_PREFIXES.some((prefix) => key.startsWith(prefix)))) keys.push(key);
+          }
+        } catch {
+          return [];
+        }
+        return keys.sort();
+      }
+
+      function runtimeStorageError(errors, key, message) {
+        const text = `${key}: ${message}`;
+        if (!errors.includes(text)) errors.push(text);
+      }
+
+      function runtimeKnownWordId(id, customIds = new Set()) {
+        if (typeof id !== 'string') return false;
+        const canonicalId = WORD_ID_ALIASES[id] || id;
+        return WORD_BY_ID.has(canonicalId) || customIds.has(id);
+      }
+
+      function validateRuntimeWordIds(values, key, field, errors, customIds = new Set()) {
+        if (!Array.isArray(values)) {
+          runtimeStorageError(errors, key, `${field} должен быть массивом`);
+          return;
+        }
+        if (!values.every((id) => runtimeKnownWordId(id, customIds))) {
+          runtimeStorageError(errors, key, `${field} содержит неизвестный id слова`);
+        }
+      }
+
+      function validateRuntimeGenericFields(value, key, errors, customIds = new Set(), path = key, depth = 0) {
+        if (depth > 8 || value === null || typeof value !== 'object') return;
+        if (Array.isArray(value)) {
+          value.forEach((item, index) => validateRuntimeGenericFields(item, key, errors, customIds, `${path}[${index}]`, depth + 1));
+          return;
+        }
+        const arrayFields = new Set([
+          'words', 'top3', 'topThreeValues', 'selectedIds', 'customWords', 'waveOneIds', 'waveOneCustomIds',
+          'graphTrailIds', 'worldHistory', 'history', 'items', 'outcomes', 'candidateIds', 'acceptedCandidateIds',
+          'weightedWordIds', 'commonWordIds', 'shelves'
+        ]);
+        Object.entries(value).forEach(([field, child]) => {
+          const fieldPath = `${path}.${field}`;
+          if (arrayFields.has(field) && !Array.isArray(child)) {
+            runtimeStorageError(errors, key, `${fieldPath} должен быть массивом`);
+            return;
+          }
+          if (field === 'shelves' && Array.isArray(child)
+            && !child.every((shelfId) => typeof shelfId === 'string' && (SHELF_BY_ID.has(shelfId) || shelfId === 'custom'))) {
+            runtimeStorageError(errors, key, `${fieldPath} содержит неизвестную полку`);
+          }
+          if (field === 'shelfId' && child !== undefined
+            && (typeof child !== 'string' || (!SHELF_BY_ID.has(child) && child !== 'custom'))) {
+            runtimeStorageError(errors, key, `${fieldPath} содержит неизвестную полку`);
+          }
+          if (field === 'sign' && child !== null && child !== undefined && !['+', '-', '±'].includes(child)) {
+            runtimeStorageError(errors, key, `${fieldPath} содержит недопустимый знак`);
+          }
+          if (field === 'wordSigns') {
+            if (!isPlainObject(child)) runtimeStorageError(errors, key, `${fieldPath} должен быть объектом`);
+            else if (!Object.values(child).every((sign) => ['+', '-', '±'].includes(sign))) {
+              runtimeStorageError(errors, key, `${fieldPath} содержит недопустимый знак`);
+            }
+          }
+          if (['top3', 'topThreeValues', 'selectedIds', 'waveOneIds', 'graphTrailIds', 'worldHistory',
+            'candidateIds', 'acceptedCandidateIds', 'weightedWordIds', 'commonWordIds'].includes(field) && Array.isArray(child)) {
+            validateRuntimeWordIds(child, key, fieldPath, errors, customIds);
+          }
+          if (field === 'words' && Array.isArray(child)) {
+            child.forEach((record) => {
+              const id = typeof record === 'string' ? record : record?.id;
+              const isCustomRecord = isPlainObject(record) && record.shelfId === 'custom' && typeof record.word === 'string';
+              if (!runtimeKnownWordId(id, customIds) && !isCustomRecord) {
+                runtimeStorageError(errors, key, `${fieldPath} содержит неизвестный id слова`);
+              }
+            });
+          }
+          validateRuntimeGenericFields(child, key, errors, customIds, fieldPath, depth + 1);
+        });
+      }
+
+      function validateRuntimeSnapshot(payload, key, errors) {
+        if (!isPlainObject(payload)) {
+          runtimeStorageError(errors, key, 'слепок должен быть объектом');
+          return;
+        }
+        if (!Array.isArray(payload.selectedIds)) runtimeStorageError(errors, key, 'selectedIds должен быть массивом');
+        if (!Array.isArray(payload.customWords)) runtimeStorageError(errors, key, 'customWords должен быть массивом');
+        const customWords = Array.isArray(payload.customWords) ? payload.customWords : [];
+        const customIds = new Set();
+        customWords.forEach((item) => {
+          if (!isPlainObject(item) || typeof item.id !== 'string' || typeof item.word !== 'string') {
+            runtimeStorageError(errors, key, 'customWords содержит сломанную запись');
+            return;
+          }
+          customIds.add(item.id);
+          if (item.shelfId !== undefined && item.shelfId !== 'custom' && !SHELF_BY_ID.has(item.shelfId)) {
+            runtimeStorageError(errors, key, 'customWords содержит неизвестную полку');
+          }
+        });
+        if (Array.isArray(payload.selectedIds)) validateRuntimeWordIds(payload.selectedIds, key, 'selectedIds', errors);
+        ['waveOneIds', 'waveOneCustomIds', 'topThreeValues', 'graphTrailIds', 'worldHistory'].forEach((field) => {
+          if (payload[field] !== undefined) validateRuntimeWordIds(payload[field], key, field, errors, customIds);
+        });
+        if (payload.topThreeValues !== undefined && Array.isArray(payload.topThreeValues) && payload.topThreeValues.length > 3) {
+          runtimeStorageError(errors, key, 'topThreeValues содержит больше трёх слов');
+        }
+        if (payload.wordSigns !== undefined) {
+          if (!isPlainObject(payload.wordSigns)) runtimeStorageError(errors, key, 'wordSigns должен быть объектом');
+          else Object.entries(payload.wordSigns).forEach(([id, sign]) => {
+            if (!runtimeKnownWordId(id, customIds)) runtimeStorageError(errors, key, 'wordSigns содержит неизвестный id слова');
+            if (!['+', '-', '±'].includes(sign)) runtimeStorageError(errors, key, 'wordSigns содержит недопустимый знак');
+          });
+        }
+        if (payload.snapshotShelfId !== undefined
+          && payload.snapshotShelfId !== 'custom' && !SHELF_BY_ID.has(payload.snapshotShelfId)) {
+          runtimeStorageError(errors, key, 'snapshotShelfId содержит неизвестную полку');
+        }
+        validateRuntimeGenericFields(payload, key, errors, customIds);
+      }
+
+      function validateRuntimeLocalStorage() {
+        const errors = [];
+        const keys = applicationLocalStorageKeys();
+        keys.forEach((key) => {
+          let parsed;
+          try { parsed = JSON.parse(localStorage.getItem(key)); }
+          catch {
+            runtimeStorageError(errors, key, 'запись не является корректным JSON');
+            return;
+          }
+          if (key === STORAGE_KEY) validateRuntimeSnapshot(parsed, key, errors);
+          else {
+            validateRuntimeGenericFields(parsed, key, errors);
+            if (key === WORLD_STORAGE_KEY && isPlainObject(parsed) && parsed.storiesByWord !== undefined) {
+              if (!isPlainObject(parsed.storiesByWord)) runtimeStorageError(errors, key, 'storiesByWord должен быть объектом');
+              else Object.entries(parsed.storiesByWord).forEach(([wordId, stories]) => {
+                if (!WORD_BY_ID.has(WORD_ID_ALIASES[wordId] || wordId)) runtimeStorageError(errors, key, 'storiesByWord содержит неизвестный id слова');
+                if (!Array.isArray(stories)) runtimeStorageError(errors, key, 'истории слова должны быть массивом');
+              });
+            }
+            if (key === FORKS_STORAGE_KEY && isPlainObject(parsed) && parsed.history !== undefined && !Array.isArray(parsed.history)) {
+              runtimeStorageError(errors, key, 'history должен быть массивом');
+            }
+            if (key === PERSONAL_DILEMMAS_STORAGE_KEY && isPlainObject(parsed) && parsed.items !== undefined && !Array.isArray(parsed.items)) {
+              runtimeStorageError(errors, key, 'items должен быть массивом');
+            }
+            if (key === MEETING_TRACES_STORAGE_KEY && isPlainObject(parsed) && parsed.items !== undefined && !Array.isArray(parsed.items)) {
+              runtimeStorageError(errors, key, 'items должен быть массивом');
+            }
+          }
+        });
+        return { ok: errors.length === 0, errors, checkedKeys: keys };
+      }
+
+      function showRuntimeStorageBanner() {
+        if (!runtimeStorageBanner.hidden) return;
+        runtimeStorageBanner.dataset.errorCount = String(runtimeStorageCheck.errors.length);
+        runtimeStorageBanner.hidden = false;
+      }
+
+      function resetRuntimeApplicationStorage() {
+        runtimeStorageReset.disabled = true;
+        try {
+          applicationLocalStorageKeys().forEach((key) => localStorage.removeItem(key));
+        } finally {
+          window.location.reload();
+        }
+      }
 
       function emptyState() {
         return {
@@ -4596,10 +4851,83 @@
       }
 
       function showStorageNotice(message, temporary = false) {
+        if (!runtimeStorageCheck.ok && !temporary) return;
         storageNotice.textContent = message;
         storageNotice.hidden = false;
         if (temporary) window.setTimeout(() => { storageNotice.hidden = true; }, 4200);
       }
+
+      function hncAudit() {
+        const snapshotItems = [
+          ...state.selectedIds.map((id) => WORD_BY_ID.get(id)).filter(Boolean),
+          ...state.customWords.map((item) => ({ id: item.id, word: item.word, shelves: [item.shelfId || 'custom'] }))
+        ];
+        const shelfCounts = Object.fromEntries([...SHELVES.map((shelf) => shelf.id), 'custom'].map((id) => [id, 0]));
+        snapshotItems.forEach((item) => {
+          (item.shelves || []).forEach((shelfId) => {
+            if (Object.hasOwn(shelfCounts, shelfId)) shelfCounts[shelfId] += 1;
+          });
+        });
+        const metadataIds = new Set([
+          ...Object.keys(state.wordSigns || {}),
+          ...Object.keys(state.privacyByWord || {})
+        ]);
+        const summary = {
+          words: snapshotItems.length,
+          top3: state.topThreeValues.length,
+          notes: metadataIds.size,
+          trailRecords: state.graphTrailIds.length,
+          forks: forksData.history.length
+        };
+        const shelfRows = [...SHELVES, CUSTOM_SHELF].map((shelf) => ({
+          id: shelf.id,
+          'Полка': `${shelf.emoji} ${shelf.title}`,
+          'Слов': shelfCounts[shelf.id] || 0
+        }));
+        const idCounts = new Map();
+        WORDS.forEach((item) => idCounts.set(item.id, (idCounts.get(item.id) || 0) + 1));
+        const duplicates = [...idCounts.entries()]
+          .filter(([, count]) => count > 1)
+          .map(([id, count]) => ({ id, count }));
+        const orphaned = WORDS
+          .filter((item) => !(Array.isArray(item.neighbors) && item.neighbors.length)
+            && !item.antonym
+            && !(Array.isArray(item.activates) && item.activates.length))
+          .map((item) => ({ id: item.id, word: item.word, shelves: (item.shelves || []).join(', ') }));
+        const snapshotJson = JSON.stringify(state);
+        const storageBytes = new TextEncoder().encode(snapshotJson).byteLength;
+        const report = {
+          snapshot: summary,
+          shelves: Object.fromEntries(shelfRows.map((row) => [row.id, row['Слов']])),
+          dictionary: { total: WORDS.length, orphaned, duplicates },
+          localStorage: { snapshotBytes: storageBytes, snapshotKilobytes: Number((storageBytes / 1024).toFixed(2)) },
+          runtimeStorage: runtimeStorageCheck
+        };
+
+        console.group('Hand & Compass — hncAudit()');
+        console.group('Слепок');
+        console.table([
+          { 'Показатель': 'Слов', 'Количество': summary.words },
+          { 'Показатель': 'Топ-3', 'Количество': summary.top3 },
+          { 'Показатель': 'Пометок слов', 'Количество': summary.notes },
+          { 'Показатель': 'Записей следа', 'Количество': summary.trailRecords },
+          { 'Показатель': 'Развилок', 'Количество': summary.forks }
+        ]);
+        console.groupEnd();
+        console.group('Полки слепка');
+        console.table(shelfRows);
+        console.groupEnd();
+        console.group('words_v3.json');
+        console.log(`Слов: ${WORDS.length}. Дубликатов ID: ${duplicates.length}. Orphaned-слов: ${orphaned.length}.`);
+        if (duplicates.length) console.table(duplicates);
+        if (orphaned.length) console.table(orphaned);
+        console.groupEnd();
+        console.log(`Примерный объём слепка в localStorage: ${storageBytes} байт (${report.localStorage.snapshotKilobytes} КБ).`);
+        console.groupEnd();
+        return report;
+      }
+
+      window.hncAudit = hncAudit;
 
       function createScatterSeed() {
         if (window.crypto?.getRandomValues) {
@@ -8595,6 +8923,11 @@
           window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }));
         }
       }
+
+      runtimeStorageClose.addEventListener('click', () => {
+        runtimeStorageBanner.hidden = true;
+      });
+      runtimeStorageReset.addEventListener('click', resetRuntimeApplicationStorage);
 
       wordField.addEventListener('click', (event) => {
         const button = event.target.closest('[data-word-id]');

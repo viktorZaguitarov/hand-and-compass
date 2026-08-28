@@ -238,6 +238,18 @@ async function main() {
   if (/localStorage\.setItem\(MEETING_TRACES_STORAGE_KEY,\s*JSON\.stringify\(linkGuest\)/.test(draftHtml)) {
     fail('meeting traces persist the full guest map');
   }
+  requireDraftFeature(draftHtml, /id="runtimeStorageBanner"[\s\S]+Сбросить и начать заново/,
+    'draft has no soft runtime storage warning with reset action');
+  requireDraftFeature(draftHtml, /RUNTIME_STORAGE_PREFIXES\s*=\s*Object\.freeze\(\['hnc_'\]\)[\s\S]+RUNTIME_STORAGE_KEYS/,
+    'runtime storage protection does not cover the requested prefix and current draft keys');
+  requireDraftFeature(draftHtml, /function validateRuntimeLocalStorage\([\s\S]+wordSigns[\s\S]+topThreeValues/,
+    'runtime storage validation does not cover signs and snapshot arrays');
+  requireDraftFeature(draftHtml, /function resetRuntimeApplicationStorage\([\s\S]+localStorage\.removeItem[\s\S]+location\.reload/,
+    'runtime storage reset does not clear app keys and reload');
+  requireDraftFeature(draftHtml, /function hncAudit\([\s\S]+console\.group[\s\S]+console\.table/,
+    'draft has no readable window.hncAudit console report');
+  requireDraftFeature(draftHtml, /window\.hncAudit\s*=\s*hncAudit/,
+    'hncAudit is not exposed globally');
   validateLinkComparisonPrivacyFilter(draftHtml, dictionary);
 
   if (!sameJson(dictionary, embeddedWords)) fail('embedded #wordsData differs from draft/words_v3.json');
