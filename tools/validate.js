@@ -232,6 +232,9 @@ async function main() {
   }
   requireDraftFeature(draftHtml, /new CompressionStream\('deflate'\)/, 'link comparison does not use deflate compression');
   requireDraftFeature(draftHtml, /new DecompressionStream\('deflate'\)/, 'link comparison cannot open deflate payloads');
+  requireDraftFeature(draftHtml, /id="graphThemeButton"[\s\S]+Ночная карта/, 'graph has no night-theme switch');
+  requireDraftFeature(draftHtml, /graphTheme: 'cream'[\s\S]+parsed\.graphTheme === 'night'/, 'graph theme is not persisted with cream as the default');
+  requireDraftFeature(draftHtml, /\.graph-screen\.is-night-map \.graph-viewport[\s\S]+\.graph-trail-line/, 'night graph styling is incomplete');
   requireDraftFeature(draftHtml, /url\.hash = `\$\{LINK_COMPARISON_HASH_PREFIX\}\$\{encoded\}`/,
     'new link comparison data is not placed in the fragment');
   if (/url\.searchParams\.set\(LINK_COMPARISON_QUERY_KEY, encoded\)/.test(draftHtml)) {

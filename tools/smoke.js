@@ -479,6 +479,36 @@ async function main() {
     await waitFor(client, `${visible('#graphIntroScreen')} || ${visible('#graphScreen')}`, 'graph entry');
     if (await evaluate(client, visible('#graphIntroScreen'))) await click(client, '#graphIntroNextButton');
     await waitFor(client, `${visible('#graphScreen')} && document.querySelectorAll('[data-graph-node-id]').length >= 6`, 'graph render');
+    const graphThemeDefault = await evaluate(client, `(() => ({
+      pressed: document.getElementById('graphThemeButton').getAttribute('aria-pressed'),
+      night: document.getElementById('graphScreen').classList.contains('is-night-map'),
+      saved: JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).graphTheme,
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(graphThemeDefault.pressed === 'false' && !graphThemeDefault.night && graphThemeDefault.saved === 'cream' && !graphThemeDefault.overflow,
+      'cream graph theme is not the saved mobile default');
+    await click(client, '#graphThemeButton');
+    const nightGraphTheme = await evaluate(client, `(() => ({
+      pressed: document.getElementById('graphThemeButton').getAttribute('aria-pressed'),
+      night: document.getElementById('graphScreen').classList.contains('is-night-map'),
+      saved: JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).graphTheme,
+      appDark: document.body.classList.contains('is-night-map'),
+      overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
+    }))()`);
+    assert(nightGraphTheme.pressed === 'true' && nightGraphTheme.night && nightGraphTheme.saved === 'night' && !nightGraphTheme.appDark && !nightGraphTheme.overflow,
+      'night graph theme is not local to the map or overflows at 390px');
+    if (process.env.HAC_NIGHT_MAP_SCREENSHOT) {
+      const screenshot = await client.call('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false });
+      await writeFile(resolve(process.env.HAC_NIGHT_MAP_SCREENSHOT), Buffer.from(screenshot.data, 'base64'));
+    }
+    await client.call('Page.reload', { ignoreCache: true });
+    await waitFor(client, `${visible('#graphScreen')} && document.getElementById('graphThemeButton').getAttribute('aria-pressed') === 'true'`, 'saved night graph theme');
+    await click(client, '#graphThemeButton');
+    if (process.env.HAC_CREAM_MAP_SCREENSHOT) {
+      const screenshot = await client.call('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false });
+      await writeFile(resolve(process.env.HAC_CREAM_MAP_SCREENSHOT), Buffer.from(screenshot.data, 'base64'));
+    }
+    completed.push('кремовая и ночная карта: переключатель + сохранение + 390px');
     const defaultConnections = await evaluate(client, `(() => ({
       pressed: document.getElementById('graphAllConnectionsButton').getAttribute('aria-pressed'),
       saved: JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft')).graphAllConnections
