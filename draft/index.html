@@ -1437,6 +1437,46 @@
       touch-action: none;
     }
 
+    .graph-screen.is-night-map .graph-viewport {
+      border-color: rgba(206, 165, 91, 0.26);
+      background:
+        radial-gradient(circle at 27% 24%, rgba(177, 133, 61, 0.12), transparent 22rem),
+        radial-gradient(circle at 77% 74%, rgba(81, 103, 121, 0.15), transparent 29rem),
+        #111923;
+      box-shadow: inset 0 0 0 1px rgba(245, 220, 164, 0.07), 0 14px 35px rgba(12, 17, 24, 0.26);
+      scrollbar-color: rgba(204, 164, 91, 0.5) transparent;
+    }
+    .graph-screen.is-night-map .graph-zone { fill: rgba(174, 192, 190, 0.035); stroke: rgba(217, 192, 137, 0.16); }
+    .graph-screen.is-night-map .graph-zone-label { fill: rgba(234, 218, 179, 0.58); }
+    .graph-screen.is-night-map .graph-edge { stroke: rgba(168, 126, 57, 0.68) !important; stroke-opacity: 0.62; stroke-width: 1.6; }
+    .graph-screen.is-night-map .graph-edge.is-chain,
+    .graph-screen.is-night-map .graph-trail-line { stroke: #d8ad5a !important; stroke-opacity: 0.95; stroke-width: 3.4; }
+    .graph-screen.is-night-map .graph-whisker { stroke: rgba(219, 189, 124, 0.4); }
+    .graph-screen.is-night-map .graph-ghost-dot { fill: rgba(34, 45, 57, 0.96); stroke: rgba(225, 195, 128, 0.65); }
+    .graph-screen.is-night-map .graph-ghost-plus { fill: #efd28f; }
+    .graph-screen.is-night-map .graph-node-plate {
+      fill: color-mix(in srgb, var(--node-color, #66877b) 66%, #202b37);
+      stroke: rgba(246, 226, 181, 0.22);
+      filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4));
+    }
+    .graph-screen.is-night-map .graph-node-label { fill: #fff9e9; }
+    .graph-screen.is-night-map .graph-node-weight-dot { stroke: #1a2430; }
+    .graph-screen.is-night-map .graph-node.is-trail .graph-node-plate,
+    .graph-screen.is-night-map .graph-node.is-chain .graph-node-plate,
+    .graph-screen.is-night-map .graph-node.has-own-story .graph-node-plate {
+      stroke: #e1b762;
+      filter: drop-shadow(0 0 7px rgba(214, 166, 82, 0.34)) drop-shadow(0 4px 7px rgba(0, 0, 0, 0.32));
+    }
+    .graph-screen.is-night-map .graph-node-spark { fill: #e3b95e; filter: drop-shadow(0 0 4px rgba(227, 185, 94, 0.65)); }
+
+    .graph-trail-line {
+      fill: none;
+      stroke: rgba(203, 165, 83, 0.82);
+      stroke-linecap: round;
+      stroke-width: 3;
+      pointer-events: none;
+    }
+
     .graph-canvas {
       display: block;
       width: 3600px;
@@ -3032,6 +3072,7 @@
               <button class="graph-walk-button" id="graphAllConnectionsButton" type="button" aria-pressed="true">Все связи</button>
               <button class="graph-walk-button" id="graphTidyButton" type="button">Уборка</button>
               <button class="graph-walk-button" id="graphJumpButton" type="button">Дальний прыжок</button>
+              <button class="graph-walk-button" id="graphThemeButton" type="button" aria-pressed="false">Ночная карта</button>
               <button class="graph-walk-button graph-walk-button--clear" id="clearGraphTrailButton" type="button" hidden>Очистить след</button>
             </div>
           </header>
@@ -3314,6 +3355,7 @@
       const clearGraphTrailButton = document.getElementById('clearGraphTrailButton');
       const graphAllConnectionsButton = document.getElementById('graphAllConnectionsButton');
       const graphTidyButton = document.getElementById('graphTidyButton');
+      const graphThemeButton = document.getElementById('graphThemeButton');
       const worldsScreen = document.getElementById('worldsScreen');
       const worldsDirectory = document.getElementById('worldsDirectory');
       const intersectionsScreen = document.getElementById('intersectionsScreen');
@@ -3599,7 +3641,7 @@
           snapshotShelfId: 'values',
           wordSigns: {}, privacyByWord: {}, topThreeValues: [],
           graphTrailIds: [],
-          graphWordOffsets: {}, graphCloudOffsets: {}, graphAllConnections: true,
+          graphWordOffsets: {}, graphCloudOffsets: {}, graphAllConnections: true, graphTheme: 'cream',
           updatedAt: null
         };
       }
@@ -3776,6 +3818,7 @@
             graphWordOffsets,
             graphCloudOffsets,
             graphAllConnections: parsed.graphAllConnections !== false,
+            graphTheme: parsed.graphTheme === 'night' ? 'night' : 'cream',
             updatedAt: typeof parsed.updatedAt === 'string' ? parsed.updatedAt : null
           };
         } catch {
@@ -8197,6 +8240,19 @@
         updateGraphHighlight();
       }
 
+      function updateGraphTheme() {
+        const isNight = state.graphTheme === 'night';
+        graphScreen.classList.toggle('is-night-map', isNight);
+        graphThemeButton.setAttribute('aria-pressed', String(isNight));
+        graphThemeButton.textContent = isNight ? 'Кремовая карта' : 'Ночная карта';
+      }
+
+      function toggleGraphTheme() {
+        state.graphTheme = state.graphTheme === 'night' ? 'cream' : 'night';
+        persistState();
+        updateGraphTheme();
+      }
+
       function nudgeGraphCloud(shelfId, dx, dy) {
         const zone = graphZones.get(shelfId);
         if (!zone) return;
@@ -8242,6 +8298,7 @@
         const graphShelves = layout.shelves;
         graphSvg.setAttribute('viewBox', `0 0 ${graphCanvas.width} ${graphCanvas.height}`);
         graphSvg.replaceChildren();
+        updateGraphTheme();
         const definitions = svgElement('defs');
         graphSvg.append(definitions);
 
@@ -8256,6 +8313,17 @@
           zoneLabels.append(label);
         });
         graphSvg.append(zoneLabels);
+
+        if (state.graphTrailIds.length > 1) {
+          const trailPoints = state.graphTrailIds.map((id) => positions.get(id)).filter(Boolean);
+          for (let index = 1; index < trailPoints.length; index += 1) {
+            graphSvg.append(svgElement('path', {
+              class: 'graph-trail-line',
+              d: graphCurve(trailPoints[index - 1], trailPoints[index], `trail:${index}`),
+              'aria-hidden': 'true'
+            }));
+          }
+        }
 
         graphShelves.forEach((shelf) => {
           const zone = graphZones.get(shelf.id);
@@ -8378,7 +8446,11 @@
           });
           const title = svgElement('title');
           title.textContent = `${item.word}. Точка тем крупнее, чем чаще ты подтверждаешь слово.`;
-          group.append(plate, label, weightDot, title);
+          group.append(plate, label, weightDot);
+          if ((item.shelves || []).includes('triggers')) {
+            group.append(svgElement('circle', { class: 'graph-node-spark', cx: -position.width / 2 + 14, cy: -position.height / 2 + 13, r: 4, 'aria-hidden': 'true' }));
+          }
+          group.append(title);
           graphSvg.append(group);
         });
 
@@ -9183,6 +9255,7 @@
       clearGraphTrailButton.addEventListener('click', clearGraphTrail);
       graphAllConnectionsButton.addEventListener('click', toggleAllGraphConnections);
       graphTidyButton.addEventListener('click', tidyGraph);
+      graphThemeButton.addEventListener('click', toggleGraphTheme);
 
       wordWorldContent.addEventListener('click', (event) => {
         if (event.target.closest('[data-world-back]')) {
