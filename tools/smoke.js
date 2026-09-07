@@ -885,42 +885,54 @@ async function main() {
       choices: document.querySelectorAll('.fork-step-situation [data-fork-action^="choose-"]').length,
       legacyButton: document.querySelectorAll('[data-fork-action="to-choice"]').length
     }))()`);
-    assert(combinedForkStep.question === 'Как поступишь ты?' && combinedForkStep.choices === 2 && combinedForkStep.legacyButton === 0, 'fork scene and choices are still split across screens');
+    assert(combinedForkStep.question === 'Как поступишь ты?' && combinedForkStep.choices === 3 && combinedForkStep.legacyButton === 0, 'fork scene is missing its two choices or own option');
     await evaluate(client, `(() => {
       const actual = JSON.parse(localStorage.getItem('hand_compass_forks_v1')).history.at(-1).actualChoice;
       const different = actual === 'A' ? 'B' : 'A';
       document.querySelector('[data-fork-action="choose-' + different + '"]').click();
     })()`);
-    await waitFor(client, visible('.fork-step-truth'), 'fork truth');
-    await waitFor(client, `document.querySelector('.fork-step-truth h1').textContent.includes('иначе')`, 'fork post-choice difference');
-    const weightCheck = await evaluate(client, `(() => {
+    await waitFor(client, visible('.fork-step-reply'), 'fork reply');
+    await click(client, '[data-fork-action="reflect"]');
+    await waitFor(client, visible('.fork-step-reflection'), 'fork reflection');
+    await evaluate(client, `(() => { const input = document.querySelector('[data-fork-thought]'); input.value = 'Мне важно сказать прямо и не терять уважение.'; })()`);
+    await click(client, '[data-fork-action="choose-word"]');
+    await waitFor(client, `[data-fork-action^="save-word:"]`, 'fork word offer');
+    await click(client, '[data-fork-action^="save-word:"]');
+    await waitFor(client, `document.querySelector('.fork-step-saved h1')?.textContent.includes('Сохранено у')`, 'fork meaning saved');
+    const meaningCheck = await evaluate(client, `(() => {
       const state = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
-      const record = JSON.parse(localStorage.getItem('hand_compass_forks_v1')).history.at(-1);
-      const dilemmas = JSON.parse(document.getElementById('dilemmasData').textContent);
-      const dilemma = dilemmas.find((item) => item.id === record.dilemmaId);
-      const candidate = record.userChoice === 'A' ? dilemma.candidateA : dilemma.candidateB;
-      const related = [...new Set([...dilemma.words, candidate])];
-      return {
-        weighted: record.weightedWordIds,
-        weightsApplied: record.weightsApplied,
-        weightedAreSelected: record.weightedWordIds.every((id) => state.selectedIds.includes(id)),
-        weightedGrew: record.weightedWordIds.every((id) => state.wordWeights[id] === 2),
-        outsideSnapshotStayedEmpty: related.filter((id) => !state.selectedIds.includes(id)).every((id) => state.wordWeights[id] === undefined),
-        unrelatedStayedOne: state.selectedIds.filter((id) => !related.includes(id)).every((id) => state.wordWeights[id] === 1)
-      };
+      const data = JSON.parse(localStorage.getItem('hand_compass_forks_v1'));
+      return { saved: Object.values(data.meaningsByWord || {}).flat().some((item) => item.text.includes('Мне важно сказать прямо')), weights: Object.values(state.wordWeights).every((weight) => weight === 1), overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth };
     })()`);
-    assert(weightCheck.weightsApplied && weightCheck.weighted.length > 0, 'dilemma did not confirm a selected word');
-    assert(weightCheck.weightedAreSelected && weightCheck.weightedGrew, 'dilemma weight was not limited to selected words');
-    assert(weightCheck.outsideSnapshotStayedEmpty && weightCheck.unrelatedStayedOne, 'dilemma changed an unrelated or unselected word');
-    await click(client, '[data-fork-action="to-outcome"]');
-    await waitFor(client, visible('.fork-step-outcome'), 'fork outcome');
-    await click(client, '[data-path-chapter="map"]');
-    await waitFor(client, `${visible('#graphIntroScreen')} || ${visible('#graphScreen')}`, 'graph entry after dilemma');
-    if (await evaluate(client, visible('#graphIntroScreen'))) await click(client, '#graphIntroNextButton');
-    await waitFor(client, visible('#graphScreen'), 'graph after dilemma');
-    const grownRadius = await evaluate(client, `Number(document.querySelector('[data-graph-node-id="${weightCheck.weighted[0]}"] .graph-node-weight-dot')?.getAttribute('r'))`);
-    assert(grownRadius > initialGraphDots[weightCheck.weighted[0]], 'personal-weight dot did not grow after dilemma');
-    completed.push('развилка: сцена + выбор → правда + личный вес');
+    assert(meaningCheck.saved && meaningCheck.weights && !meaningCheck.overflow, 'fork thought did not save cleanly without changing weights');
+    if (process.env.HAC_FORK_SAVED_SCREENSHOT) {
+      const screenshot = await client.call('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false });
+      await writeFile(resolve(process.env.HAC_FORK_SAVED_SCREENSHOT), Buffer.from(screenshot.data, 'base64'));
+    }
+    await click(client, '[data-fork-action="finish"]');
+    await waitFor(client, visible('#intersectionsScreen'), 'fork finish without another record');
+    completed.push('развилка: ответ двойника → своя мысль → сохранено у слова без веса');
+
+    await evaluate(client, `(() => {
+      localStorage.removeItem('hand_compass_forks_v1');
+      sessionStorage.removeItem('hand_compass_fork_seen_v1');
+    })()`);
+    await click(client, '[data-path-chapter="forks"]');
+    await waitFor(client, visible('.fork-step-situation'), 'fresh fork for clean finish');
+    await click(client, '[data-fork-action="choose-A"]');
+    await waitFor(client, visible('.fork-step-reply'), 'reply before clean finish');
+    if (process.env.HAC_FORK_FINISH_SCREENSHOT) {
+      const screenshot = await client.call('Page.captureScreenshot', { format: 'png', fromSurface: true, captureBeyondViewport: false });
+      await writeFile(resolve(process.env.HAC_FORK_FINISH_SCREENSHOT), Buffer.from(screenshot.data, 'base64'));
+    }
+    await click(client, '[data-fork-action="finish"]');
+    await waitFor(client, visible('#intersectionsScreen'), 'clean fork finish');
+    const cleanFinish = await evaluate(client, `(() => {
+      const data = JSON.parse(localStorage.getItem('hand_compass_forks_v1'));
+      return { entries: Object.values(data.meaningsByWord || {}).flat().length, note: data.history.at(-1)?.note || null };
+    })()`);
+    assert(cleanFinish.entries === 0 && cleanFinish.note === null, 'fork finish created a thought record');
+    completed.push('развилка: Закончить без записи');
 
     await click(client, '[data-path-chapter="mirror"]');
     await waitFor(client, visible('#snapshotScreen'), 'snapshot before supplement');

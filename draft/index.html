@@ -3230,6 +3230,81 @@
       const DATA = JSON.parse(document.getElementById('wordsData').textContent);
       const FAKE_DATA = JSON.parse(document.getElementById('fakePeopleData').textContent);
       const DILEMMAS = JSON.parse(document.getElementById('dilemmasData').textContent);
+      const DILEMMA_REPLY_DATA = Object.freeze({
+        child_money: {
+          A: { short: 'Я бы прямо сказал: деньги без спроса брать нельзя.', word: 'ответственность', meaning: 'если взял чужое, важно исправить сделанное.', cost: 'Такой разговор может сделать ребёнку страшно прийти с другой ошибкой.', otherwise: 'Если правило о деньгах не объясняли, сначала объясню его.' },
+          B: { short: 'Я бы сначала сел рядом и спросил, что произошло.', word: 'забота', meaning: 'дать ребёнку рассказать, не угадывая заранее его мотив.', cost: 'Спокойствие могут услышать как «ничего особенного».', otherwise: 'Если правило уже было ясным, попрошу вернуть и договорюсь, как исправить.' }
+        },
+        road_to_closeness: {
+          A: { short: 'Я бы пока не стал раскрывать всё сразу.', word: 'близость', meaning: 'сохранить разговоры и чувство, что меня ждут.', cost: 'Человек может привязаться и к тому, что я приукрасил.', otherwise: 'Если спросят прямо, не стану отвечать новой выдумкой.' },
+          B: { short: 'Я бы признался, что кое-что приукрасил.', word: 'честность', meaning: 'дать человеку решать, зная, что происходит.', cost: 'Можно потерять и интерес другого, и красивый образ себя.', otherwise: 'О личном, к которому не готов, скажу: «пока не хочу об этом говорить».' }
+        },
+        unsaid_truth: {
+          A: { short: 'Я бы сказал, что вижу риск, и объяснил почему.', word: 'честность', meaning: 'не прятать мнение, когда близкий прямо спрашивает.', cost: 'Я могу испортить радость и сам могу ошибаться.', otherwise: 'Если решение уже принято и человеку нужна опора, сначала побуду рядом.' },
+          B: { short: 'Я бы сейчас поддержал и не стал спорить.', word: 'бережность', meaning: 'не заставлять человека защищать выбор ещё и передо мной.', cost: 'Он спросил мнение, а часть ответа я оставляю при себе.', otherwise: 'Если попросит именно сомнения, расскажу, что меня настораживает.' }
+        },
+        friend_request: {
+          A: { short: 'Я бы прикрыл друга в этот раз.', word: 'верность', meaning: 'не бросать человека в момент, когда он просит помощи.', cost: 'Моя фраза станет частью истории, которую он строит без меня.', otherwise: 'Если ложь причинит кому-то прямой вред, не стану её подтверждать.' },
+          B: { short: 'Я бы не стал подтверждать то, чего не было.', word: 'честность', meaning: 'не занимать место внутри чужой лжи.', cost: 'Друг может услышать в отказе осуждение.', otherwise: 'Могу быть рядом в разговоре, не придумывая алиби.' }
+        },
+        good_intent_bad_result: {
+          A: { short: 'Я бы дал ещё один ясный срок и сел рядом разобраться.', word: 'забота', meaning: 'не сводить человека к провалу в трудный период.', cost: 'Команда продолжит нести часть нагрузки.', otherwise: 'Если договорённость уже не раз срывалась, остановлю сотрудничество.' },
+          B: { short: 'Я бы сказал, что дальше так нельзя, и завершил сотрудничество.', word: 'решительность', meaning: 'не оставлять остальных платить за моё промедление.', cost: 'Это больно именно потому, что человек мне не безразличен.', otherwise: 'При реальном плане перемен дам короткий шанс с ясными границами.' }
+        },
+        family_money: {
+          A: { short: 'Я бы рискнул, но сначала назвал бы семье риск без украшений.', word: 'смелость', meaning: 'не отказываться от возможности только из-за негарантированного исхода.', cost: 'Последствия разделят те, кто поверил в дело.', otherwise: 'Если семья не может позволить себе потерю, не возьму деньги.' },
+          B: { short: 'Я бы не трогал семейные деньги и поискал другой способ.', word: 'бережность', meaning: 'не делать близких залогом своей мечты.', cost: 'Путь станет медленнее, и возможность может уйти.', otherwise: 'При посильной сумме и ясном согласии могу принять помощь.' }
+        },
+        colleague_error: {
+          A: { short: 'Я бы сначала пришёл к коллеге и предложил исправить всё вместе.', word: 'верность', meaning: 'дать человеку возможность самому встретиться со своей ошибкой.', cost: 'Риск останется и у меня, если он не успеет признаться.', otherwise: 'При срочных последствиях сразу подключу руководителя.' },
+          B: { short: 'Я бы сразу сообщил руководителю о риске.', word: 'справедливость', meaning: 'не прятать проблему, которая коснётся не только нас двоих.', cost: 'Коллега может почувствовать, что я не оставил ему шанса.', otherwise: 'Если есть время, сначала предложу ему сказать самому.' }
+        },
+        bad_friend_book: {
+          A: { short: 'Я бы сказал честно, но начал бы с того, что в книге уже живое.', word: 'честность', meaning: 'не делать вид, что моё мнение другое.', cost: 'Даже бережные слова могут сильно ранить.', otherwise: 'Если он просит только разделить радость, оставлю разбор на другой разговор.' },
+          B: { short: 'Я бы сейчас поддержал друга и не стал резать по живому.', word: 'забота', meaning: 'дать усилию быть увиденным прежде, чем разбирать слабые места.', cost: 'Молчание могут принять за согласие.', otherwise: 'На прямую просьбу о разборе скажу конкретно и мягко.' }
+        },
+        parents_against: {
+          A: { short: 'Я бы поехал строить свою жизнь и заранее договорился, как быть рядом.', word: 'свобода', meaning: 'не откладывать свой путь до момента без тревоги.', cost: 'Родителям может быть одиноко и страшно.', otherwise: 'Если им нужна ежедневная помощь, сначала найду, как её обеспечить.' },
+          B: { short: 'Я бы пока остался ближе.', word: 'семья', meaning: 'не проходить мимо тревоги тех, кто на меня опирается.', cost: 'Мой собственный план может отдалиться.', otherwise: 'Если это страх перемен, а не нужда в помощи, всё же поеду.' }
+        },
+        promise_and_chance: {
+          A: { short: 'Я бы закончил то, что обещал партнёру.', word: 'надёжность', meaning: 'не менять договорённость молча из-за яркого шанса.', cost: 'Возможность может не вернуться.', otherwise: 'Если партнёр готов пересобрать план, честно обсудим другой срок.' },
+          B: { short: 'Я бы честно попросил отпустить меня ради этого шанса.', word: 'мечта', meaning: 'важная возможность требует признать, что я не справлюсь со всем сразу.', cost: 'Партнёр потеряет время и, возможно, обидится.', otherwise: 'Если без меня проект рухнет, сначала выполню критическую часть.' }
+        },
+        friend_cheated: {
+          A: { short: 'Я бы сказал другу то, что знаю.', word: 'честность', meaning: 'не держать у себя правду, которая его касается.', cost: 'Фраза может разрушить его спокойствие и нашу дружбу.', otherwise: 'При ненадёжном источнике сначала проверю факты.' },
+          B: { short: 'Я бы не стал вмешиваться без его запроса.', word: 'граница', meaning: 'не занимать место внутри чужих отношений.', cost: 'Потом он может узнать, что я знал, и почувствовать одиночество.', otherwise: 'При прямой опасности не останусь в стороне.' }
+        },
+        laughter_behind_back: {
+          A: { short: 'Я бы не поддержал этот смех и перевёл разговор.', word: 'смелость', meaning: 'не делать вид, что всё нормально, когда кого-то нет рядом.', cost: 'Компания может отстраниться.', otherwise: 'Если прямое замечание подольёт масла, поговорю с кем-то позже.' },
+          B: { short: 'Я бы остался в разговоре и не стал спорить вслух.', word: 'принадлежность', meaning: 'мне трудно сразу выйти против тех, среди кого я свой.', cost: 'Молчание могут услышать как согласие.', otherwise: 'При унижении или опасности вмешаюсь прямо.' }
+        },
+        only_place: {
+          A: { short: 'Я бы принял место, которое выиграл.', word: 'справедливость', meaning: 'конкурс был про работу и путь, а не о чьей нужде громче.', cost: 'Трудно не чувствовать свою победу чьей-то потерей.', otherwise: 'Если место мне не подходит, не стану держаться за него из принципа.' },
+          B: { short: 'Я бы уступил место финалисту.', word: 'щедрость', meaning: 'чужая потребность для меня важнее права оставить всё себе.', cost: 'Могу потом жалеть о собственном шансе.', otherwise: 'Если это мой редкий профессиональный путь, не буду его обесценивать.' }
+        },
+        open_phone: {
+          A: { short: 'Я бы показал телефон сейчас, а потом поговорил о границах.', word: 'доверие', meaning: 'в момент ссоры мне важнее снять напряжение.', cost: 'Уступка может стать правилом, которого я не хотел.', otherwise: 'При повторяющемся контроле не буду доказывать невиновность телефоном.' },
+          B: { short: 'Я бы не показывал телефон и предложил поговорить о недоверии.', word: 'границы', meaning: 'личная переписка остаётся личной, даже когда скрывать нечего.', cost: 'Отказ могут услышать как закрытую дверь.', otherwise: 'Если сам дал повод сомневаться, предложу другой способ вернуть доверие.' }
+        },
+        stolen_idea: {
+          A: { short: 'Я бы поднял вопрос и назвал эту историю вслух.', word: 'смелость', meaning: 'не соглашаться молчанием на присвоение моей работы.', cost: 'Разговор может осложнить работу с тем, от кого я завишу.', otherwise: 'При безопасном пути через факты и посредника начну с него.' },
+          B: { short: 'Я бы не стал тратить на это все силы и собрал следующую идею.', word: 'осторожность', meaning: 'иногда я выбираю сохранить опору, а не выиграть каждый конфликт.', cost: 'Молчание может дать понять, что так можно и дальше.', otherwise: 'Если это становится системой, зафиксирую факты и подниму вопрос.' }
+        }
+      });
+      DILEMMAS.forEach((dilemma) => {
+        dilemma.replies = DILEMMA_REPLY_DATA[dilemma.id];
+      });
+      const firstDilemma = DILEMMAS.find((item) => item.id === 'child_money');
+      if (firstDilemma) {
+        firstDilemma.optionA = 'Сказать, что заметил деньги, попросить вернуть их и договориться, как исправить.';
+        firstDilemma.optionB = 'Спросить, что произошло, выслушать и вместе решить, как вернуть деньги.';
+      }
+      const secondDilemma = DILEMMAS.find((item) => item.id === 'road_to_closeness');
+      if (secondDilemma) {
+        secondDilemma.optionA = 'Пока не исправлять приукрашивания и продолжить общение.';
+        secondDilemma.optionB = 'Сказать, что кое-что приукрасил, и поправить это.';
+      }
       const WORDS = Array.isArray(DATA.words) ? DATA.words : [];
       const FAKE_PROFILES = Array.isArray(FAKE_DATA.profiles) ? FAKE_DATA.profiles : [];
       const FORK_ARCHETYPE_VOICES = Object.freeze({
@@ -3915,7 +3990,7 @@
       }
 
       function emptyForksData() {
-        return { version: 1, history: [], inviteSeen: false };
+        return { version: 2, history: [], meaningsByWord: {}, inviteSeen: false };
       }
 
       function restoreForksData() {
@@ -3932,22 +4007,28 @@
                   dilemmaId: item.dilemmaId,
                   startedAt: item.startedAt,
                   finishedAt: typeof item.finishedAt === 'string' ? item.finishedAt : null,
-                  prediction: item.prediction === 'A' || item.prediction === 'B' ? item.prediction : null,
                   userChoice: item.userChoice === 'A' || item.userChoice === 'B'
                     ? item.userChoice
-                    : (item.prediction === 'A' || item.prediction === 'B' ? item.prediction : null),
-                  actualChoice: item.actualChoice === 'A' || item.actualChoice === 'B' ? item.actualChoice : null,
-                  gap: typeof item.gap === 'boolean' ? item.gap : null,
-                  candidateId: typeof item.candidateId === 'string' && WORD_BY_ID.has(item.candidateId) ? item.candidateId : null,
-                  acceptedCandidate: typeof item.acceptedCandidate === 'boolean' ? item.acceptedCandidate : null,
-                  weightsApplied: item.weightsApplied === true,
-                  weightedWordIds: Array.isArray(item.weightedWordIds)
-                    ? [...new Set(item.weightedWordIds.filter((id) => WORD_BY_ID.has(id)))]
-                    : [],
+                    : null,
+                  ownOption: typeof item.ownOption === 'string' ? item.ownOption.slice(0, 500) : null,
+                  note: typeof item.note === 'string' ? item.note.slice(0, 700) : null,
                   skipped: item.skipped === true
                 }))
             : [];
-          return { version: 1, history, inviteSeen: parsed.inviteSeen === true };
+          const meaningsByWord = {};
+          if (parsed.meaningsByWord && typeof parsed.meaningsByWord === 'object') {
+            Object.entries(parsed.meaningsByWord).forEach(([wordId, entries]) => {
+              if (!WORD_BY_ID.has(wordId) || !Array.isArray(entries)) return;
+              meaningsByWord[wordId] = entries.filter((entry) => entry && typeof entry.id === 'string' && typeof entry.text === 'string' && entry.text.trim())
+                .slice(-30).map((entry) => ({
+                  id: entry.id.slice(0, 120), text: entry.text.trim().slice(0, 700),
+                  dilemmaId: knownDilemmaIds.has(entry.dilemmaId) ? entry.dilemmaId : null,
+                  createdAt: typeof entry.createdAt === 'string' ? entry.createdAt : null,
+                  origin: entry.origin === 'suggested-and-accepted' ? 'suggested-and-accepted' : 'written-by-person'
+                }));
+            });
+          }
+          return { version: 2, history, meaningsByWord, inviteSeen: parsed.inviteSeen === true };
         } catch {
           showStorageNotice('Сохранённые развилки не удалось прочитать. Исходная запись пока не изменена.');
           return emptyForksData();
@@ -5953,10 +6034,16 @@
         return choice === 'A' || choice === 'B' ? choice : 'A';
       }
 
-      function forkTruthLine(dilemma, bot, choice) {
-        const action = dilemma?.archetypeBias?.[`truth${choice}`] || `Я бы выбрал этот вариант.`;
-        const voice = FORK_ARCHETYPE_VOICES[bot?.archetype]?.[choice] || '';
-        return `${action}${voice ? ` ${voice}` : ''}`;
+      function forkReply(dilemma, choice) {
+        const fallbackWord = WORD_BY_ID.get(choice === 'A' ? dilemma.candidateA : dilemma.candidateB)?.word || 'это слово';
+        const fallbackChoice = forkOptionText(dilemma, choice);
+        return dilemma?.replies?.[choice] || {
+          short: `Я бы выбрал: ${fallbackChoice}`,
+          word: fallbackWord,
+          meaning: `Для меня здесь важно не потерять ${fallbackWord}.`,
+          cost: 'Понимаю, что у этого решения будут последствия.',
+          otherwise: 'В другом контексте я мог бы выбрать иначе.'
+        };
       }
 
       function forkOptionText(dilemma, choice) {
@@ -5967,14 +6054,17 @@
         return activeFork ? forksData.history.find((item) => item.startedAt === activeFork.startedAt && item.dilemmaId === activeFork.dilemma.id) : null;
       }
 
-      function confirmForkChoiceWords(dilemma, choice, record) {
-        if (!record || record.weightsApplied) return [];
-        const candidateId = choice === 'A' ? dilemma.candidateA : dilemma.candidateB;
-        const relatedIds = [...new Set([...(dilemma.words || []), candidateId])];
-        const weightedWordIds = relatedIds.filter((id) => addWordWeight(id));
-        record.weightsApplied = true;
-        record.weightedWordIds = weightedWordIds;
-        return weightedWordIds;
+      function meaningEntriesForWord(wordId) {
+        return Array.isArray(forksData.meaningsByWord?.[wordId]) ? forksData.meaningsByWord[wordId] : [];
+      }
+
+      function saveForkMeaning(wordId, text, dilemmaId, origin = 'written-by-person') {
+        if (!WORD_BY_ID.has(wordId) || !text?.trim()) return null;
+        const id = window.crypto?.randomUUID ? window.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        const entry = { id: `meaning:${id}`, text: text.trim().slice(0, 700), dilemmaId, createdAt: new Date().toISOString(), origin };
+        forksData.meaningsByWord[wordId] = [...meaningEntriesForWord(wordId), entry].slice(-30);
+        persistForksData();
+        return entry;
       }
 
       const PERSONAL_SEARCH_STOP_WORDS = new Set([
@@ -6286,23 +6376,18 @@
         if (!dilemma || !bot) return null;
         const startedAt = new Date().toISOString();
         const actualChoice = forkActualChoice(dilemma, bot);
-        activeFork = { dilemma, bot, startedAt, actualChoice, userChoice: null, step: 'situation' };
-        forksData.history.push({
-          dilemmaId: dilemma.id, startedAt, finishedAt: null, prediction: null, userChoice: null,
-          actualChoice, gap: null, candidateId: null, acceptedCandidate: null,
-          weightsApplied: false, weightedWordIds: [], skipped: false
-        });
+        activeFork = { dilemma, bot, startedAt, actualChoice, userChoice: null, ownOption: '', thought: '', showWhy: false, step: 'situation' };
+        forksData.history.push({ dilemmaId: dilemma.id, startedAt, finishedAt: null, userChoice: null, ownOption: null, note: null, skipped: false });
         markForkUsedThisSession();
         persistForksData();
         return activeFork;
       }
 
-      function finishFork({ skipped = false, acceptedCandidate = null, destination = 'intersections' } = {}) {
+      function finishFork({ skipped = false, destination = 'intersections' } = {}) {
         const record = forkRecord();
         if (record) {
           record.finishedAt = new Date().toISOString();
           record.skipped = skipped;
-          if (typeof acceptedCandidate === 'boolean') record.acceptedCandidate = acceptedCandidate;
         }
         persistForksData();
         activeFork = null;
@@ -6355,45 +6440,70 @@
             button.prepend(letter);
             actions.append(button);
           });
-        } else if (step === 'truth') {
-          const sameChoice = activeFork.userChoice === actualChoice;
+          const ownOption = document.createElement('textarea');
+          ownOption.className = 'personal-dilemma-text';
+          ownOption.dataset.forkOwnOption = 'true';
+          ownOption.maxLength = 500;
+          ownOption.placeholder = 'Свой вариант — если ни А, ни Б не подходят';
+          ownOption.value = activeFork.ownOption || '';
+          stage.append(ownOption);
+          actions.append(createForkButton('Выбрать свой вариант', 'choose-own'));
+        } else if (step === 'reply') {
+          const reply = forkReply(dilemma, actualChoice);
           stage.append(forkHeader(
-            'после твоего ответа',
-            `${bot.name} выбрал бы ${sameChoice ? 'так же.' : 'иначе.'}`,
-            forkOptionText(dilemma, actualChoice)
+            'ответ двойника',
+            `${bot.name}: «${reply.short}»`,
+            `Для него «${reply.word}» — ${reply.meaning}`
           ));
           const logic = document.createElement('p');
           logic.className = 'fork-logic';
-          logic.textContent = `«${forkTruthLine(dilemma, bot, actualChoice)}»`;
+          logic.textContent = `«${reply.short}»`;
           stage.append(logic);
-          if (sameChoice) {
-            const warmth = document.createElement('p');
-            warmth.className = 'fork-warmth';
-            warmth.textContent = 'Здесь вы услышали ситуацию одинаково.';
-            stage.append(warmth);
-            actions.append(createForkButton('Завершить', 'finish', 'fork-primary'));
-          } else {
-            actions.append(createForkButton('Посмотреть, что отозвалось', 'to-outcome', 'fork-primary'));
+          if (activeFork.showWhy) {
+            const why = document.createElement('p');
+            why.className = 'fork-warmth';
+            why.textContent = `Цена: ${reply.cost} Иначе: ${reply.otherwise}`;
+            stage.append(why);
           }
-        } else {
-          const candidateId = activeFork.userChoice === 'A' ? dilemma.candidateA : dilemma.candidateB;
-          const candidate = WORD_BY_ID.get(candidateId);
-          stage.append(forkHeader('после расхождения', 'Что в твоём выборе было главным?'));
-          const candidateBlock = document.createElement('div');
-          candidateBlock.className = 'fork-candidate';
-          const candidateLabel = document.createElement('p');
-          candidateLabel.textContent = 'В твоём выборе рядом оказалось слово:';
-          const candidateWord = document.createElement('strong');
-          candidateWord.textContent = candidate ? `«${candidate.word}»` : '';
-          candidateBlock.append(candidateLabel, candidateWord);
-          stage.append(candidateBlock);
           actions.append(
-            createForkButton('Узнаю себя — в слепок', 'accept-candidate', 'fork-primary'),
-            createForkButton('Не моё', 'reject-candidate')
+            createForkButton(activeFork.showWhy ? 'Скрыть подробности' : 'Почему так?', 'toggle-why'),
+            createForkButton('Закончить', 'finish', 'fork-primary'),
+            createForkButton('Оставить свою мысль', 'reflect')
           );
+        } else {
+          stage.append(forkHeader('твоя мысль', 'Что тебе хочется оставить после этой истории?'));
+          const thought = document.createElement('textarea');
+          thought.className = 'personal-dilemma-text';
+          thought.dataset.forkThought = 'true';
+          thought.maxLength = 700;
+          thought.placeholder = 'Здесь можно написать только то, что хочется оставить себе.';
+          thought.value = activeFork.thought || '';
+          stage.append(thought);
+          if (activeFork.showHints) {
+            const hint = document.createElement('p');
+            hint.className = 'fork-warmth';
+            hint.textContent = 'Можно начать с конкретной детали: что для тебя здесь было важнее всего?';
+            stage.append(hint);
+          }
+          if (!activeFork.thought?.trim()) {
+            actions.append(createForkButton(activeFork.showHints ? 'Скрыть подсказку' : 'Подсказка', 'toggle-hints'), createForkButton('Дальше', 'choose-word', 'fork-primary'));
+          } else {
+            const selected = forkTouchedWords(dilemma).find((item) => hasSnapshotWord(item.id));
+            if (selected) {
+              const offer = document.createElement('p');
+              offer.className = 'fork-warmth';
+              offer.textContent = `Оставить рядом с «${selected.word}»?`;
+              stage.append(offer);
+              actions.append(createForkButton(`Сохранить у «${selected.word}»`, `save-word:${selected.id}`, 'fork-primary'));
+            }
+            const candidateId = activeFork.userChoice === 'A' ? dilemma.candidateA : activeFork.userChoice === 'B' ? dilemma.candidateB : null;
+            const candidate = WORD_BY_ID.get(candidateId);
+            if (candidate && !hasSnapshotWord(candidate.id)) actions.append(createForkButton(`Добавить «${candidate.word}» на карту`, `add-word:${candidate.id}`));
+            actions.append(createForkButton('Сохранить мысль у истории', 'save-without-word'));
+          }
         }
 
-        appendForkSkip(actions);
+        if (step === 'situation') appendForkSkip(actions);
         stage.append(actions);
         forksContent.append(stage);
       }
@@ -8656,6 +8766,31 @@
         brief.textContent = briefParts.length ? briefParts.join(' · ') : 'Можно открыть мир слова или снять фокус повторным тапом.';
         graphCard.append(brief);
 
+        const meanings = meaningEntriesForWord(item.id);
+        if (meanings.length) {
+          const meaningsSection = document.createElement('section');
+          meaningsSection.className = 'graph-card-section';
+          const meaningsTitle = document.createElement('span');
+          meaningsTitle.className = 'graph-card-label';
+          meaningsTitle.textContent = 'Мои формулировки';
+          meaningsSection.append(meaningsTitle);
+          meanings.slice().reverse().forEach((entry) => {
+            const row = document.createElement('div');
+            row.className = 'graph-card-copy';
+            const text = document.createElement('p');
+            text.textContent = entry.text;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'secondary-button';
+            remove.dataset.deleteMeaning = entry.id;
+            remove.dataset.meaningWordId = item.id;
+            remove.textContent = 'Удалить';
+            row.append(text, remove);
+            meaningsSection.append(row);
+          });
+          graphCard.append(meaningsSection);
+        }
+
         const detailsContent = document.createElement('div');
         detailsContent.className = 'graph-card-detail-content';
         if (interestParent) {
@@ -9230,6 +9365,16 @@
       });
 
       graphCard.addEventListener('click', (event) => {
+        const removeMeaning = event.target.closest('[data-delete-meaning]');
+        if (removeMeaning) {
+          const wordId = removeMeaning.dataset.meaningWordId;
+          const entryId = removeMeaning.dataset.deleteMeaning;
+          forksData.meaningsByWord[wordId] = meaningEntriesForWord(wordId).filter((entry) => entry.id !== entryId);
+          if (!forksData.meaningsByWord[wordId].length) delete forksData.meaningsByWord[wordId];
+          persistForksData();
+          renderGraphCard(wordId);
+          return;
+        }
         const chooseShelf = event.target.closest('[data-choose-custom-shelf]');
         if (chooseShelf) { openCustomShelfPicker(chooseShelf.dataset.chooseCustomShelf, 'graph'); return; }
         const worldButton = event.target.closest('[data-open-word-world]');
@@ -9527,40 +9672,70 @@
           finishFork({ skipped: true });
           return;
         }
-        if (action === 'choose-A' || action === 'choose-B') {
-          activeFork.userChoice = action.endsWith('A') ? 'A' : 'B';
-          activeFork.step = 'truth';
+        activeFork.ownOption = forksContent.querySelector('[data-fork-own-option]')?.value.trim().slice(0, 500) || activeFork.ownOption;
+        activeFork.thought = forksContent.querySelector('[data-fork-thought]')?.value.trim().slice(0, 700) || activeFork.thought;
+        if (action === 'choose-A' || action === 'choose-B' || action === 'choose-own') {
+          if (action === 'choose-own' && !activeFork.ownOption.trim()) return;
+          activeFork.userChoice = action === 'choose-A' ? 'A' : action === 'choose-B' ? 'B' : null;
+          activeFork.step = 'reply';
           if (record) {
             record.userChoice = activeFork.userChoice;
-            record.gap = activeFork.userChoice !== activeFork.actualChoice;
-            confirmForkChoiceWords(activeFork.dilemma, activeFork.userChoice, record);
-            persistState();
+            record.ownOption = action === 'choose-own' ? activeFork.ownOption : null;
             persistForksData();
           }
-        } else if (action === 'to-outcome') {
-          activeFork.step = 'outcome';
-          if (record) {
-            record.candidateId = activeFork.userChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
-            persistForksData();
-          }
+        } else if (action === 'toggle-why') {
+          activeFork.showWhy = !activeFork.showWhy;
+        } else if (action === 'reflect') {
+          activeFork.step = 'reflection';
+        } else if (action === 'toggle-hints') {
+          activeFork.showHints = !activeFork.showHints;
+        } else if (action === 'choose-word') {
+          if (!activeFork.thought.trim()) return;
+        } else if (action.startsWith('save-word:')) {
+          const wordId = action.slice('save-word:'.length);
+          const word = WORD_BY_ID.get(wordId);
+          if (!word || !activeFork.thought.trim()) return;
+          saveForkMeaning(wordId, activeFork.thought, activeFork.dilemma.id);
+          activeFork.savedWordId = wordId;
+          activeFork.step = 'saved';
+        } else if (action.startsWith('add-word:')) {
+          const wordId = action.slice('add-word:'.length);
+          const word = WORD_BY_ID.get(wordId);
+          if (!word || !activeFork.thought.trim()) return;
+          state.selectedIds.push(wordId);
+          setSelectionWave(wordId);
+          persistState();
+          saveForkMeaning(wordId, activeFork.thought, activeFork.dilemma.id, 'suggested-and-accepted');
+          activeFork.savedWordId = wordId;
+          activeFork.step = 'saved';
+        } else if (action === 'save-without-word') {
+          if (!activeFork.thought.trim()) return;
+          if (record) record.note = activeFork.thought;
+          persistForksData();
+          finishFork();
+          return;
+        } else if (action.startsWith('open-word:')) {
+          const wordId = action.slice('open-word:'.length);
+          finishFork({ destination: 'graph' });
+          window.setTimeout(() => selectGraphNode(wordId), 0);
+          return;
         } else if (action === 'finish') {
           finishFork();
           return;
-        } else if (action === 'accept-candidate' || action === 'reject-candidate') {
-          const accepted = action === 'accept-candidate';
-          const candidateId = activeFork.userChoice === 'A' ? activeFork.dilemma.candidateA : activeFork.dilemma.candidateB;
-          const candidate = WORD_BY_ID.get(candidateId);
-          if (accepted && candidate && !state.selectedIds.includes(candidate.id)) {
-            state.selectedIds.push(candidate.id);
-            setSelectionWave(candidate.id);
-            addWordWeight(candidate.id);
-            const themedShelf = (activeFork.dilemma.shelves || []).find((shelfId) => candidate.shelves.includes(shelfId));
-            state.snapshotShelfId = themedShelf || candidate.shelves[0] || state.snapshotShelfId;
-            persistState();
-          }
-          finishFork({ acceptedCandidate: accepted, destination: accepted ? 'snapshot' : 'intersections' });
-          return;
         } else {
+          return;
+        }
+        if (activeFork.step === 'saved') {
+          const word = WORD_BY_ID.get(activeFork.savedWordId);
+          forksContent.replaceChildren();
+          const saved = document.createElement('section');
+          saved.className = 'fork-stage fork-step-saved';
+          saved.append(forkHeader('твоя мысль', `Сохранено у «${word.word}»`));
+          const actions = document.createElement('div');
+          actions.className = 'fork-actions';
+          actions.append(createForkButton('Открыть слово', `open-word:${word.id}`, 'fork-primary'), createForkButton('Закончить', 'finish'));
+          saved.append(actions);
+          forksContent.append(saved);
           return;
         }
         renderForkScreen();
