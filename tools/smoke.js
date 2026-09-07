@@ -533,7 +533,13 @@ async function main() {
 
     await evaluate(client, `(() => {
       const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
-      saved.privacyByWord = { ...(saved.privacyByWord || {}), blizost: 'only-me', predatelstvo: 'only-me' };
+      saved.privacyByWord = {
+        ...(saved.privacyByWord || {}),
+        chestnost: 'public',
+        muzyka: 'public',
+        blizost: 'on-match',
+        predatelstvo: 'only-me'
+      };
       saved.view = 'intersections';
       localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
     })()`);
@@ -546,7 +552,7 @@ async function main() {
       overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
     }))()`);
     assert(senderPreview.words.includes('честность'), 'public word is missing from friend-link preview');
-    assert(!senderPreview.words.includes('близость') && !senderPreview.words.includes('предательство'), 'private word leaked into friend-link preview');
+    assert(!senderPreview.words.includes('близость') && !senderPreview.words.includes('предательство'), 'non-public word leaked into friend-link preview');
     assert(!senderPreview.overflow, 'friend-link preview overflows at 390px');
     await evaluate(client, `(() => {
       const input = document.querySelector('#linkShareContent [name="nickname"]');
@@ -554,13 +560,13 @@ async function main() {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
     })()`);
-    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).searchParams.has('c')`, 'sender query-link creation');
+    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).hash.startsWith('#compare=')`, 'sender fragment-link creation');
     const senderBundle = await evaluate(client, `(() => ({
       url: document.querySelector('#linkShareContent .link-share-url').value,
       storage: Object.fromEntries(Object.entries(localStorage))
     }))()`);
-    assert(new URL(senderBundle.url).searchParams.get('c') && !new URL(senderBundle.url).hash,
-      'sender link is not using the query-only payload format');
+    assert(new URL(senderBundle.url).hash.startsWith('#compare=') && !new URL(senderBundle.url).searchParams.get('c'),
+      'sender link is not using the fragment-only payload format');
 
     await evaluate(client, 'localStorage.clear(); sessionStorage.clear(); true');
     await client.call('Page.navigate', { url: 'about:blank' });
@@ -594,6 +600,11 @@ async function main() {
       return selected;
     })()`);
     assert(recipientLightIds.length === 30, 'recipient ritual did not select enough shareable words for a real response payload');
+    await evaluate(client, `(() => {
+      const saved = JSON.parse(localStorage.getItem('hand_compass_snapshot_v2_draft'));
+      saved.privacyByWord = { ...(saved.privacyByWord || {}), ...Object.fromEntries(${JSON.stringify(['chestnost', 'muzyka'])}.map((id) => [id, 'public'])) };
+      localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
+    })()`);
     await click(client, '#doneButton');
     await waitFor(client, visible('#darkIntroScreen'), 'recipient dark-wave entry');
     await click(client, '#startDarkButton');
@@ -642,11 +653,11 @@ async function main() {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
     })()`);
-    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).searchParams.has('c')`, 'reply query-link creation');
+    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).hash.startsWith('#compare=')`, 'reply fragment-link creation');
     const responseBundle = await evaluate(client, `(async () => {
       const url = document.querySelector('#linkShareContent .link-share-url').value;
       const parsedUrl = new URL(url);
-      const encoded = parsedUrl.searchParams.get('c');
+      const encoded = parsedUrl.hash.slice('#compare='.length);
       const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(encoded.length / 4) * 4, '=');
       const binary = atob(base64);
       const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
@@ -655,18 +666,17 @@ async function main() {
       return {
         url,
         length: url.length,
-        queryPayload: encoded,
+        payload: encoded,
         hash: parsedUrl.hash,
         payloadWords: payload.w?.map((word) => word.i) || [],
         shared: window.__lastComparisonShare || null
       };
     })()`);
     assert(responseBundle.length > 500, `reply link is suspiciously short (${responseBundle.length} characters)`);
-    assert(responseBundle.queryPayload && !responseBundle.hash, 'reply link is not using the query-only payload format');
-    assert(responseBundle.payloadWords.length === recipientLightIds.length,
-      `reply payload is empty, broken, or does not contain the fresh ritual words (${JSON.stringify({ selected: recipientLightIds.length, payload: responseBundle.payloadWords.length })})`);
-    assert(responseBundle.payloadWords.every((id) => recipientLightIds.includes(id)), 'reply payload contains words outside the recipient ritual');
-    assert(responseBundle.shared && responseBundle.shared.text.includes(responseBundle.url), 'system share did not receive the full query URL');
+    assert(responseBundle.payload && responseBundle.hash.startsWith('#compare='), 'reply link is not using the fragment-only payload format');
+    assert(responseBundle.payloadWords.sort().join('|') === 'chestnost|muzyka',
+      `reply payload includes something other than explicit 🌍 words (${JSON.stringify(responseBundle.payloadWords)})`);
+    assert(responseBundle.shared && responseBundle.shared.text.includes(responseBundle.url), 'system share did not receive the full fragment URL');
     assert(!Object.hasOwn(responseBundle.shared, 'url'), 'system share unexpectedly split the comparison URL out of the message text');
     const responseLink = responseBundle.url;
 
@@ -687,7 +697,7 @@ async function main() {
       'reply opened the ritual instead of the comparison, or overflows at 390px');
 
     const truncatedResponseLink = new URL(responseLink);
-    truncatedResponseLink.searchParams.set('c', responseBundle.queryPayload.slice(0, Math.floor(responseBundle.queryPayload.length / 2)));
+    truncatedResponseLink.hash = `compare=${responseBundle.payload.slice(0, Math.floor(responseBundle.payload.length / 2))}`;
     await client.call('Page.navigate', { url: 'about:blank' });
     await client.call('Page.navigate', { url: truncatedResponseLink.href });
     await waitFor(client, `${visible('#linkInviteScreen')} && document.getElementById('linkInviteTitle').textContent === 'Ссылка не дошла целиком.'`, 'truncated reply error');
@@ -711,13 +721,13 @@ async function main() {
     await waitFor(client, `${visible('#linkComparisonScreen')} && document.getElementById('linkComparisonTitle').textContent.includes('Друг')`, 'manual message paste comparison');
     assert(!await evaluate(client, visible('#scatterScreen')), 'manual message paste fell back to the ritual');
 
-    const legacyHashLink = new URL(responseLink);
-    legacyHashLink.searchParams.delete('c');
-    legacyHashLink.hash = `compare=${responseBundle.queryPayload}`;
+    const legacyQueryLink = new URL(responseLink);
+    legacyQueryLink.hash = '';
+    legacyQueryLink.searchParams.set('c', responseBundle.payload);
     await client.call('Page.navigate', { url: 'about:blank' });
-    await client.call('Page.navigate', { url: legacyHashLink.href });
-    await waitFor(client, `${visible('#linkComparisonScreen')} && document.getElementById('linkComparisonTitle').textContent.includes('Друг')`, 'legacy hash comparison');
-    assert(!await evaluate(client, visible('#scatterScreen')), 'legacy hash link fell back to the ritual');
+    await client.call('Page.navigate', { url: legacyQueryLink.href });
+    await waitFor(client, `${visible('#linkComparisonScreen')} && document.getElementById('linkComparisonTitle').textContent.includes('Друг')`, 'legacy query comparison');
+    assert(!await evaluate(client, visible('#scatterScreen')), 'legacy query link fell back to the ritual');
     await click(client, '[data-link-comparison-back]');
     await waitFor(client, visible('#intersectionsScreen'), 'return from friend comparison');
     await waitFor(client, `document.querySelectorAll('#meetingPeopleList [data-meeting-trace-id]').length === 1`, 'People meeting list');
@@ -754,7 +764,7 @@ async function main() {
       'unavailable comparison does not degrade to the minimal meeting card');
     await click(client, '[data-link-comparison-back]');
     await waitFor(client, visible('#intersectionsScreen'), 'return from minimal meeting trace');
-    completed.push(`ссылка query + ручная вставка + старый hash + след встречи (${responseBundle.length} символов)`);
+    completed.push(`ссылка fragment + ручная вставка + старый query + след встречи (${responseBundle.length} символов)`);
 
     const signedComparisonStorage = await evaluate(client, `Object.fromEntries(Object.entries(localStorage))`);
     await evaluate(client, `(() => {
@@ -1029,7 +1039,7 @@ async function main() {
       saved.selectionWaves = Object.fromEntries(ids.map((id) => [id, 1]));
       saved.wordWeights = Object.fromEntries(ids.map((id) => [id, 1]));
       saved.waveOneIds = ids;
-      saved.privacyByWord = Object.fromEntries(ids.map((id) => [id, 'on-match']));
+      saved.privacyByWord = Object.fromEntries(ids.map((id) => [id, 'public']));
       saved.ritualComplete = true;
       saved.view = 'intersections';
       localStorage.setItem('hand_compass_snapshot_v2_draft', JSON.stringify(saved));
@@ -1050,7 +1060,7 @@ async function main() {
       input.dispatchEvent(new Event('input', { bubbles: true }));
       document.querySelector('#linkShareContent [data-link-share-form]').requestSubmit();
     })()`);
-    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).searchParams.has('c')`, '70-word query-link creation');
+    await waitFor(client, `new URL(document.querySelector('#linkShareContent .link-share-url')?.value).hash.startsWith('#compare=')`, '70-word fragment-link creation');
     fullSnapshotLinkLength = await evaluate(client, `document.querySelector('#linkShareContent .link-share-url').value.length`);
     completed.push(`ссылка на 70 слов: ${fullSnapshotLinkLength} символов`);
 

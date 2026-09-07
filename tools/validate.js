@@ -79,7 +79,7 @@ function validateLinkComparisonPrivacyFilter(draftHtml, dictionary) {
     )(100, 'hand-compass-link', 1, normalizeNickname, normalizeSign);
     const sourceState = {
       selectedIds: ['chestnost', 'blizost', 'predatelstvo'],
-      privacyByWord: { blizost: 'only-me' },
+      privacyByWord: { chestnost: 'public', blizost: 'on-match', predatelstvo: 'only-me' },
       wordSigns: { chestnost: '+', blizost: '±', predatelstvo: '-' }
     };
     const shelves = [
@@ -91,7 +91,7 @@ function validateLinkComparisonPrivacyFilter(draftHtml, dictionary) {
     const decoded = JSON.parse(inflateSync(Buffer.from(encoded, 'base64url')).toString('utf8'));
     const encodedIds = decoded.w.map((word) => word.i);
     if (encodedIds.join('|') !== 'chestnost') {
-      fail(`link payload leaked private words (${encodedIds.join(', ') || 'empty payload'})`);
+      fail(`link payload leaked a non-public word (${encodedIds.join(', ') || 'empty payload'})`);
     }
     if (decoded.w.some((word) => Object.keys(word).sort().join(',') !== 'g,i,s')) {
       fail('link payload exposes fields beyond word id, shelves, and sign');
@@ -232,8 +232,11 @@ async function main() {
   }
   requireDraftFeature(draftHtml, /new CompressionStream\('deflate'\)/, 'link comparison does not use deflate compression');
   requireDraftFeature(draftHtml, /new DecompressionStream\('deflate'\)/, 'link comparison cannot open deflate payloads');
-  requireDraftFeature(draftHtml, /url\.searchParams\.set\(LINK_COMPARISON_QUERY_KEY, encoded\)/,
-    'new link comparison data is not placed in the query');
+  requireDraftFeature(draftHtml, /url\.hash = `\$\{LINK_COMPARISON_HASH_PREFIX\}\$\{encoded\}`/,
+    'new link comparison data is not placed in the fragment');
+  if (/url\.searchParams\.set\(LINK_COMPARISON_QUERY_KEY, encoded\)/.test(draftHtml)) {
+    fail('new link comparison data is still placed in the query');
+  }
   requireDraftFeature(draftHtml, /rawHash\.startsWith\(LINK_COMPARISON_HASH_PREFIX\)/,
     'legacy hash comparison links are no longer supported');
   requireDraftFeature(draftHtml, /function linkComparisonEncodedFromText/,
