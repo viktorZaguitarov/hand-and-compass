@@ -4055,7 +4055,7 @@
             const defaultPrivacy = (item.shelves || []).some((shelfId) => shelfId === 'stones' || shelfId === 'triggers')
               ? 'only-me'
               : 'on-match';
-            return (savedPrivacy || defaultPrivacy) !== 'only-me';
+            return (savedPrivacy || defaultPrivacy) === 'public';
           })
           .slice(0, LINK_COMPARISON_MAX_WORDS)
           .map((item) => ({
@@ -4156,8 +4156,8 @@
         const encoded = bytesToBase64Url(compressed);
         const url = new URL(window.location.href);
         url.searchParams.delete(LINK_COMPARISON_LEGACY_MARKER_KEY);
-        url.searchParams.set(LINK_COMPARISON_QUERY_KEY, encoded);
-        url.hash = '';
+        url.searchParams.delete(LINK_COMPARISON_QUERY_KEY);
+        url.hash = `${LINK_COMPARISON_HASH_PREFIX}${encoded}`;
         return { url: url.href, payload, encoded };
       }
 
@@ -4178,18 +4178,18 @@
 
       function storeLinkComparisonLocation(encoded) {
         const url = new URL(window.location.href);
+        url.searchParams.delete(LINK_COMPARISON_QUERY_KEY);
         url.searchParams.delete(LINK_COMPARISON_LEGACY_MARKER_KEY);
-        url.searchParams.set(LINK_COMPARISON_QUERY_KEY, encoded);
-        url.hash = '';
-        history.replaceState(null, '', `${url.pathname}${url.search}`);
+        url.hash = `${LINK_COMPARISON_HASH_PREFIX}${encoded}`;
+        history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
       }
 
       function linkComparisonEncodedFromText(value) {
         const text = String(value || '');
-        const queryMatch = text.match(/(?:\?|&)c=([A-Za-z0-9_-]+)/);
-        if (queryMatch) return queryMatch[1];
         const hashMatch = text.match(/#compare=([A-Za-z0-9_-]+)/);
-        return hashMatch?.[1] || null;
+        if (hashMatch) return hashMatch[1];
+        const queryMatch = text.match(/(?:\?|&)c=([A-Za-z0-9_-]+)/);
+        return queryMatch?.[1] || null;
       }
 
       async function decodeLinkComparisonEncoded(encoded) {
@@ -4585,10 +4585,10 @@
         const title = document.createElement('h1');
         title.id = 'linkShareTitle';
         title.tabIndex = -1;
-        title.textContent = 'Покажи другу только выбранную часть карты.';
+        title.textContent = 'Покажи другу только слова, отмеченные 🌍.';
         const lead = document.createElement('p');
         lead.className = 'lead';
-        lead.textContent = 'Перед созданием проверь слова, которые окажутся в ссылке.';
+        lead.textContent = 'В ссылку попадут только слова с уровнем 🌍. 👁 и 🔒 останутся только у тебя.';
         header.append(eyebrow, title, lead);
 
         const card = document.createElement('section');
@@ -4600,7 +4600,7 @@
         appendLinkPreviewGroups(card, previewPayload.w);
         const warning = document.createElement('p');
         warning.className = 'link-warning';
-        warning.textContent = 'ссылка = твоя карта в словах, отправляй тому, кому доверяешь; отозвать её нельзя';
+        warning.textContent = 'данные карты находятся во фрагменте ссылки и не передаются хостингу при открытии; отправляй тому, кому доверяешь — отозвать ссылку нельзя';
         card.append(warning);
 
         const form = document.createElement('form');
